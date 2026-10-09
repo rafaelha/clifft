@@ -1,0 +1,25 @@
+{
+  "upstream_revision": "b99452de7e300324e7bbf5cd9347241c3e289bae",
+  "model_sha256": "18587ca9d3363ee9dfd66b13a6a0cc9514c507a8cb250a5f9c500c6fbe162b8c",
+  "witness_sha256": "c564643ca72969b8f75363387e3d7c7ec36131b6ed279f1dca31dba2b80dc1d0",
+  "source_sha256": "f3b4dbdc995778c24c5141bc07506a9a36008a1f6fef967d401d0bb15f36e34b",
+  "history": [
+    [
+      3246,
+      4
+    ],
+    [
+      3794,
+      4
+    ],
+    [
+      2700,
+      4
+    ],
+    [
+      5379,
+      2
+    ]
+  ],
+  "expected_acceptance": 0.0
+}

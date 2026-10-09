@@ -1,0 +1,3329 @@
+{
+  "primitives": {
+    "pauli_branches": 144,
+    "clifford_branches": 45,
+    "bounded_refusals": 99,
+    "maximum_error": 9.992007221626409e-16,
+    "incompatible_entry_refused": true
+  },
+  "versions": {
+    "clifft": "0.11.1.dev11+ged2a125ad",
+    "stim": "1.16.0",
+    "qiskit": "2.3.0",
+    "qiskit-aer": "0.17.2",
+    "numpy": "2.4.2"
+  },
+  "complete": {
+    "chan-four-round-d5": {
+      "source_sha256": "f3b4dbdc995778c24c5141bc07506a9a36008a1f6fef967d401d0bb15f36e34b",
+      "fault_sites": 5537,
+      "rows": [
+        {
+          "faults": 0,
+          "history": [],
+          "seconds": 0.38778028916567564,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 0,
+          "witness": false
+        },
+        {
+          "faults": 4,
+          "history": [
+            [
+              2312,
+              2
+            ],
+            [
+              2314,
+              1
+            ],
+            [
+              2951,
+              1
+            ],
+            [
+              5294,
+              3
+            ]
+          ],
+          "seconds": 0.4913024278357625,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": -2.238661936039212e-17,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": -1.0,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 4.884981308350689e-15,
+          "detector_events": 10,
+          "witness": false
+        },
+        {
+          "faults": 7,
+          "history": [
+            [
+              1572,
+              3
+            ],
+            [
+              2253,
+              2
+            ],
+            [
+              2356,
+              2
+            ],
+            [
+              2443,
+              3
+            ],
+            [
+              2562,
+              1
+            ],
+            [
+              4688,
+              2
+            ],
+            [
+              5115,
+              3
+            ]
+          ],
+          "seconds": 0.5654950318858027,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": -9.565215248217661e-18,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0000000000000002,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 2.220446049250313e-16,
+          "detector_events": 14,
+          "witness": false
+        },
+        {
+          "faults": 11,
+          "history": [
+            [
+              288,
+              2
+            ],
+            [
+              444,
+              1
+            ],
+            [
+              1530,
+              3
+            ],
+            [
+              2104,
+              1
+            ],
+            [
+              2477,
+              1
+            ],
+            [
+              2635,
+              2
+            ],
+            [
+              3346,
+              3
+            ],
+            [
+              3628,
+              2
+            ],
+            [
+              3813,
+              3
+            ],
+            [
+              3846,
+              2
+            ],
+            [
+              4303,
+              15
+            ]
+          ],
+          "seconds": 0.49649915704503655,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": -2.1127673912800033e-18,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": 4.0254227221653105e-18,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0000000000000002,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 2.220446049250313e-16,
+          "detector_events": 13,
+          "witness": false
+        },
+        {
+          "faults": 3,
+          "history": [
+            [
+              510,
+              1
+            ],
+            [
+              1050,
+              2
+            ],
+            [
+              5456,
+              1
+            ]
+          ],
+          "seconds": 0.5732870921492577,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 0,
+          "witness": false
+        },
+        {
+          "faults": 3,
+          "history": [
+            [
+              2915,
+              2
+            ],
+            [
+              3983,
+              3
+            ],
+            [
+              4759,
+              1
+            ]
+          ],
+          "seconds": 0.4453274328261614,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": -1.0,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 4,
+          "witness": false
+        },
+        {
+          "faults": 8,
+          "history": [
+            [
+              425,
+              3
+            ],
+            [
+              774,
+              2
+            ],
+            [
+              1063,
+              1
+            ],
+            [
+              1385,
+              2
+            ],
+            [
+              2436,
+              1
+            ],
+            [
+              2658,
+              3
+            ],
+            [
+              2737,
+              2
+            ],
+            [
+              2764,
+              1
+            ]
+          ],
+          "seconds": 0.4129547057673335,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": -1.0,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": 5.142552139637855e-18,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 2.220446049250313e-16,
+          "detector_events": 7,
+          "witness": false
+        },
+        {
+          "faults": 6,
+          "history": [
+            [
+              330,
+              2
+            ],
+            [
+              986,
+              3
+            ],
+            [
+              1803,
+              3
+            ],
+            [
+              2028,
+              1
+            ],
+            [
+              2750,
+              8
+            ],
+            [
+              4702,
+              14
+            ]
+          ],
+          "seconds": 0.4135078559629619,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": -8.508831552577664e-18,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": -1.0,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 13,
+          "witness": false
+        },
+        {
+          "faults": 6,
+          "history": [
+            [
+              260,
+              3
+            ],
+            [
+              1059,
+              14
+            ],
+            [
+              2105,
+              3
+            ],
+            [
+              4055,
+              4
+            ],
+            [
+              5084,
+              2
+            ],
+            [
+              5494,
+              3
+            ]
+          ],
+          "seconds": 0.42504908703267574,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": -1.0,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": -1.0563836956400001e-18,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": -1.0,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 2.220446049250313e-16,
+          "detector_events": 9,
+          "witness": false
+        },
+        {
+          "faults": 7,
+          "history": [
+            [
+              862,
+              3
+            ],
+            [
+              1401,
+              2
+            ],
+            [
+              1856,
+              1
+            ],
+            [
+              2262,
+              3
+            ],
+            [
+              2349,
+              14
+            ],
+            [
+              3815,
+              2
+            ],
+            [
+              5077,
+              2
+            ]
+          ],
+          "seconds": 0.3987925471737981,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": 9.751741403858142e-19,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 2.220446049250313e-16,
+          "detector_events": 8,
+          "witness": false
+        },
+        {
+          "faults": 9,
+          "history": [
+            [
+              105,
+              3
+            ],
+            [
+              186,
+              3
+            ],
+            [
+              219,
+              1
+            ],
+            [
+              402,
+              1
+            ],
+            [
+              975,
+              3
+            ],
+            [
+              1415,
+              1
+            ],
+            [
+              3004,
+              2
+            ],
+            [
+              5098,
+              2
+            ],
+            [
+              5431,
+              1
+            ]
+          ],
+          "seconds": 0.41128801740705967,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": -1.0,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": -1.0,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 6,
+          "witness": false
+        },
+        {
+          "faults": 4,
+          "history": [
+            [
+              639,
+              1
+            ],
+            [
+              3630,
+              8
+            ],
+            [
+              4879,
+              2
+            ],
+            [
+              5138,
+              2
+            ]
+          ],
+          "seconds": 0.46957469172775745,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": -4.231363004342607e-18,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 2.220446049250313e-16,
+          "detector_events": 11,
+          "witness": false
+        },
+        {
+          "faults": 3,
+          "history": [
+            [
+              1826,
+              2
+            ],
+            [
+              4853,
+              3
+            ],
+            [
+              4932,
+              3
+            ]
+          ],
+          "seconds": 0.5093298759311438,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 0,
+          "witness": false
+        },
+        {
+          "faults": 4,
+          "history": [
+            [
+              1705,
+              1
+            ],
+            [
+              3478,
+              3
+            ],
+            [
+              4296,
+              2
+            ],
+            [
+              4604,
+              2
+            ]
+          ],
+          "seconds": 0.4790442078374326,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": 5.142552139637855e-18,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 2.220446049250313e-16,
+          "detector_events": 11,
+          "witness": false
+        },
+        {
+          "faults": 4,
+          "history": [
+            [
+              20,
+              1
+            ],
+            [
+              917,
+              3
+            ],
+            [
+              2817,
+              1
+            ],
+            [
+              3444,
+              2
+            ]
+          ],
+          "seconds": 0.397795754019171,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": -5.368956255236793e-18,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 0.9999999999999999,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 8.659739592076221e-15,
+          "detector_events": 4,
+          "witness": false
+        },
+        {
+          "faults": 5,
+          "history": [
+            [
+              667,
+              3
+            ],
+            [
+              2356,
+              2
+            ],
+            [
+              2555,
+              3
+            ],
+            [
+              3689,
+              1
+            ],
+            [
+              5273,
+              5
+            ]
+          ],
+          "seconds": 0.49445659574121237,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": -4.231363004342607e-18,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 2.220446049250313e-16,
+          "detector_events": 11,
+          "witness": false
+        },
+        {
+          "faults": 90,
+          "history": [
+            [
+              31,
+              1
+            ],
+            [
+              48,
+              1
+            ],
+            [
+              240,
+              2
+            ],
+            [
+              285,
+              3
+            ],
+            [
+              316,
+              2
+            ],
+            [
+              413,
+              2
+            ],
+            [
+              495,
+              2
+            ],
+            [
+              501,
+              3
+            ],
+            [
+              608,
+              3
+            ],
+            [
+              617,
+              1
+            ],
+            [
+              618,
+              2
+            ],
+            [
+              665,
+              1
+            ],
+            [
+              751,
+              3
+            ],
+            [
+              756,
+              3
+            ],
+            [
+              864,
+              3
+            ],
+            [
+              973,
+              2
+            ],
+            [
+              1017,
+              1
+            ],
+            [
+              1141,
+              1
+            ],
+            [
+              1191,
+              2
+            ],
+            [
+              1218,
+              2
+            ],
+            [
+              1431,
+              1
+            ],
+            [
+              1437,
+              10
+            ],
+            [
+              1508,
+              1
+            ],
+            [
+              1525,
+              3
+            ],
+            [
+              1647,
+              2
+            ],
+            [
+              1700,
+              2
+            ],
+            [
+              1742,
+              1
+            ],
+            [
+              1823,
+              2
+            ],
+            [
+              1846,
+              3
+            ],
+            [
+              1888,
+              2
+            ],
+            [
+              1955,
+              3
+            ],
+            [
+              2003,
+              1
+            ],
+            [
+              2040,
+              2
+            ],
+            [
+              2080,
+              3
+            ],
+            [
+              2145,
+              2
+            ],
+            [
+              2154,
+              1
+            ],
+            [
+              2163,
+              3
+            ],
+            [
+              2203,
+              2
+            ],
+            [
+              2279,
+              1
+            ],
+            [
+              2284,
+              1
+            ],
+            [
+              2302,
+              1
+            ],
+            [
+              2320,
+              2
+            ],
+            [
+              2355,
+              2
+            ],
+            [
+              2540,
+              2
+            ],
+            [
+              2646,
+              3
+            ],
+            [
+              2767,
+              2
+            ],
+            [
+              2846,
+              1
+            ],
+            [
+              2859,
+              2
+            ],
+            [
+              2926,
+              2
+            ],
+            [
+              2953,
+              1
+            ],
+            [
+              3057,
+              1
+            ],
+            [
+              3288,
+              8
+            ],
+            [
+              3361,
+              1
+            ],
+            [
+              3378,
+              2
+            ],
+            [
+              3390,
+              3
+            ],
+            [
+              3466,
+              1
+            ],
+            [
+              3545,
+              8
+            ],
+            [
+              3560,
+              2
+            ],
+            [
+              3670,
+              3
+            ],
+            [
+              3844,
+              2
+            ],
+            [
+              3846,
+              3
+            ],
+            [
+              3921,
+              3
+            ],
+            [
+              3951,
+              2
+            ],
+            [
+              4116,
+              1
+            ],
+            [
+              4117,
+              3
+            ],
+            [
+              4140,
+              3
+            ],
+            [
+              4144,
+              15
+            ],
+            [
+              4177,
+              3
+            ],
+            [
+              4188,
+              13
+            ],
+            [
+              4227,
+              1
+            ],
+            [
+              4301,
+              7
+            ],
+            [
+              4415,
+              2
+            ],
+            [
+              4431,
+              1
+            ],
+            [
+              4483,
+              3
+            ],
+            [
+              4488,
+              2
+            ],
+            [
+              4514,
+              3
+            ],
+            [
+              4664,
+              11
+            ],
+            [
+              4687,
+              1
+            ],
+            [
+              4761,
+              1
+            ],
+            [
+              4811,
+              2
+            ],
+            [
+              4908,
+              1
+            ],
+            [
+              4946,
+              1
+            ],
+            [
+              4989,
+              3
+            ],
+            [
+              5007,
+              2
+            ],
+            [
+              5053,
+              2
+            ],
+            [
+              5169,
+              2
+            ],
+            [
+              5217,
+              3
+            ],
+            [
+              5371,
+              1
+            ],
+            [
+              5382,
+              11
+            ],
+            [
+              5452,
+              2
+            ]
+          ],
+          "seconds": 0.43398772832006216,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": 1.2821404112174455e-17,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": -1.4934171503454458e-17,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": -0.9999999999999999,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 1.1102230246251565e-15,
+          "detector_events": 52,
+          "witness": false
+        },
+        {
+          "faults": 98,
+          "history": [
+            [
+              23,
+              1
+            ],
+            [
+              45,
+              3
+            ],
+            [
+              52,
+              1
+            ],
+            [
+              134,
+              3
+            ],
+            [
+              183,
+              1
+            ],
+            [
+              242,
+              2
+            ],
+            [
+              266,
+              1
+            ],
+            [
+              274,
+              1
+            ],
+            [
+              302,
+              3
+            ],
+            [
+              314,
+              2
+            ],
+            [
+              333,
+              3
+            ],
+            [
+              366,
+              3
+            ],
+            [
+              369,
+              3
+            ],
+            [
+              469,
+              1
+            ],
+            [
+              489,
+              3
+            ],
+            [
+              524,
+              2
+            ],
+            [
+              536,
+              2
+            ],
+            [
+              596,
+              2
+            ],
+            [
+              633,
+              1
+            ],
+            [
+              665,
+              1
+            ],
+            [
+              813,
+              1
+            ],
+            [
+              957,
+              8
+            ],
+            [
+              974,
+              1
+            ],
+            [
+              1079,
+              3
+            ],
+            [
+              1119,
+              3
+            ],
+            [
+              1218,
+              2
+            ],
+            [
+              1234,
+              3
+            ],
+            [
+              1368,
+              1
+            ],
+            [
+              1402,
+              3
+            ],
+            [
+              1452,
+              1
+            ],
+            [
+              1534,
+              2
+            ],
+            [
+              1616,
+              3
+            ],
+            [
+              1621,
+              1
+            ],
+            [
+              1639,
+              3
+            ],
+            [
+              1745,
+              1
+            ],
+            [
+              1893,
+              1
+            ],
+            [
+              2019,
+              15
+            ],
+            [
+              2020,
+              3
+            ],
+            [
+              2097,
+              1
+            ],
+            [
+              2182,
+              1
+            ],
+            [
+              2254,
+              2
+            ],
+            [
+              2288,
+              3
+            ],
+            [
+              2338,
+              3
+            ],
+            [
+              2457,
+              2
+            ],
+            [
+              2461,
+              3
+            ],
+            [
+              2585,
+              3
+            ],
+            [
+              2692,
+              3
+            ],
+            [
+              2718,
+              1
+            ],
+            [
+              2726,
+              3
+            ],
+            [
+              2796,
+              3
+            ],
+            [
+              2875,
+              15
+            ],
+            [
+              2919,
+              2
+            ],
+            [
+              2925,
+              1
+            ],
+            [
+              2984,
+              1
+            ],
+            [
+              2999,
+              3
+            ],
+            [
+              3018,
+              3
+            ],
+            [
+              3035,
+              1
+            ],
+            [
+              3074,
+              2
+            ],
+            [
+              3138,
+              3
+            ],
+            [
+              3143,
+              3
+            ],
+            [
+              3332,
+              2
+            ],
+            [
+              3333,
+              10
+            ],
+            [
+              3351,
+              1
+            ],
+            [
+              3357,
+              2
+            ],
+            [
+              3538,
+              3
+            ],
+            [
+              3620,
+              2
+            ],
+            [
+              3701,
+              1
+            ],
+            [
+              3720,
+              6
+            ],
+            [
+              3749,
+              1
+            ],
+            [
+              3945,
+              3
+            ],
+            [
+              3960,
+              1
+            ],
+            [
+              3982,
+              3
+            ],
+            [
+              3992,
+              2
+            ],
+            [
+              4011,
+              6
+            ],
+            [
+              4048,
+              1
+            ],
+            [
+              4155,
+              3
+            ],
+            [
+              4199,
+              2
+            ],
+            [
+              4205,
+              3
+            ],
+            [
+              4236,
+              1
+            ],
+            [
+              4249,
+              3
+            ],
+            [
+              4361,
+              1
+            ],
+            [
+              4369,
+              3
+            ],
+            [
+              4397,
+              3
+            ],
+            [
+              4410,
+              1
+            ],
+            [
+              4451,
+              3
+            ],
+            [
+              4583,
+              2
+            ],
+            [
+              4617,
+              13
+            ],
+            [
+              4696,
+              1
+            ],
+            [
+              4699,
+              1
+            ],
+            [
+              4969,
+              3
+            ],
+            [
+              4984,
+              1
+            ],
+            [
+              5066,
+              2
+            ],
+            [
+              5231,
+              12
+            ],
+            [
+              5261,
+              1
+            ],
+            [
+              5354,
+              3
+            ],
+            [
+              5390,
+              11
+            ],
+            [
+              5471,
+              1
+            ],
+            [
+              5518,
+              2
+            ]
+          ],
+          "seconds": 0.4676426090300083,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": -1.0563836956400016e-18,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": 7.365410079900865e-18,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": -2.3973282901869103e-18,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 1.3322676295501878e-15,
+          "detector_events": 45,
+          "witness": false
+        },
+        {
+          "faults": 91,
+          "history": [
+            [
+              15,
+              2
+            ],
+            [
+              74,
+              3
+            ],
+            [
+              219,
+              2
+            ],
+            [
+              316,
+              1
+            ],
+            [
+              395,
+              3
+            ],
+            [
+              451,
+              2
+            ],
+            [
+              462,
+              2
+            ],
+            [
+              536,
+              1
+            ],
+            [
+              573,
+              1
+            ],
+            [
+              660,
+              2
+            ],
+            [
+              666,
+              2
+            ],
+            [
+              682,
+              3
+            ],
+            [
+              688,
+              1
+            ],
+            [
+              693,
+              3
+            ],
+            [
+              729,
+              2
+            ],
+            [
+              777,
+              2
+            ],
+            [
+              865,
+              1
+            ],
+            [
+              923,
+              2
+            ],
+            [
+              1060,
+              8
+            ],
+            [
+              1064,
+              1
+            ],
+            [
+              1336,
+              1
+            ],
+            [
+              1367,
+              2
+            ],
+            [
+              1402,
+              3
+            ],
+            [
+              1405,
+              2
+            ],
+            [
+              1526,
+              1
+            ],
+            [
+              1543,
+              1
+            ],
+            [
+              1551,
+              2
+            ],
+            [
+              1725,
+              3
+            ],
+            [
+              1801,
+              2
+            ],
+            [
+              1808,
+              2
+            ],
+            [
+              1847,
+              1
+            ],
+            [
+              1878,
+              2
+            ],
+            [
+              1900,
+              3
+            ],
+            [
+              1920,
+              3
+            ],
+            [
+              1977,
+              2
+            ],
+            [
+              1986,
+              3
+            ],
+            [
+              2000,
+              3
+            ],
+            [
+              2101,
+              2
+            ],
+            [
+              2107,
+              1
+            ],
+            [
+              2159,
+              2
+            ],
+            [
+              2230,
+              1
+            ],
+            [
+              2290,
+              2
+            ],
+            [
+              2357,
+              2
+            ],
+            [
+              2460,
+              2
+            ],
+            [
+              2515,
+              3
+            ],
+            [
+              2673,
+              3
+            ],
+            [
+              2725,
+              1
+            ],
+            [
+              2758,
+              2
+            ],
+            [
+              2845,
+              3
+            ],
+            [
+              2849,
+              1
+            ],
+            [
+              2909,
+              1
+            ],
+            [
+              2920,
+              3
+            ],
+            [
+              2940,
+              1
+            ],
+            [
+              2992,
+              3
+            ],
+            [
+              3024,
+              1
+            ],
+            [
+              3046,
+              3
+            ],
+            [
+              3109,
+              2
+            ],
+            [
+              3149,
+              2
+            ],
+            [
+              3213,
+              9
+            ],
+            [
+              3246,
+              10
+            ],
+            [
+              3274,
+              3
+            ],
+            [
+              3285,
+              2
+            ],
+            [
+              3304,
+              3
+            ],
+            [
+              3306,
+              2
+            ],
+            [
+              3314,
+              2
+            ],
+            [
+              3417,
+              1
+            ],
+            [
+              3620,
+              2
+            ],
+            [
+              3629,
+              3
+            ],
+            [
+              3875,
+              3
+            ],
+            [
+              3928,
+              1
+            ],
+            [
+              3970,
+              1
+            ],
+            [
+              3990,
+              2
+            ],
+            [
+              4050,
+              1
+            ],
+            [
+              4069,
+              2
+            ],
+            [
+              4198,
+              2
+            ],
+            [
+              4394,
+              1
+            ],
+            [
+              4463,
+              1
+            ],
+            [
+              4464,
+              2
+            ],
+            [
+              4522,
+              1
+            ],
+            [
+              4636,
+              3
+            ],
+            [
+              4679,
+              3
+            ],
+            [
+              4704,
+              5
+            ],
+            [
+              4907,
+              1
+            ],
+            [
+              4954,
+              2
+            ],
+            [
+              4983,
+              3
+            ],
+            [
+              5003,
+              3
+            ],
+            [
+              5074,
+              3
+            ],
+            [
+              5091,
+              3
+            ],
+            [
+              5107,
+              3
+            ],
+            [
+              5220,
+              2
+            ],
+            [
+              5439,
+              3
+            ]
+          ],
+          "seconds": 0.5107500310987234,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": 1.0563836956400016e-18,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": -2.6501668798118793e-17,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0000000000000002,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 6.661338147750939e-16,
+          "detector_events": 47,
+          "witness": false
+        },
+        {
+          "faults": 66,
+          "history": [
+            [
+              85,
+              3
+            ],
+            [
+              89,
+              3
+            ],
+            [
+              139,
+              1
+            ],
+            [
+              343,
+              2
+            ],
+            [
+              429,
+              2
+            ],
+            [
+              454,
+              3
+            ],
+            [
+              486,
+              2
+            ],
+            [
+              579,
+              2
+            ],
+            [
+              938,
+              3
+            ],
+            [
+              1120,
+              3
+            ],
+            [
+              1338,
+              3
+            ],
+            [
+              1448,
+              3
+            ],
+            [
+              1449,
+              1
+            ],
+            [
+              1673,
+              3
+            ],
+            [
+              1897,
+              1
+            ],
+            [
+              1979,
+              1
+            ],
+            [
+              2078,
+              2
+            ],
+            [
+              2156,
+              2
+            ],
+            [
+              2161,
+              3
+            ],
+            [
+              2320,
+              3
+            ],
+            [
+              2330,
+              1
+            ],
+            [
+              2360,
+              3
+            ],
+            [
+              2480,
+              2
+            ],
+            [
+              2485,
+              1
+            ],
+            [
+              2610,
+              1
+            ],
+            [
+              2633,
+              1
+            ],
+            [
+              2756,
+              1
+            ],
+            [
+              2793,
+              5
+            ],
+            [
+              2849,
+              2
+            ],
+            [
+              3213,
+              9
+            ],
+            [
+              3463,
+              1
+            ],
+            [
+              3496,
+              1
+            ],
+            [
+              3504,
+              1
+            ],
+            [
+              3529,
+              1
+            ],
+            [
+              3592,
+              11
+            ],
+            [
+              3593,
+              8
+            ],
+            [
+              3619,
+              2
+            ],
+            [
+              3761,
+              4
+            ],
+            [
+              3763,
+              4
+            ],
+            [
+              3895,
+              1
+            ],
+            [
+              3913,
+              2
+            ],
+            [
+              3962,
+              1
+            ],
+            [
+              4087,
+              3
+            ],
+            [
+              4106,
+              11
+            ],
+            [
+              4121,
+              2
+            ],
+            [
+              4238,
+              3
+            ],
+            [
+              4265,
+              9
+            ],
+            [
+              4403,
+              1
+            ],
+            [
+              4493,
+              1
+            ],
+            [
+              4551,
+              1
+            ],
+            [
+              4558,
+              3
+            ],
+            [
+              4597,
+              3
+            ],
+            [
+              4666,
+              12
+            ],
+            [
+              4690,
+              1
+            ],
+            [
+              4741,
+              1
+            ],
+            [
+              4772,
+              2
+            ],
+            [
+              4818,
+              2
+            ],
+            [
+              4893,
+              2
+            ],
+            [
+              5042,
+              3
+            ],
+            [
+              5196,
+              3
+            ],
+            [
+              5280,
+              1
+            ],
+            [
+              5326,
+              13
+            ],
+            [
+              5352,
+              3
+            ],
+            [
+              5419,
+              2
+            ],
+            [
+              5425,
+              2
+            ],
+            [
+              5444,
+              2
+            ]
+          ],
+          "seconds": 0.4317556880414486,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": -1.0,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": -6.396064161297664e-18,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": 0.0,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 1.1102230246251565e-15,
+          "detector_events": 36,
+          "witness": false
+        },
+        {
+          "faults": 4,
+          "history": [
+            [
+              3246,
+              4
+            ],
+            [
+              3794,
+              4
+            ],
+            [
+              2700,
+              4
+            ],
+            [
+              5379,
+              2
+            ]
+          ],
+          "seconds": 0.4631110290065408,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 1465,
+              "last_line": 2309
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": 9.565215248217661e-18,
+              "output_width": 1,
+              "first_line": 5158,
+              "last_line": 6268
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": -1.0,
+              "output_width": 1,
+              "first_line": 6398,
+              "last_line": 6436
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 2.220446049250313e-16,
+          "detector_events": 4,
+          "witness": true
+        }
+      ]
+    },
+    "chan-v1-d3": {
+      "source_sha256": "d7b72b53fb9f0fddc7301b4a5c0c418b15c48afa423c58bcac29046eecb6d5ff",
+      "fault_sites": 658,
+      "rows": [
+        {
+          "faults": 0,
+          "history": [],
+          "seconds": 0.05966654233634472,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 0,
+          "witness": false,
+          "aer_state_error": 3.755417477601228e-17,
+          "aer_probability_error": 0.0
+        },
+        {
+          "faults": 0,
+          "history": [],
+          "seconds": 0.031088945921510458,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 0,
+          "witness": false,
+          "aer_state_error": 4.454923250536326e-17,
+          "aer_probability_error": 0.0
+        },
+        {
+          "faults": 0,
+          "history": [],
+          "seconds": 0.029863035771995783,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 0,
+          "witness": false,
+          "aer_state_error": 3.374902934497514e-17,
+          "aer_probability_error": 1.1102230246251565e-16
+        },
+        {
+          "faults": 0,
+          "history": [],
+          "seconds": 0.03293897584080696,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 0,
+          "witness": false,
+          "aer_state_error": 3.5751067846190986e-17,
+          "aer_probability_error": 0.0
+        },
+        {
+          "faults": 2,
+          "history": [
+            [
+              338,
+              9
+            ],
+            [
+              340,
+              1
+            ]
+          ],
+          "seconds": 0.032721896190196276,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": 2.1127673912800033e-18,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 4,
+          "witness": false,
+          "aer_state_error": 3.6594031814720145e-17,
+          "aer_probability_error": 0.0
+        },
+        {
+          "faults": 1,
+          "history": [
+            [
+              319,
+              2
+            ]
+          ],
+          "seconds": 0.03442505095154047,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 0,
+          "witness": false,
+          "aer_state_error": 4.4456409063328635e-17,
+          "aer_probability_error": 0.0
+        },
+        {
+          "faults": 0,
+          "history": [],
+          "seconds": 0.030910045374184847,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 0,
+          "witness": false,
+          "aer_state_error": 4.335749335312723e-17,
+          "aer_probability_error": 0.0
+        },
+        {
+          "faults": 0,
+          "history": [],
+          "seconds": 0.06191299203783274,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 0,
+          "witness": false,
+          "aer_state_error": 3.5327044855456574e-17,
+          "aer_probability_error": 0.0
+        },
+        {
+          "faults": 0,
+          "history": [],
+          "seconds": 0.06399481184780598,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 0,
+          "witness": false,
+          "aer_state_error": 3.755417477601228e-17,
+          "aer_probability_error": 0.0
+        },
+        {
+          "faults": 1,
+          "history": [
+            [
+              30,
+              3
+            ]
+          ],
+          "seconds": 0.0908928969874978,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 2,
+          "witness": false,
+          "aer_state_error": 3.7554174776012284e-17,
+          "aer_probability_error": 0.0
+        },
+        {
+          "faults": 0,
+          "history": [],
+          "seconds": 0.06261288514360785,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 0,
+          "witness": false,
+          "aer_state_error": 3.424458841010313e-17,
+          "aer_probability_error": 0.0
+        },
+        {
+          "faults": 1,
+          "history": [
+            [
+              529,
+              3
+            ]
+          ],
+          "seconds": 0.0675661638379097,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 2,
+          "witness": false,
+          "aer_state_error": 3.3186411802846605e-17,
+          "aer_probability_error": 0.0
+        },
+        {
+          "faults": 2,
+          "history": [
+            [
+              552,
+              2
+            ],
+            [
+              655,
+              2
+            ]
+          ],
+          "seconds": 0.04658007388934493,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": 5.368956255236791e-18,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 2,
+          "witness": false,
+          "aer_state_error": 3.8321294114307615e-17,
+          "aer_probability_error": 0.0
+        },
+        {
+          "faults": 2,
+          "history": [
+            [
+              84,
+              3
+            ],
+            [
+              203,
+              3
+            ]
+          ],
+          "seconds": 0.06263891281560063,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 4,
+          "witness": false,
+          "aer_state_error": 3.019101921563397e-17,
+          "aer_probability_error": 0.0
+        },
+        {
+          "faults": 0,
+          "history": [],
+          "seconds": 0.06307158013805747,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 0,
+          "witness": false,
+          "aer_state_error": 4.219435397312394e-17,
+          "aer_probability_error": 0.0
+        },
+        {
+          "faults": 0,
+          "history": [],
+          "seconds": 0.07807280495762825,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 0,
+          "witness": false,
+          "aer_state_error": 3.763483323632437e-17,
+          "aer_probability_error": 0.0
+        },
+        {
+          "faults": 11,
+          "history": [
+            [
+              7,
+              1
+            ],
+            [
+              17,
+              4
+            ],
+            [
+              166,
+              1
+            ],
+            [
+              178,
+              1
+            ],
+            [
+              195,
+              2
+            ],
+            [
+              250,
+              6
+            ],
+            [
+              261,
+              5
+            ],
+            [
+              401,
+              3
+            ],
+            [
+              410,
+              1
+            ],
+            [
+              557,
+              2
+            ],
+            [
+              632,
+              1
+            ]
+          ],
+          "seconds": 0.07121357088908553,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": -1.0563836956400016e-18,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": -1.0,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 2.220446049250313e-16,
+          "detector_events": 10,
+          "witness": false,
+          "aer_state_error": 5.815852873680767e-17,
+          "aer_probability_error": 2.7755575615628914e-17
+        },
+        {
+          "faults": 3,
+          "history": [
+            [
+              112,
+              2
+            ],
+            [
+              335,
+              2
+            ],
+            [
+              582,
+              2
+            ]
+          ],
+          "seconds": 0.06434669531881809,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": 2.9716279650498872e-18,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0000000000000002,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 11,
+          "witness": false,
+          "aer_state_error": 5.869931039739981e-17,
+          "aer_probability_error": 0.0
+        },
+        {
+          "faults": 6,
+          "history": [
+            [
+              6,
+              1
+            ],
+            [
+              190,
+              3
+            ],
+            [
+              213,
+              3
+            ],
+            [
+              317,
+              1
+            ],
+            [
+              327,
+              12
+            ],
+            [
+              452,
+              4
+            ]
+          ],
+          "seconds": 0.061333711724728346,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": -1.0,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 9,
+          "witness": false,
+          "aer_state_error": 3.1986720415755645e-17,
+          "aer_probability_error": 2.7755575615628914e-17
+        },
+        {
+          "faults": 2,
+          "history": [
+            [
+              86,
+              2
+            ],
+            [
+              184,
+              7
+            ]
+          ],
+          "seconds": 0.06363175110891461,
+          "reductions": [
+            {
+              "input_width": 1,
+              "instrument_width": 2,
+              "expectation": -2.9716279650498872e-18,
+              "output_width": 1,
+              "first_line": 491,
+              "last_line": 771
+            },
+            {
+              "input_width": 1,
+              "instrument_width": 1,
+              "expectation": 1.0,
+              "output_width": 1,
+              "first_line": 824,
+              "last_line": 838
+            }
+          ],
+          "peak_carry_width": 1,
+          "exact_queries": 6,
+          "maximum_relative_error": 0.0,
+          "detector_events": 10,
+          "witness": false,
+          "aer_state_error": 5.1372423311715924e-17,
+          "aer_probability_error": 2.7755575615628914e-17
+        }
+      ]
+    }
+  },
+  "controls": {
+    "equivalence_controls": [
+      {
+        "case": "chan-four-round-d5",
+        "kind": "permuted_qubits",
+        "probability": 0.007812499999999995
+      },
+      {
+        "case": "chan-v1-d3",
+        "kind": "permuted_qubits",
+        "probability": 1.0
+      },
+      {
+        "kind": "reported_noise",
+        "fault_bits": 0,
+        "probability": 1.0
+      },
+      {
+        "kind": "reported_noise",
+        "fault_bits": 1,
+        "probability": 1.0
+      },
+      {
+        "kind": "reported_noise",
+        "fault_bits": 2,
+        "probability": 1.0
+      },
+      {
+        "kind": "reported_noise",
+        "fault_bits": 3,
+        "probability": 1.0
+      }
+    ],
+    "malformed_refused": [
+      "grouped_single_qubit_instruction",
+      "grouped_single_qubit_instruction",
+      "grouped_single_qubit_instruction",
+      "inverse_network",
+      "inverse_phase"
+    ]
+  },
+  "four_fault_witness": {
+    "branches": 128,
+    "unique_records": 128,
+    "probability_sum": 1.0,
+    "acceptance": 0.0,
+    "maximum_probability_error": 1.734723475976807e-18
+  },
+  "native_extension_sha256": "7d1fdcb705231ff636333ef5fc243ed1b4f7f3a535404ab62b15c72e3af7fee7",
+  "source_hashes": {
+    "validate_chan_algebraic.py": "29227be21183b5dc60f61e1a8853454cf602ab516678799b33e5c1e309b11a22",
+    "conditional_clifford_core.py": "95f4d17aff73fa67bea9cb3a97dc8e25ceb1d8669ab57309434f1efb49b42237",
+    "chan_algebraic_continuation.py": "5ea2f8d5ee22d78009db4c283c1b3e0ac595358d50f0847e546a8fea97830d05",
+    "parity_envelope_audit.py": "1a34e75d2083915c4fa72352ee6cd160b2551c5ef9cfc74feefc4b8953dc33ec",
+    "study_chan_boundary.py": "df3587ce5618d9661d440e7354a79bb9d4e73217fcf569d2f4423f351c95d0d0",
+    "automatic_specialization.py": "391738d9b0c78e7a0658a1d1a5c3e6ad9e85bff1ed0e921b8d7c9272a573bc90"
+  }
+}

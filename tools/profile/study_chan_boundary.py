@@ -87,8 +87,8 @@ def classify(v: np.ndarray) -> tuple[dict, str | None]:
             blocks = correlations.reshape(-1, 2, 1 << k)
             a, b = blocks[:, 0, :].copy(), blocks[:, 1, :].copy()
             blocks[:, 0, :], blocks[:, 1, :] = a + b, a - b
-        for z in np.flatnonzero(abs(abs(correlations) - 1) < 1e-9):
-            z = int(z)
+        for raw_z in np.flatnonzero(abs(abs(correlations) - 1) < 1e-9):
+            z = int(raw_z)
             value = ((-1j) ** (x & z).bit_count()) * correlations[z]
             p = pauli(x, z, n)
             p.sign = 1 if value.real > 0 else -1

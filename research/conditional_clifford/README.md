@@ -1,5 +1,11 @@
 # Conditional Clifford reduction: research review
 
+The [algebraic Chan continuation checkpoint](CHAN_ALGEBRAIC_CONTINUATION.md)
+now replaces the earlier exhaustive boundary reconstruction with a bounded
+state update and tests the supplied four-round d5 circuit through growth and
+both physical checks. This is research tooling; production execution is
+unchanged. The broader survey below remains the preceding prototype's result.
+
 This branch explores an optional way to sample circuits whose ordinary Clifft
 active width is too large. It specializes on sampled Pauli faults and
 measurement outcomes, using algebraic structure of the prepared state to

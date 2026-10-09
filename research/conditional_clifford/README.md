@@ -15,7 +15,14 @@ compiled once is not a research constraint. The current production executor
 contract remains unchanged; host-side experiments may sample and recompile
 between calls to it.
 
-Latest study on the forked branch: [state-preserving factory continuation](QUADCYCLE_FACTORY_STUDY.md)
+Latest confidence study: [theory-protocol fault validation](THEORY_PROTOCOL_VALIDATION.md)
+adds an independent integer Pauli-expansion reference for the depth-two
+tricycle circuit. It compares complete ideal X/Z syndrome laws for all 3,645
+single faults and a bounded multiple-fault panel. The theory and quadcycle
+protocols remain complementary workloads; matching published rate curves is
+a separate goal.
+
+The [state-preserving factory continuation](QUADCYCLE_FACTORY_STUDY.md) study
 adds a quantum-state exit interface and categorical correlated-Pauli channels.
 A coupled tricycle/fan-out/quadcycle diagnostic executes at active width nine
 after reduction and optimization, versus width 33 for ordinary noisy compilation.

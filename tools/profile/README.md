@@ -586,6 +586,28 @@ Merlin CSS helper revision as the preceding study. There is no new native build.
 The [research report](../../research/conditional_clifford/QUADCYCLE_FACTORY_STUDY.md)
 records the model boundary, validation scope, and next checkpoint.
 
+## Theory-protocol fault validation
+
+`validate_theory_ccz_faults.py` independently expands the physical Clifford
+error of the theory paper's depth-two tricycle CCZ circuit in Pauli characters.
+It checks exact rational syndrome laws against reduced Clifft record
+probabilities for all 3,645 single faults and a bounded multiple-fault panel.
+Small Aer statevector controls check the error-propagation oracle. Additional
+state-overlap queries use the known injected X error as an ideal correction;
+they do not evaluate a physical decoder or a noisy protocol rate.
+
+```bash
+env OMP_NUM_THREADS=1 .venv/bin/python tools/profile/validate_theory_ccz_faults.py \
+  --merlin-checkout /path/to/pinned/merlin \
+  --output /tmp/theory-ccz-fault-validation.json
+```
+
+The oracle caps its expansion and checks active width before allocation.
+`--single-limit N` restricts candidate single-fault checks for a quick local
+run; it still computes the whole reference table and checks multiple faults.
+The [study notes](../../research/conditional_clifford/THEORY_PROTOCOL_VALIDATION.md)
+describe the two retained protocol workloads and remaining validation steps.
+
 ## Probability queries
 
 `profile_probability` uses a unitary-only circuit because measurements,

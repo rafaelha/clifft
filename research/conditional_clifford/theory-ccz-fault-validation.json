@@ -1,0 +1,105 @@
+{
+  "paper": "https://arxiv.org/html/2610.03605v1",
+  "oracle_aer_control": {
+    "random_circuits": 32,
+    "maximum_state_infidelity": 4.440892098500626e-16
+  },
+  "single_fault_reference_cases": 3645,
+  "single_fault_acceptance_histogram": {
+    "1/16": 189,
+    "0": 3132,
+    "1/4": 81,
+    "1/64": 54,
+    "1": 189
+  },
+  "single_fault_logical_z_survivors": 54,
+  "single_fault_ideal_xz_survivors": 0,
+  "candidate_histories": 3686,
+  "multiple_fault_histories": 40,
+  "targeted_accepted_histories": [
+    {
+      "history": [
+        [
+          1,
+          3
+        ],
+        [
+          81,
+          48
+        ]
+      ],
+      "accept_x": "1",
+      "joint_oracle_corrected_fidelity": "1"
+    },
+    {
+      "history": [
+        [
+          1,
+          1
+        ],
+        [
+          81,
+          16
+        ]
+      ],
+      "accept_x": "1/4",
+      "joint_oracle_corrected_fidelity": "1/4"
+    },
+    {
+      "history": [
+        [
+          0,
+          3
+        ],
+        [
+          9,
+          3
+        ],
+        [
+          18,
+          3
+        ]
+      ],
+      "accept_x": "1",
+      "joint_oracle_corrected_fidelity": "0"
+    },
+    {
+      "history": [
+        [
+          0,
+          3
+        ],
+        [
+          9,
+          3
+        ],
+        [
+          18,
+          3
+        ],
+        [
+          38,
+          3
+        ],
+        [
+          81,
+          12
+        ]
+      ],
+      "accept_x": "1",
+      "joint_oracle_corrected_fidelity": "0"
+    }
+  ],
+  "complete_xz_syndrome_probabilities_checked": 103463,
+  "joint_oracle_corrected_fidelity_queries": 51,
+  "maximum_probability_error": 6.938893903907228e-18,
+  "maximum_active_width": 9,
+  "reference_laws_sha256": "09813198d89dda7967eba4e4a6b6beaa805b90f951e272ae3c1974f0e7d0bf5a",
+  "scope": "Ideal preparation and syndrome measurements; fixed faults, not noisy protocol rates. Fidelity queries use fault-aware X correction, not a physical decoder.",
+  "source_hashes": {
+    "validate_theory_ccz_faults.py": "fe9865fdac6dbd9e4b8cc439c7be5c3b6461b023d4539864333a5932091b9e88",
+    "study_quadcycle_factory.py": "2f911db3d0b867eade178a8c14997ab629023a8b7edb32c6f0d31bc7ec6c62dc",
+    "automatic_specialization.py": "391738d9b0c78e7a0658a1d1a5c3e6ad9e85bff1ed0e921b8d7c9272a573bc90",
+    "shared_phase_specialization.py": "6e8016ab9987f44beb9828f4d58b6af3b87c7e9e1b931bddab6bdc8a5f0feae0"
+  }
+}

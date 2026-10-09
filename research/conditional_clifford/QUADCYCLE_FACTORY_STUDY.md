@@ -166,6 +166,12 @@ padding normalization for the installed Stim flow oracle.
 
 ## Next checkpoint
 
+The subsequent [theory-protocol confidence study](THEORY_PROTOCOL_VALIDATION.md)
+adds an independent exact fault reference before numerical-rate matching.
+Both protocol families remain in scope: the theory circuit supplies precise
+fault controls and extraction variants, while this factory supplies the larger
+state-transfer continuation.
+
 The state interface composes on the bounded independent tests, and the coupled
 noisy diagnostic stays within an executable width after optimization. This
 removes the terminal-readout restriction for this tested continuation. It does

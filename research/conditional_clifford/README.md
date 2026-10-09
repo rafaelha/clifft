@@ -23,6 +23,9 @@ not the inherited PR 552 changes, when assessing this experiment.
    performance results, and what those results actually rule out.
 5. [Reproduction and evidence](REPRODUCING.md): run retained circuit inputs
    without this VM's temporary directories; inspect the selected evidence.
+6. [Flagged Chan boundary study](CHAN_BOUNDARY.md): a later algebraic result
+   that can retain one T across a complete measured check, under a certified
+   entry condition; not yet integrated into the frontend.
 
 ## How it works for a Clifft user
 
@@ -114,13 +117,18 @@ an exhaustive large-circuit equivalence proof.
 
 ## Assessment and next step
 
-Compilation reuse has reached a useful checkpoint. Stop tuning the current
-panel and obtain an independently motivated hard circuit with at least two
-interacting non-Clifford regions, preferably outside the existing protocol
-cluster. Keep the current frontend and one-rotation bound fixed initially,
-and pair it with an independent small-instance oracle or exact marginal
-checks. Learn which boundary actually blocks useful width reduction before
-choosing a larger carrier representation.
+Compilation reuse has reached a useful checkpoint. The supplied Chan circuits
+from #495 now provide the next structural test, without acquiring more inputs.
+The [boundary study](CHAN_BOUNDARY.md) finds a sufficient algebraic condition
+under which a complete noisy flagged check returns to a Clifford image of
+one T. Independent d3 physical-state checks and repetitions support that
+condition; a counterexample shows it cannot be assumed for arbitrary one-T
+entries. The existing frontend and the frozen survey above are unchanged.
+
+Keep the one-T bound. Next, replace the study's dense reconstruction oracle
+with a certificate and direct lowering, and test composition through the actual
+small-check, growth and large-check sequence of the four-round d5 protocol.
+That will distinguish useful whole-circuit closure from another local saving.
 
 ## Historical provenance
 

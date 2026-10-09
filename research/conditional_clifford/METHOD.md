@@ -75,6 +75,12 @@ another generic phase synthesis to that non-Clifford input. Multiple surviving
 rotations similarly remain ordinary work. This is why the carrier's existence
 does not establish unrestricted multi-region chaining.
 
+The later [Chan boundary study](CHAN_BOUNDARY.md) identifies an additional
+algebraic route: a complete measured inverse-T check can act as a Clifford
+instrument on a suitably certified one-T entry. That result is outside the
+current frontend described here. Its bounded reconstruction oracle does not
+implement scalable recognition or a general coherent-sum carrier.
+
 ## Compilation reuse and remaining per-shot work
 
 The fixed preparation is optimized once and exported with its physical frame.

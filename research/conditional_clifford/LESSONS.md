@@ -67,6 +67,14 @@ ordinary optimizer, and defer a larger carrier until a useful hard circuit
 identifies the actual obstruction. In the latest survey d3 improves from
 width four to one; d5 remains at ten.
 
+The subsequent [Chan study](CHAN_BOUNDARY.md) separates that implementation
+limit from the underlying state requirement. A complete measured check can
+return to the one-T class under an eigenstate/Pauli-entry condition, even when
+its original code stabilizers are no longer deterministic. Expanding another
+phase polynomial or preserving only the original code frame misses this
+opportunity. A counterexample outside the condition requires greater nullity,
+so the condition must be checked rather than inferred from the gate pattern.
+
 ## More planner caching is not uniformly faster
 
 The recent coordinate audit found that many frames survive only one query;

@@ -70,6 +70,19 @@ package.
 
 ## Independent small checks
 
+The later [Chan boundary experiment](CHAN_BOUNDARY.md) includes its own complete
+input circuits and needs no native profiling worker or external checkout:
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 .venv/bin/python \
+  tools/profile/study_chan_boundary.py --trials 32 --probe-shots 256 \
+  --output /tmp/chan-boundary-study.json
+```
+
+Its supplied audit boundaries and dense state reconstruction are research
+oracles, not additions to the automatic frontend. The report distinguishes
+physical d3 instruments, constructed repetitions and d5 algebra/entry checks.
+
 These validators use generated small circuits and need no external benchmark
 checkout:
 

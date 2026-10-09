@@ -1,0 +1,352 @@
+{
+  "input_archive_sha256": "5226f98de6bed12c2332a1fdf810700631a88a9489840ef37252f5f09cf18d58",
+  "script_sha256": "7ea36b6ea0cf3d0025341a39ab781427efff748d3a31f193e1dc5d39375e1566",
+  "package_versions": {
+    "clifft": "0.11.1.dev11+ged2a125ad",
+    "stim": "1.16.0",
+    "numpy": "2.4.2",
+    "qiskit": "2.3.0",
+    "qiskit-aer": "0.17.2"
+  },
+  "native_extension_sha256": "7d1fdcb705231ff636333ef5fc243ed1b4f7f3a535404ab62b15c72e3af7fee7",
+  "provenance": {
+    "audit_revision": "01a8eec8",
+    "export_manifest_sha256": "d20c3a24c28be389c019160cf6cd9aaa3dbd54cafa760a5e6e9d7a0854a2a7ba",
+    "upstream_repository": "https://github.com/kh428/exact_ler_for_msc",
+    "upstream_revision": "b99452de7e300324e7bbf5cd9347241c3e289bae"
+  },
+  "cases": {
+    "chan-four-round-d5": {
+      "source_sha256": "f3b4dbdc995778c24c5141bc07506a9a36008a1f6fef967d401d0bb15f36e34b",
+      "probes": {
+        "entry_ideal": {
+          "shots": 1,
+          "peak_active_width": 4,
+          "outside_original_signed_code": 0,
+          "distinct_logical_bloch": [
+            [
+              0.7071067812,
+              -0.7071067812,
+              0.0
+            ]
+          ]
+        },
+        "entry_noisy": {
+          "shots": 256,
+          "peak_active_width": 4,
+          "outside_original_signed_code": 0,
+          "distinct_logical_bloch": [
+            [
+              -0.7071067812,
+              -0.7071067812,
+              -0.0
+            ],
+            [
+              -0.7071067812,
+              0.7071067812,
+              0.0
+            ],
+            [
+              0.7071067812,
+              -0.7071067812,
+              0.0
+            ],
+            [
+              0.7071067812,
+              0.7071067812,
+              -0.0
+            ]
+          ]
+        },
+        "exit_ideal": {
+          "shots": 1,
+          "peak_active_width": 10,
+          "outside_original_signed_code": 0,
+          "distinct_logical_bloch": [
+            [
+              0.7071067812,
+              -0.7071067812,
+              0.0
+            ]
+          ]
+        },
+        "exit_noisy": {
+          "shots": 256,
+          "peak_active_width": 10,
+          "outside_original_signed_code": 183,
+          "distinct_logical_bloch": [
+            [
+              -0.7071067812,
+              0.7071067812,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              -0.0
+            ],
+            [
+              0.7071067812,
+              -0.7071067812,
+              0.0
+            ]
+          ]
+        }
+      },
+      "eigenstate_certificate": {
+        "data_qubits": 19,
+        "ideal_parity_eigenvalue": 1,
+        "ideal_eigenstate_error": 1.4719616800160393e-17,
+        "pauli_entry_trials": 32,
+        "outcome_identities": 64,
+        "modes": {
+          "clifford_quarter_turn": 17,
+          "pauli_projection": 15
+        },
+        "maximum_identity_error": 8.673617379884035e-18
+      },
+      "physical_frames": {
+        "histories": 32,
+        "conditioned_outcomes": 64,
+        "minimum_faults": 0,
+        "maximum_faults": 31,
+        "failed_relative_paulis": 0
+      }
+    },
+    "chan-v1-d3": {
+      "source_sha256": "d7b72b53fb9f0fddc7301b4a5c0c418b15c48afa423c58bcac29046eecb6d5ff",
+      "probes": {
+        "entry_ideal": {
+          "shots": 1,
+          "peak_active_width": 1,
+          "outside_original_signed_code": 0,
+          "distinct_logical_bloch": [
+            [
+              0.7071067812,
+              0.7071067812,
+              0.0
+            ]
+          ]
+        },
+        "entry_noisy": {
+          "shots": 256,
+          "peak_active_width": 1,
+          "outside_original_signed_code": 0,
+          "distinct_logical_bloch": [
+            [
+              -0.7071067812,
+              -0.7071067812,
+              0.0
+            ],
+            [
+              -0.7071067812,
+              0.7071067812,
+              -0.0
+            ],
+            [
+              0.7071067812,
+              -0.7071067812,
+              0.0
+            ],
+            [
+              0.7071067812,
+              0.7071067812,
+              0.0
+            ]
+          ]
+        },
+        "exit_ideal": {
+          "shots": 1,
+          "peak_active_width": 4,
+          "outside_original_signed_code": 0,
+          "distinct_logical_bloch": [
+            [
+              0.7071067812,
+              0.7071067812,
+              0.0
+            ]
+          ]
+        },
+        "exit_noisy": {
+          "shots": 256,
+          "peak_active_width": 4,
+          "outside_original_signed_code": 52,
+          "distinct_logical_bloch": [
+            [
+              -0.7071067812,
+              -0.7071067812,
+              -0.0
+            ],
+            [
+              -0.0,
+              0.0,
+              -0.0
+            ],
+            [
+              0.7071067812,
+              0.7071067812,
+              0.0
+            ]
+          ]
+        }
+      },
+      "eigenstate_certificate": {
+        "data_qubits": 7,
+        "ideal_parity_eigenvalue": 1,
+        "ideal_eigenstate_error": 8.326672684688674e-17,
+        "pauli_entry_trials": 32,
+        "outcome_identities": 64,
+        "modes": {
+          "pauli_projection": 14,
+          "clifford_quarter_turn": 18
+        },
+        "maximum_identity_error": 4.3885418357208765e-17
+      },
+      "physical_frames": {
+        "histories": 32,
+        "conditioned_outcomes": 64,
+        "minimum_faults": 0,
+        "maximum_faults": 12,
+        "failed_relative_paulis": 0
+      },
+      "physical_state_checks": [
+        {
+          "repetitions": 1,
+          "constructed_repeat_control": false,
+          "trajectories": 32,
+          "classes": {
+            "one_t": 32
+          },
+          "central_outcomes": {
+            "0": 25,
+            "1": 7
+          },
+          "maximum_faults": 19,
+          "maximum_full_state_error": 6.667168230774504e-17,
+          "physical_instrument_checks": 32,
+          "flag_records_checked": 64,
+          "nonzero_flag_records": 9,
+          "maximum_path_state_error": 3.4829432762703156e-17,
+          "maximum_conditional_probability_error": 1.1102230246251565e-16,
+          "representative": {
+            "history": [
+              [
+                421,
+                7
+              ]
+            ],
+            "records": "0000000101",
+            "preparation": "H 15\nT 15\nH 15\nS 15 15\nH 15\nS 15 15\nCX 8 0 0 8 8 0 0 8\nS 10\nH 10 14\nCX 10 0 14 0 15 0 3 8\nH 12\nCX 10 3 12 3 10 8 8 10 10 8\nS 8\nH 12 14\nCX 8 10 8 12 8 14\nH 12 14\nCX 12 8 14 8 14 10 10 14 14 10\nS 10\nH 12\nCX 10 12 10 14 10 15\nH 12\nCX 12 10 14 12 12 14 14 12 15 12\nS 14\nH 8\nS 8 8\nH 8\nS 10 10 12 12\nH 1 2 4 7 9 13 16 11\nS 11 11\nH 11\n",
+            "classification": {
+              "stabilizer_rank": 6,
+              "stabilizer_nullity": 1,
+              "decoded_bloch": [
+                -0.7071067811865474,
+                0.7071067811865475,
+                -1.1796119636642288e-16
+              ],
+              "class": "one_t"
+            }
+          }
+        },
+        {
+          "repetitions": 2,
+          "constructed_repeat_control": true,
+          "trajectories": 32,
+          "classes": {
+            "one_t": 32
+          },
+          "central_outcomes": {
+            "0": 52,
+            "1": 12
+          },
+          "maximum_faults": 23,
+          "maximum_full_state_error": 5.204170427930421e-17,
+          "physical_instrument_checks": 64,
+          "flag_records_checked": 128,
+          "nonzero_flag_records": 11,
+          "maximum_path_state_error": 3.125805130844264e-17,
+          "maximum_conditional_probability_error": 4.440892098500626e-16,
+          "representative": {
+            "history": [
+              [
+                394,
+                1
+              ]
+            ],
+            "records": "0000000000000",
+            "preparation": "H 15\nT 15\nH 15\nS 15 15\nH 15\nS 15 15\nCX 8 0 0 8 8 0 0 8\nS 10\nH 10 14\nCX 10 0 14 0 15 0 3 8\nH 12\nCX 10 3 12 3 10 8 8 10 10 8\nS 8\nH 12 14\nCX 8 10 8 12 8 14\nH 12 14\nCX 12 8 14 8 14 10 10 14 14 10\nS 10\nH 12\nCX 10 12 10 14 10 15\nH 12\nCX 12 10 14 12 12 14 14 12 15 12\nS 14\nH 8\nS 8 8\nH 8\nS 10 10 12 12\nH 1 2 4 7 9 13 16\n",
+            "classification": {
+              "stabilizer_rank": 6,
+              "stabilizer_nullity": 1,
+              "decoded_bloch": [
+                -0.7071067811865476,
+                0.7071067811865476,
+                -1.0408340855860843e-16
+              ],
+              "class": "one_t"
+            }
+          }
+        },
+        {
+          "repetitions": 3,
+          "constructed_repeat_control": true,
+          "trajectories": 32,
+          "classes": {
+            "one_t": 32
+          },
+          "central_outcomes": {
+            "0": 77,
+            "1": 19
+          },
+          "maximum_faults": 27,
+          "maximum_full_state_error": 5.342304096109478e-17,
+          "physical_instrument_checks": 96,
+          "flag_records_checked": 192,
+          "nonzero_flag_records": 13,
+          "maximum_path_state_error": 3.469446951953614e-17,
+          "maximum_conditional_probability_error": 6.661338147750939e-16,
+          "representative": {
+            "history": [
+              [
+                202,
+                3
+              ]
+            ],
+            "records": "0000000000000000",
+            "preparation": "H 15\nT 15\nH 15\nS 15 15\nH 15\nCX 0 8\nH 10 14\nCX 3 0 10 0 14 0 8 3 3 8 8 3 3 8\nH 12\nCX 10 3 12 3 15 3 10 8 12 8 14 8 15 8 14 10 10 14 14 10 10 15 12 10 14 12 12 14 14 12\nH 1 2 4 7 9 13 16\n",
+            "classification": {
+              "stabilizer_rank": 6,
+              "stabilizer_nullity": 1,
+              "decoded_bloch": [
+                0.7071067811865475,
+                -0.7071067811865472,
+                0.0
+              ],
+              "class": "one_t"
+            }
+          }
+        }
+      ],
+      "unsupported_entry_control": {
+        "entry": "one T on a product of seven plus states; same data parity Clifford",
+        "outcomes": [
+          {
+            "outcome": 0,
+            "probability": 0.5625,
+            "stabilizer_rank": 0,
+            "stabilizer_nullity": 7,
+            "class": "outside_one_t"
+          },
+          {
+            "outcome": 1,
+            "probability": 0.4375,
+            "stabilizer_rank": 0,
+            "stabilizer_nullity": 7,
+            "class": "outside_one_t"
+          }
+        ]
+      }
+    }
+  }
+}

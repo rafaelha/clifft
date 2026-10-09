@@ -3,6 +3,11 @@
 This is a research record, not an execution-architecture specification. The
 repository's planning, allocation, and correctness invariants continue to apply.
 
+For another optimizer, start with the [benchmark handoff](BENCHMARK_HANDOFF.md).
+It documents complete circuit exports, fixed-fault reference queries, candidate
+integration, and timing requirements. The current plan is to benchmark these
+workloads before adding protocol complexity; older next-step notes are history.
+
 Accepted scope: the user explicitly permits assuming that every qubit starts
 in |0> at circuit entry. Preparation gates, resets, measurements, and feedback
 still execute normally; this does not assume an all-zero state at an internal

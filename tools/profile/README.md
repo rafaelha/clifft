@@ -552,6 +552,11 @@ for the supported interface and limits of each oracle.
 
 ## State-preserving phase continuation
 
+For inputs to a different optimizer, use `export_factory_benchmarks.py` and the
+[benchmark handoff](../../research/conditional_clifford/BENCHMARK_HANDOFF.md).
+It exports complete original circuits, reproducible fixed-fault variants, and
+selected exact D/E record-probability queries without supplying region boundaries.
+
 `SharedPhase(..., preserve_state=True).render_state(controls)` restores the
 physical quantum state and prefix record slots at an unmeasured phase-region
 exit. The emitted source can be followed by ordinary Clifft operations,

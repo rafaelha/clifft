@@ -139,7 +139,7 @@ def validate_channels() -> dict[str, Any]:
     if np.any(delta > bound):
         raise AssertionError("Categorical history probabilities failed")
     rejected = []
-    for unsupported in ("E(0.1) X0 Y1", "HERALDED_ERASE(0.1) 0"):
+    for unsupported in ("HERALDED_ERASE(0.1) 0", "HERALDED_PAULI_CHANNEL_1(.1,0,0,0) 0"):
         try:
             FaultModel(unsupported)
         except (ValueError, core.ParseError):

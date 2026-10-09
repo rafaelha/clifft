@@ -550,6 +550,42 @@ region produce an explicit fallback. See the
 [research report](../../research/conditional_clifford/SHARED_PHASE_SPECIALIZATION.md)
 for the supported interface and limits of each oracle.
 
+## State-preserving phase continuation
+
+`SharedPhase(..., preserve_state=True).render_state(controls)` restores the
+physical quantum state and prefix record slots at an unmeasured phase-region
+exit. The emitted source can be followed by ordinary Clifft operations,
+including noncommuting gates and measurement-controlled Pauli corrections.
+It does not optimize a second region with an arbitrary non-Clifford input.
+The generic host now also accepts correlated-error chains as categorical sites,
+including a full three-qubit CCZ error channel.
+
+`study_quadcycle_factory.py` reconstructs a coupled 27-to-54 factory diagnostic,
+certifies its code/CCZ/escape maps, and checks widths before allocating states.
+Its schedule, linear preparation recovery, and omitted idle noise differ from
+the paper's numerical model. It does not estimate acceptance or logical fidelity.
+`validate_phase_continuation.py` checks full quantum instruments against Aer
+and correlated channels against Stim. `validate_quadcycle_factory.py` compares
+selected full-record probabilities against direct conditional compilation;
+those probes do not certify the complete noisy factory law.
+
+```bash
+env OMP_NUM_THREADS=1 .venv/bin/python tools/profile/validate_phase_continuation.py \
+  --output /tmp/phase-continuation-validation.json
+env OMP_NUM_THREADS=1 .venv/bin/python tools/profile/validate_quadcycle_factory.py \
+  --merlin-checkout /path/to/pinned/merlin \
+  --output /tmp/quadcycle-factory-validation.json
+env OMP_NUM_THREADS=1 taskset -c 0 .venv/bin/python tools/profile/study_quadcycle_factory.py \
+  --merlin-checkout /path/to/pinned/merlin \
+  --output /tmp/quadcycle-factory-study.json
+```
+
+These scripts use the existing development environment, including Qiskit Aer,
+Stim, and the installed Clifft extension. The factory scripts use the same pinned
+Merlin CSS helper revision as the preceding study. There is no new native build.
+The [research report](../../research/conditional_clifford/QUADCYCLE_FACTORY_STUDY.md)
+records the model boundary, validation scope, and next checkpoint.
+
 ## Probability queries
 
 `profile_probability` uses a unitary-only circuit because measurements,

@@ -15,7 +15,15 @@ compiled once is not a research constraint. The current production executor
 contract remains unchanged; host-side experiments may sample and recompile
 between calls to it.
 
-Latest study: [reusing conditional phase analysis](SHARED_PHASE_SPECIALIZATION.md)
+Latest study on the forked branch: [state-preserving factory continuation](QUADCYCLE_FACTORY_STUDY.md)
+adds a quantum-state exit interface and categorical correlated-Pauli channels.
+A coupled tricycle/fan-out/quadcycle diagnostic executes at active width nine
+after reduction and optimization, versus width 33 for ordinary noisy compilation.
+Independent small-instrument checks and an ideal escape-channel certificate
+validate the interface. The diagnostic has explicit decoder/noise-model differences
+from the paper and makes no factory-rate claim.
+
+The preceding study, [reusing conditional phase analysis](SHARED_PHASE_SPECIALIZATION.md),
 derives affine support, a fixed non-Clifford remainder, and fault/outcome-dependent
 Clifford responses once, then rebuilds only the reduced computation. The same
 construction handles distillation, BT27, and measured-state controls. It removes

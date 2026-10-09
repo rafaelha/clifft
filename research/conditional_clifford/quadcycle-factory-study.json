@@ -1,0 +1,541 @@
+{
+  "cases": [
+    {
+      "p": 0.0,
+      "ordinary": {
+        "input_t": 378,
+        "output_t": 35,
+        "peak_width": 9,
+        "phase": {
+          "blocks_examined": 1,
+          "blocks_reduced": 1,
+          "blocks_capped": 0,
+          "blocks_expanded": 1
+        },
+        "parse_trace_seconds": 0.00566039327532053,
+        "optimizer_seconds": 0.0560676259920001,
+        "width_inspection_seconds": 0.0035775909200310707
+      },
+      "certificate": {
+        "tricycle": [
+          27,
+          3
+        ],
+        "quadcycle": [
+          54,
+          6
+        ],
+        "check_ranks": [
+          8,
+          16,
+          24,
+          24
+        ],
+        "escape_logical_rank": 3,
+        "physical_ccz_gates": 54,
+        "logical_ccz_tensor": [
+          [
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              1,
+              0
+            ]
+          ],
+          [
+            [
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              1,
+              0,
+              0
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              0
+            ],
+            [
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ]
+        ],
+        "ccz_check_dependence": 0,
+        "matrix_sha256": "e29367890d95f586bc11af330ca12bebf98e7668b84260b9ef46345dcc44c638",
+        "physical_qubits": 432,
+        "prefix_records": 189,
+        "escape_records": 162,
+        "logical_readouts": 18,
+        "scope": "Structural escape circuit; diagnostic preparation recovery and schedule, no idle noise or postselection"
+      },
+      "shared": {
+        "physical_qubits": 432,
+        "support_variables": 105,
+        "quantum_core_qubits": 324,
+        "prefix_records": 189,
+        "primitive_fault_controls": 0,
+        "phase_monomials": 126,
+        "conditional_clifford_responses": 378,
+        "residual_t": 216,
+        "encoder_cnot": 1119,
+        "dependency_mask_payload_bytes": 17690
+      },
+      "setup_seconds": 0.28338137827813625,
+      "variants": [
+        {
+          "faults": 0,
+          "region_history": [],
+          "raw_t": 216,
+          "raw_width": 21,
+          "optimized": {
+            "input_t": 216,
+            "output_t": 33,
+            "peak_width": 9,
+            "phase": {
+              "blocks_examined": 1,
+              "blocks_reduced": 1,
+              "blocks_capped": 0,
+              "blocks_expanded": 0
+            },
+            "parse_trace_seconds": 0.004719644319266081,
+            "optimizer_seconds": 0.01953052869066596,
+            "width_inspection_seconds": 0.0013922941870987415
+          },
+          "sampled_records": [
+            16,
+            369
+          ]
+        }
+      ],
+      "source_sha256": "19a4e51baee61eb2d07be18724d968daa9a3677568c1ae8365078dd1291489fa"
+    },
+    {
+      "p": 0.001,
+      "ordinary": {
+        "input_t": 378,
+        "output_t": 378,
+        "peak_width": 33,
+        "phase": {
+          "blocks_examined": 54,
+          "blocks_reduced": 0,
+          "blocks_capped": 0,
+          "blocks_expanded": 0
+        },
+        "parse_trace_seconds": 0.00956864608451724,
+        "optimizer_seconds": 0.1767629417590797,
+        "width_inspection_seconds": 0.0046355873346328735
+      },
+      "certificate": {
+        "tricycle": [
+          27,
+          3
+        ],
+        "quadcycle": [
+          54,
+          6
+        ],
+        "check_ranks": [
+          8,
+          16,
+          24,
+          24
+        ],
+        "escape_logical_rank": 3,
+        "physical_ccz_gates": 54,
+        "logical_ccz_tensor": [
+          [
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              1,
+              0
+            ]
+          ],
+          [
+            [
+              0,
+              0,
+              1
+            ],
+            [
+              0,
+              0,
+              0
+            ],
+            [
+              1,
+              0,
+              0
+            ]
+          ],
+          [
+            [
+              0,
+              1,
+              0
+            ],
+            [
+              1,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ]
+        ],
+        "ccz_check_dependence": 0,
+        "matrix_sha256": "e29367890d95f586bc11af330ca12bebf98e7668b84260b9ef46345dcc44c638",
+        "physical_qubits": 432,
+        "prefix_records": 189,
+        "escape_records": 162,
+        "logical_readouts": 18,
+        "scope": "Structural escape circuit; diagnostic preparation recovery and schedule, no idle noise or postselection"
+      },
+      "shared": {
+        "physical_qubits": 432,
+        "support_variables": 105,
+        "quantum_core_qubits": 324,
+        "prefix_records": 189,
+        "primitive_fault_controls": 5724,
+        "phase_monomials": 126,
+        "conditional_clifford_responses": 540,
+        "residual_t": 216,
+        "encoder_cnot": 1119,
+        "dependency_mask_payload_bytes": 142997
+      },
+      "setup_seconds": 0.40700850496068597,
+      "variants": [
+        {
+          "faults": 0,
+          "region_history": [],
+          "raw_t": 216,
+          "raw_width": 21,
+          "optimized": {
+            "input_t": 216,
+            "output_t": 33,
+            "peak_width": 9,
+            "phase": {
+              "blocks_examined": 1,
+              "blocks_reduced": 1,
+              "blocks_capped": 0,
+              "blocks_expanded": 0
+            },
+            "parse_trace_seconds": 0.00470880838111043,
+            "optimizer_seconds": 0.021164558827877045,
+            "width_inspection_seconds": 0.001430652104318142
+          },
+          "sampled_records": [
+            16,
+            369
+          ]
+        },
+        {
+          "faults": 1,
+          "region_history": [
+            [
+              331,
+              1
+            ]
+          ],
+          "raw_t": 216,
+          "raw_width": 21,
+          "optimized": {
+            "input_t": 216,
+            "output_t": 33,
+            "peak_width": 9,
+            "phase": {
+              "blocks_examined": 1,
+              "blocks_reduced": 1,
+              "blocks_capped": 0,
+              "blocks_expanded": 0
+            },
+            "parse_trace_seconds": 0.004705202765762806,
+            "optimizer_seconds": 0.021498346235603094,
+            "width_inspection_seconds": 0.00187740009278059
+          },
+          "sampled_records": [
+            16,
+            369
+          ]
+        },
+        {
+          "faults": 0,
+          "region_history": [],
+          "raw_t": 216,
+          "raw_width": 21,
+          "optimized": {
+            "input_t": 216,
+            "output_t": 33,
+            "peak_width": 9,
+            "phase": {
+              "blocks_examined": 1,
+              "blocks_reduced": 1,
+              "blocks_capped": 0,
+              "blocks_expanded": 0
+            },
+            "parse_trace_seconds": 0.0045943548902869225,
+            "optimizer_seconds": 0.02130347117781639,
+            "width_inspection_seconds": 0.0014649038203060627
+          },
+          "sampled_records": [
+            16,
+            369
+          ]
+        },
+        {
+          "faults": 3,
+          "region_history": [
+            [
+              219,
+              1
+            ],
+            [
+              506,
+              15
+            ],
+            [
+              668,
+              1
+            ]
+          ],
+          "raw_t": 216,
+          "raw_width": 21,
+          "optimized": {
+            "input_t": 216,
+            "output_t": 33,
+            "peak_width": 9,
+            "phase": {
+              "blocks_examined": 1,
+              "blocks_reduced": 1,
+              "blocks_capped": 0,
+              "blocks_expanded": 0
+            },
+            "parse_trace_seconds": 0.0046106185764074326,
+            "optimizer_seconds": 0.021274928003549576,
+            "width_inspection_seconds": 0.0014368812553584576
+          },
+          "sampled_records": [
+            16,
+            369
+          ]
+        },
+        {
+          "faults": 2,
+          "region_history": [
+            [
+              815,
+              7
+            ],
+            [
+              1868,
+              8
+            ]
+          ],
+          "raw_t": 216,
+          "raw_width": 21,
+          "optimized": {
+            "input_t": 216,
+            "output_t": 33,
+            "peak_width": 9,
+            "phase": {
+              "blocks_examined": 1,
+              "blocks_reduced": 1,
+              "blocks_capped": 0,
+              "blocks_expanded": 0
+            },
+            "parse_trace_seconds": 0.004682378377765417,
+            "optimizer_seconds": 0.02134091779589653,
+            "width_inspection_seconds": 0.0014816587790846825
+          },
+          "sampled_records": [
+            16,
+            369
+          ]
+        },
+        {
+          "faults": 1,
+          "region_history": [
+            [
+              2052,
+              1
+            ]
+          ],
+          "raw_t": 216,
+          "raw_width": 21,
+          "optimized": {
+            "input_t": 216,
+            "output_t": 33,
+            "peak_width": 9,
+            "phase": {
+              "blocks_examined": 1,
+              "blocks_reduced": 1,
+              "blocks_capped": 0,
+              "blocks_expanded": 0
+            },
+            "parse_trace_seconds": 0.0046062832698225975,
+            "optimizer_seconds": 0.021271771751344204,
+            "width_inspection_seconds": 0.0015360121615231037
+          },
+          "sampled_records": [
+            16,
+            369
+          ]
+        },
+        {
+          "faults": 1,
+          "region_history": [
+            [
+              2052,
+              21
+            ]
+          ],
+          "raw_t": 216,
+          "raw_width": 21,
+          "optimized": {
+            "input_t": 216,
+            "output_t": 33,
+            "peak_width": 9,
+            "phase": {
+              "blocks_examined": 1,
+              "blocks_reduced": 1,
+              "blocks_capped": 0,
+              "blocks_expanded": 0
+            },
+            "parse_trace_seconds": 0.004630529787391424,
+            "optimizer_seconds": 0.021240144036710262,
+            "width_inspection_seconds": 0.0015306640416383743
+          },
+          "sampled_records": [
+            16,
+            369
+          ]
+        },
+        {
+          "faults": 1,
+          "region_history": [
+            [
+              2052,
+              63
+            ]
+          ],
+          "raw_t": 216,
+          "raw_width": 21,
+          "optimized": {
+            "input_t": 216,
+            "output_t": 33,
+            "peak_width": 9,
+            "phase": {
+              "blocks_examined": 1,
+              "blocks_reduced": 1,
+              "blocks_capped": 0,
+              "blocks_expanded": 0
+            },
+            "parse_trace_seconds": 0.004600915126502514,
+            "optimizer_seconds": 0.021258561871945858,
+            "width_inspection_seconds": 0.001446004956960678
+          },
+          "sampled_records": [
+            16,
+            369
+          ]
+        },
+        {
+          "faults": 5,
+          "region_history": [
+            [
+              2052,
+              63
+            ],
+            [
+              2053,
+              63
+            ],
+            [
+              2054,
+              63
+            ],
+            [
+              2055,
+              63
+            ],
+            [
+              2056,
+              63
+            ]
+          ],
+          "raw_t": 216,
+          "raw_width": 21,
+          "optimized": {
+            "input_t": 216,
+            "output_t": 33,
+            "peak_width": 9,
+            "phase": {
+              "blocks_examined": 1,
+              "blocks_reduced": 1,
+              "blocks_capped": 0,
+              "blocks_expanded": 0
+            },
+            "parse_trace_seconds": 0.0046547274105250835,
+            "optimizer_seconds": 0.02120221685618162,
+            "width_inspection_seconds": 0.00143783213570714
+          },
+          "sampled_records": [
+            16,
+            369
+          ]
+        }
+      ],
+      "source_sha256": "b29712e7bdf3f81f8cfba522407f5a7db2bb5f310c40d8329b9bd19496a1def9"
+    }
+  ],
+  "escape_certificate": {
+    "reference_bell_pairs": 3,
+    "deterministic_stabilizer_probes": 81,
+    "all_measurement_branches": true,
+    "law_sha256": "8bd21a0d1328fca9fd5be02f7726b7208490cb9603da41728b4cb0203156fc25"
+  },
+  "merlin_helper_revision": "097380fac1a3968ca47925146e211fe990f4c396",
+  "source_hashes": {
+    "study_quadcycle_factory.py": "2f911db3d0b867eade178a8c14997ab629023a8b7edb32c6f0d31bc7ec6c62dc",
+    "automatic_specialization.py": "391738d9b0c78e7a0658a1d1a5c3e6ad9e85bff1ed0e921b8d7c9272a573bc90",
+    "shared_phase_specialization.py": "6e8016ab9987f44beb9828f4d58b6af3b87c7e9e1b931bddab6bdc8a5f0feae0"
+  }
+}

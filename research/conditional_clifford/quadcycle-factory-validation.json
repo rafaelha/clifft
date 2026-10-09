@@ -1,0 +1,171 @@
+{
+  "cases": [
+    {
+      "region_history": [],
+      "tail_history": [],
+      "prefix_seed": 17,
+      "widths_candidate_reference": [
+        9,
+        9
+      ],
+      "record_probabilities_checked": 16,
+      "maximum_relative_error": 0.0
+    },
+    {
+      "region_history": [],
+      "tail_history": [],
+      "prefix_seed": 311,
+      "widths_candidate_reference": [
+        9,
+        9
+      ],
+      "record_probabilities_checked": 16,
+      "maximum_relative_error": 0.0
+    },
+    {
+      "region_history": [
+        [
+          0,
+          1
+        ]
+      ],
+      "tail_history": [
+        [
+          0,
+          15
+        ]
+      ],
+      "prefix_seed": 17,
+      "widths_candidate_reference": [
+        9,
+        9
+      ],
+      "record_probabilities_checked": 16,
+      "maximum_relative_error": 0.0
+    },
+    {
+      "region_history": [
+        [
+          0,
+          1
+        ]
+      ],
+      "tail_history": [
+        [
+          0,
+          15
+        ]
+      ],
+      "prefix_seed": 311,
+      "widths_candidate_reference": [
+        9,
+        9
+      ],
+      "record_probabilities_checked": 16,
+      "maximum_relative_error": 0.0
+    },
+    {
+      "region_history": [
+        [
+          2052,
+          63
+        ]
+      ],
+      "tail_history": [
+        [
+          81,
+          1
+        ]
+      ],
+      "prefix_seed": 17,
+      "widths_candidate_reference": [
+        9,
+        9
+      ],
+      "record_probabilities_checked": 16,
+      "maximum_relative_error": 0.0
+    },
+    {
+      "region_history": [
+        [
+          2052,
+          63
+        ]
+      ],
+      "tail_history": [
+        [
+          81,
+          1
+        ]
+      ],
+      "prefix_seed": 311,
+      "widths_candidate_reference": [
+        9,
+        9
+      ],
+      "record_probabilities_checked": 16,
+      "maximum_relative_error": 0.0
+    },
+    {
+      "region_history": [
+        [
+          0,
+          1
+        ],
+        [
+          2052,
+          21
+        ],
+        [
+          2105,
+          63
+        ]
+      ],
+      "tail_history": [],
+      "prefix_seed": 17,
+      "widths_candidate_reference": [
+        9,
+        9
+      ],
+      "record_probabilities_checked": 16,
+      "maximum_relative_error": 0.0
+    },
+    {
+      "region_history": [
+        [
+          0,
+          1
+        ],
+        [
+          2052,
+          21
+        ],
+        [
+          2105,
+          63
+        ]
+      ],
+      "tail_history": [],
+      "prefix_seed": 311,
+      "widths_candidate_reference": [
+        9,
+        9
+      ],
+      "record_probabilities_checked": 16,
+      "maximum_relative_error": 0.0
+    }
+  ],
+  "escape_certificate": {
+    "reference_bell_pairs": 3,
+    "deterministic_stabilizer_probes": 81,
+    "all_measurement_branches": true,
+    "law_sha256": "8bd21a0d1328fca9fd5be02f7726b7208490cb9603da41728b4cb0203156fc25"
+  },
+  "scope": "Selected full-record probabilities, not equality of the complete noisy law; reference uses the existing optimizer",
+  "source_hashes": {
+    "validate_quadcycle_factory.py": "9cefbd357b9c71d6b2f9f63b2c93e2b887cda03e75951dffb00931f7ddbc5400",
+    "study_quadcycle_factory.py": "2f911db3d0b867eade178a8c14997ab629023a8b7edb32c6f0d31bc7ec6c62dc",
+    "automatic_specialization.py": "391738d9b0c78e7a0658a1d1a5c3e6ad9e85bff1ed0e921b8d7c9272a573bc90",
+    "shared_phase_specialization.py": "6e8016ab9987f44beb9828f4d58b6af3b87c7e9e1b931bddab6bdc8a5f0feae0"
+  }
+}

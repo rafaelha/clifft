@@ -15,7 +15,13 @@ compiled once is not a research constraint. The current production executor
 contract remains unchanged; host-side experiments may sample and recompile
 between calls to it.
 
-Latest confidence study: [theory-protocol fault validation](THEORY_PROTOCOL_VALIDATION.md)
+Latest confidence study: [physical Steane continuation](STEANE_CONTINUATION_VALIDATION.md)
+adds the shared and separate extraction gadgets after the reduced CCZ region.
+It retains raw ancilla readouts, checks complete inferred-syndrome laws,
+and probes conditional data states in two bases. Ancilla preparation remains
+ideal and no decoder or noise-weighted rate is claimed.
+
+The preceding [theory-protocol fault validation](THEORY_PROTOCOL_VALIDATION.md)
 adds an independent integer Pauli-expansion reference for the depth-two
 tricycle circuit. It compares complete ideal X/Z syndrome laws for all 3,645
 single faults and a bounded multiple-fault panel. The theory and quadcycle

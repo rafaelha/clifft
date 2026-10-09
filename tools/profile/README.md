@@ -608,6 +608,28 @@ run; it still computes the whole reference table and checks multiple faults.
 The [study notes](../../research/conditional_clifford/THEORY_PROTOCOL_VALIDATION.md)
 describe the two retained protocol workloads and remaining validation steps.
 
+## Physical Steane continuation validation
+
+`validate_steane_continuation.py` appends physical shared/separate encoded
+ancilla extraction to the reduced data state. It checks inferred-syndrome
+distributions with a rational reference, selected raw-record probabilities,
+and conditional data-state probes in two bases. Exact encoded Bell-state
+controls certify ideal extraction, while small full instruments use Aer.
+
+```bash
+env OMP_NUM_THREADS=1 .venv/bin/python tools/profile/validate_steane_continuation.py \
+  --merlin-checkout /path/to/pinned/merlin \
+  --output /tmp/steane-continuation-validation.json
+```
+
+The default panel includes all single extraction-CNOT Pauli faults, ancilla
+entry Paulis, and readout flips. `--tail-limit N` limits that exhaustive part
+for local development; mixed faults and mechanistic controls still run.
+Preparation is ideal. Fault-aware scoring and ideal data checks are validation
+tools, not decoder inputs. See the
+[study notes](../../research/conditional_clifford/STEANE_CONTINUATION_VALIDATION.md)
+for exact versus selected checks and the remaining protocol-model work.
+
 ## Probability queries
 
 `profile_probability` uses a unitary-only circuit because measurements,

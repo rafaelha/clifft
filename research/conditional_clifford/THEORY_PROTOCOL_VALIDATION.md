@@ -96,6 +96,10 @@ because the comparisons query probabilities directly.
 
 ## Next checkpoint across the two workloads
 
+The first item below is now covered by the subsequent
+[physical Steane continuation study](STEANE_CONTINUATION_VALIDATION.md).
+The noisy preparation and decoder checkpoint remains outstanding.
+
 1. Add the physical shared-ancilla extraction of protocol E, with D as a
    control. Check explicitly the cancellation of equal syndromes in different
    blocks and errors propagating back from the shared ancilla. Retain physical

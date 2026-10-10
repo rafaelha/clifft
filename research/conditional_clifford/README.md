@@ -1,5 +1,10 @@
 # Conditional Clifford reduction: research review
 
+The [larger color-code scaling study](COLOR_CHECK_SCALING.md) tests the same
+conditional update on constructed d7/d9/d11 checks, with explicit physical
+noise and independent coherent-state validation. These are scaling controls;
+the complete author-supplied Chan evidence remains at d3/d5.
+
 The [algebraic Chan continuation checkpoint](CHAN_ALGEBRAIC_CONTINUATION.md)
 now replaces the earlier exhaustive boundary reconstruction with a bounded
 state update and tests the supplied four-round d5 circuit through growth and

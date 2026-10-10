@@ -1,5 +1,9 @@
 # Algebraic continuation through the complete Chan circuit
 
+Follow-up: [larger color-code scaling controls](COLOR_CHECK_SCALING.md) test
+this update at larger distances. Their constructed schedules are distinct
+from the supplied complete Chan circuits validated below.
+
 This research checkpoint replaces physical-state tomography with a bounded
 algebraic instrument update. It handles the supplied Chan d3 circuit and the
 actual small-check, growth, large-check, and terminal-check sequence of the

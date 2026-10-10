@@ -4,8 +4,13 @@ The [complete-circuit checkpoint](COMPLETE_CIRCUIT_CHECKPOINT.md) freezes BT81
 direct-X, Steane E, Chan four-round d5, RP2 d5, and reconstructed folded f7
 against current Clifft `847757e2`. It reuses the existing programs and reports
 complete attempts, state-interface failures, and total process-tree memory.
-Its decision is one bounded live folded-output handoff experiment; it does not
-yet recommend an optional production mode. The surveys below are prior evidence.
+Its [consumer review and scope proposal](COMPLETE_CIRCUIT_CHECKPOINT.md#concrete-consumer-and-optional-mode-scope)
+now validate decoder-based FEC before folded logical readout, first at f3 with
+dense Aer and then at f7 with an independent physical oracle. This consumes the
+existing live state without a generic output interface. The decision is to
+propose a limited optional sampling mode with explicit per-route certificates,
+refusals, output limitations, and full costs; production implementation remains
+outside this checkpoint. The surveys below are prior evidence.
 
 The [SOFT/RP2 transfer study](FAMILY_TRANSFER.md) validates the same bounded
 update on complete supplied d3/d5 cultivation-only models. RP2's morphed code

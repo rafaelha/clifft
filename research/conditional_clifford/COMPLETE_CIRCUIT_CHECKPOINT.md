@@ -1,22 +1,18 @@
 # Complete-circuit checkpoint across families
 
-2026-10-10. **Decision: one precise obstruction warrants a bounded extension.**
-The existing programs sample the five frozen complete inputs on all 80 fresh
-attempts tested. This is useful cross-family evidence, but it is not yet enough
-to propose an optional Clifft mode. The missing capability is a certified,
-usable **live folded output state for a generic continuation**. The folded
-sampler has strong internal composition; its interface does not establish this
-external composition contract.
+2026-10-10. **Decision: sufficient cross-family capability to propose a limited,
+optional conditional sampling mode.** This is a scope proposal, not production
+implementation or a claim of universal conditional-state support.
 
-The bounded next experiment would expose the folded state **after the physical
-syndrome measurements that justify its sector selection, before final logical
-readout**, and carry its physical encoder, logical amplitudes, ancillas,
-records, and remaining noise into an ordinary continuation. Compare that state
-and continuation against the complete physical instrument on accepted and
-rejected histories. Refuse any unsupported state or unresolved measurement
-obligation explicitly. This checkpoint stops at that decision: it does not
-implement the extension, start scaling controls, tune static compilation, or
-propose a production architecture change.
+The existing programs sample the five frozen complete inputs on all 80 fresh
+attempts tested. The subsequent
+[consumer review and optional-mode scope](#concrete-consumer-and-optional-mode-scope)
+add 32 validated complete FEC attempts at f3/f7. Decoder recovery consumes the
+existing folded state after the physical syndrome measurements and before
+logical readout. It supplies a concrete missing calculation without a generic
+output interface. These results support a bounded mode proposal with explicit
+structural admission, per-history resource guards, and output limitations.
+This checkpoint stops at that proposal; production architecture is unchanged.
 
 ## What is actually common
 
@@ -40,9 +36,9 @@ by itself does not supply this interface.
 
 The phase route can already express its state and continuation as an executable
 conditional program; it need not fit a one-coordinate state object. The folded
-route needs an equivalent usable exit from its specialized chain. This is why
-the next bounded experiment concerns that exit, rather than replacing all three
-representations with another small-core implementation.
+route already composes its specialized chain internally. The new FEC consumer
+uses that live representation directly. The proposed sampling scope therefore
+does not require all routes to share a generic quantum-state object.
 
 ## Frozen panel and provenance
 
@@ -93,7 +89,8 @@ arbitrary raw circuit text. Altered physical source with the old annotation
 is refused. Inside the folded compiler, annotations propose candidates;
 verified physical identities authorize them.
 
-No new quantum handoff was added. Measured-check export still has the existing
+No new quantum handoff was added for the frozen five-input panel. Measured-check
+export still has the existing
 one-coordinate/stabilizer-or-T-orbit restriction and temporary bound of three.
 All per-shot Python tableau work remains in research host preparation, outside
 ordinary Clifft hot execution. Production sources and Stim are unchanged.
@@ -240,7 +237,7 @@ Certificates that are absent are recorded as absent. Earlier independent Aer
 and larger selected-reference results remain in the linked studies; they were
 not all rerun and are not counted as new checks here.
 
-## Why the folded handoff is the next boundary to resolve
+## Conditioning obligation identified by the initial checkpoint
 
 The existing `sample_body` samples a syndrome sector and retains two coherent
 logical amplitudes. Its f5-to-f7 growth certificate proves that later physical
@@ -260,15 +257,13 @@ folded bridge. It explains why that certificate cannot be silently generalized.
 The current terminal `finish` processes post-check records, adjusts the physical
 Pauli frame, and samples the final logical measurement. It does not return the
 post-measurement quantum state. Its internal pre-readout boundary is the precise
-place to test a new general continuation: after the resolving physical checks,
+place to test a justified continuation: after the resolving physical checks,
 while the logical amplitudes remain live. The export must retain any pending
 conditioning obligations if an earlier cut is used.
 
-That bounded handoff experiment is the next decision point. A validated small
-physical state plus ordinary suffix could justify proposing a limited optional
-mode. Failure to certify it, or expensive residual output, would instead argue
-that these remain useful specialized samplers. The present checkpoint claims
-neither outcome in advance.
+The initial proposal treated a general exit as the next decision point. The
+consumer review below instead tests a specific missing calculation at this
+cut, using the existing representation directly.
 
 ## Reproduction
 
@@ -318,3 +313,186 @@ python tools/profile/validate_compiled_prefix_reuse.py \
 The compact audit archive also includes the latter two existing validators and
 the documented two-circuit early-sector counterexample. None of these audit
 costs is used as a sampling benchmark.
+
+## Concrete consumer and optional-mode scope
+
+The concrete consumer is **decoder-based fictitious error correction (FEC),
+followed by logical H_XY evaluation**. The complete input includes noisy
+injection, cultivation, physical growth, both final folded checks, noisy CSS
+extraction, noiseless final syndrome extraction, decoder-controlled physical
+Pauli recovery, and the final noiseless logical measurement. This extends the
+retained reconstructed cultivation calculation from FED to FEC. It does not
+add escape or a fault-tolerant storage protocol.
+
+Takada, Bartlett, and Williamson describe this continuation in
+[Appendix A.2](https://arxiv.org/html/2609.16929v1#A1.SS2): decode the final
+syndrome with PyMatching and propagate the recovery through the subsequent
+non-Clifford logical measurement. The retained generator accepts only `fed`
+and `none`; the existing terminal sampler has no decoder/recovery step.
+Changing which records reject an attempt would therefore be insufficient.
+
+The missing capability and its complete input were stated before adding the
+adapter. The new research adapter inserts exactly one bounded recovery call
+in the existing `finish`, after all resolving physical checks and before
+`bind(final_, boundary)`. It updates the existing signed-code state and resumes
+the existing final contraction. It neither exports a generic state object nor
+changes the contraction, measured-check update, phase reducer, or growth map.
+The pinned reference remains untouched; the build creates an explicitly
+recorded source overlay. Production Clifft and Stim remain unchanged.
+
+The decoder policy is PyMatching 2.3.1, separate X/Z check matrices, unit weight
+per physical data qubit, and final noiseless syndrome records only. Recovery
+applies X then Z, with no additional recovery noise. This is a fully specified
+evaluation instrument, not a claimed reproduction of the authors' decoder
+weights, tie choices, or logical-error rates. The complete input is the
+physical source **plus this conditional recovery policy**; source text alone
+omits the adaptive operation. The source, matrices, record slots, every chosen
+recovery, and their placement immediately before `final_logical` are retained.
+
+The first retained f3 stress history provides a physical witness: without
+recovery its final logical distribution is `(0.5, 0.5)`; with recovery it is
+`(1, 0)`, to numerical precision. The same prior fault and measurement history
+is used in both evaluations. Flipping an already sampled terminal bit cannot
+produce that change. This is a rejected stress history used to test the
+quantum operation, not evidence of improved acceptance or an error-rate result.
+
+### Validation and resource limits
+
+The [FEC evidence archive](folded-fec-evidence.json.gz) retains the complete
+inputs, policy, all original attempts, audits, the witness, build provenance,
+and an invalid-recovery refusal. Small-instance validation preceded f7 testing.
+The final audit observes the existing physical oracle during its full circuit
+traversal; it does not reconstruct its state from the native logical amplitudes.
+
+All 32 new complete attempts pass. At f3, eight fresh attempts at p=0.001 and
+eight at p=0.03 were checked with dense Aer, including each hidden reset
+projection and all code-stabilizer/logical X/Y/Z expectations immediately
+before and after recovery. Maximum Aer discrepancy is 1.47e-14. Eight stress
+histories have nonzero final syndromes; seven change their logical Bloch vector.
+
+At f7, all 16 p=0.001 attempts agree with the independent physical coherent
+Clifford oracle and native prefix replay, conditioned on each retained Pauli
+fault history. Maximum complete record log-probability
+error is 2.67e-15 and live-state expectation error is 2.78e-15. All 84 data
+stabilizers and all three logical axes are checked on both sides of recovery.
+Eleven attempts have nonzero final syndromes and two change the logical Bloch
+vector. Four attempts pass the original noisy-protocol predicate and twelve
+fail; none of the four accepted attempts has nonzero final syndrome. The new
+capability is validated, but improved acceptance is not demonstrated here.
+
+There are zero sampling or recovery-certificate failures on these draws.
+As a separate negative check, a deliberately invalid zero recovery on the first
+nonzero-syndrome f3 stress history is refused before logical readout, with
+`FEC recovery does not clear the measured syndrome`. Its request and failure
+are retained; it is not counted as a physical protocol rejection.
+
+No attempt is selected for replacement, discarded from the archive, or redrawn. The
+higher-noise f3 run is a separate declared stress input. These finite histories
+do not establish universal support or acceptance/error-rate estimates.
+
+At f7 the native prefix still peaks at width 8, the folded computation has four
+coherent paths and one live logical coordinate plus the signed code and
+ancillas, and recovery keeps that representation. Residual quantum work is the
+existing terminal H_XY instrument. Lookup payload is 9,023,524 bytes, contraction
+workspace 2,570,720 bytes, and growth transfer payload 249,344 bytes. None of
+these small internal figures replaces total process memory or setup cost.
+
+The pinned baseline remains current Clifft `847757e2`. The unchanged noisy
+physical schedules have ordinary widths 8 (f3) and 44 (f7); the latter requires
+256 TiB of coefficient storage alone. Ordinary Clifft does not accept this
+external MWPM-controlled instrument as one static input. There is consequently
+**no measured ordinary complete-FEC time or speedup ratio**. The five-family
+table above remains the direct comparison on common complete static inputs.
+
+For 16 original-noise f7 FEC attempts, host/compiler setup plus native loading
+takes 32.10 s; complete native attempts average 173.70 ms, including the blocking
+decoder request, recovery, final measurement, all faults and records, and trace
+construction. Decoder computation averages 0.494 ms within that total. Cold
+worker wall time is 36.52 s and observed aggregate RSS/PSS is 310.24/299.52 MiB.
+The same 20 ms process-tree observer is used as above. Audits are excluded.
+These short measurements are not evidence that FEC is faster than FED.
+
+### Draft scope of an optional mode
+
+The proposed scope is **opt-in conditional trajectory sampling of complete
+inputs whose entire reduced execution has certificates and bounded resources**.
+The complete input can include an explicitly specified decoder instrument,
+as in this experiment. Ordinary compilation remains the default. The mode's
+purpose is access to otherwise infeasible inputs; the current Python measured
+check route is much slower than ordinary Clifft on Chan d5 and RP2 d5.
+
+| Existing route | Structural admission and useful complete inputs | Boundary of the proposal |
+| --- | --- | --- |
+| Phase reduction | Certified stabilizer preparation, supported phase polynomial and conditional Clifford responses; BT81 direct-X and Steane E | Preserve the complete residual executable program, including its 23/33 T gates. No small-core or final-state export promise. |
+| Measured-check update | Verified measured Clifford envelope, shared signed stabilizers, supported outgoing state and width/orbit bounds; supplied Chan four-round d5 and RP2 d5 | Per-history checks remain necessary. Unsupported branches fail explicitly. Constructed d9/d11 remain controls. |
+| Folded contraction and growth | Exact source coverage, monomial paths, signed CSS entry, resolving measurements, verified growth map; reconstructed f7 | FED terminal evaluation and the specific FEC recovery/readout consumer. No generic continuation or arbitrary folded-circuit recognition claim. |
+
+Admission must use verified operations and state structure. Names select panel
+fixtures only. The folded research frontend currently needs source-linked
+annotations; the mode must disclose that requirement instead of presenting
+it as automatic discovery from arbitrary source text.
+
+All original noise channels and records, including hidden outcomes needed for
+the retained trajectory, must survive reduction. Rejection remains an output
+of the complete protocol. A failed certificate must identify the attempt and
+the failed obligation and stop that request with an incomplete result. It must
+never be treated as protocol rejection, silently omitted, or replaced by a
+new shot. Any eventual fallback must preserve the same conditioning and fault
+history; absent such a fallback, the request fails explicitly.
+
+The output contract is complete records and sufficient retained reconstruction
+data for each conditional quantum state. Compact state preparation/export is
+reported only where separately certified. Sampling success is not a claim
+that all three representations implement a common public quantum-state API.
+Peak conditional/intermediate resources, residual output complexity, total
+memory, setup, and complete attempt cost remain mandatory diagnostics.
+
+Outside scope: arbitrary non-Pauli noise, universal adaptive quantum circuits,
+unverified folded suffixes, escape/storage protocols, a universal support
+theorem, GPU/packed execution guarantees, fixed-fault public API integration,
+and competitive performance claims against bespoke literature simulators.
+f7 remains an independent reconstruction with sequential extraction and no
+idle noise. The FEC decoder and noiseless evaluation are explicit modeling
+choices, not an implementation of a full operational decoder/escape pipeline.
+
+There is already a pinned
+[folded integration experiment](https://github.com/unitaryfoundation/clifft/blob/b87c0da396b4bbde54fbee5535aeac1116170605/docs/guide/folded-specialization.md)
+with `specialize_folded=True`, operation recognition, and a preallocated native
+kernel action. It excludes the native f5-to-f7 growth transfer and decoder FEC,
+and it is absent from the pinned current baseline. Any implementation proposal
+should reuse that work alongside the existing research routes. This checkpoint
+does not implement a new production dispatcher, general output interface, or
+executor architecture. Python host planning and blocking decoder IPC here are
+research machinery, not a production hot-path design.
+
+The resulting decision is to propose this bounded optional sampling mode for
+review. The concrete FEC consumer removes the need for an architecture-driven
+generic folded exit experiment. It does not remove the recorded output-state
+limitations of the other routes. This checkpoint stops at the proposal; it
+does not start additional scaling controls, another simulator, or static
+compilation tuning.
+
+### Reproducing the bounded consumer
+
+Use the same extracted reference and baseline source/build as above; put the
+reference `tools/profile`, this checkout's `tools/profile`, and the pinned
+Clifft Python extension on `PYTHONPATH`. In addition to the earlier audit
+dependencies, install PyMatching 2.3.1. The build verifies the reference tree
+and baseline source revision; retain the resulting core/binary hashes.
+
+```bash
+python tools/profile/folded_fec_consumer.py build \
+  --reference "$PANEL_REFERENCE" --work /tmp/folded-fec-build \
+  --baseline-source "$PANEL_BASELINE_SOURCE" --baseline-build "$PANEL_BASELINE_BUILD"
+python tools/profile/folded_fec_consumer.py run \
+  --distance 3 --shots 8 --probability 0.001 --work /tmp/fec-f3 \
+  --executable /tmp/folded-fec-build/folded_fec --output /tmp/fec-f3.json.gz
+python tools/profile/audit_folded_fec.py \
+  --input /tmp/fec-f3.json.gz --reference "$PANEL_BIN/replay" \
+  --output /tmp/fec-f3-audit.json.gz
+```
+
+Repeat the small run/audit at p=0.03 in a separate directory. Only after the
+small checks pass, run/audit distance 7, 16 shots, p=0.001. All runs use seed
+10102026 and one OpenMP/OpenBLAS thread. The Python audit forces each original
+measurement/reset branch; it does not draw a more convenient reference history.

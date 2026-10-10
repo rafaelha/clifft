@@ -12,6 +12,15 @@ for its check/cat schedules, and Higgott et al.'s
 for its growth circuit. These are reused reconstruction artifacts and design
 influences, not author-supplied f7 circuits or new algorithms in this checkpoint.
 
+Clifft benefited from Takada, Bartlett, and Williamson's
+[FEC evaluation procedure](https://arxiv.org/html/2609.16929v1#A1.SS2)
+through the concrete decoder-recovery-then-logical-measurement consumer tested
+in the same checkpoint. Clifft benefited from
+[PyMatching](https://github.com/oscarhiggott/PyMatching) through direct use of
+its minimum-weight matching implementation for that research decoder. Its
+unit-weight CSS policy is specified locally; this is not a reproduction of
+the paper's decoder configuration or published error rates.
+
 Clifft benefited from Wan and Zapirain's
 [exact cultivation corpus](https://github.com/kh428/exact_ler_for_msc/tree/b99452de7e300324e7bbf5cd9347241c3e289bae)
 through the released Chan circuit models and four-fault witness used to

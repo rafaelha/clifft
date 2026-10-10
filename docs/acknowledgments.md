@@ -1,5 +1,17 @@
 # Acknowledgments
 
+Clifft benefited from the existing
+[folded research implementation](https://github.com/unitaryfoundation/clifft/tree/b87c0da396b4bbde54fbee5535aeac1116170605/tools/profile)
+through direct reuse of its reconstructed physical f7 circuit, coherent-path
+contractions, signed-code growth transfer, and independent physical-history
+oracle in the [complete-circuit checkpoint](../research/conditional_clifford/COMPLETE_CIRCUIT_CHECKPOINT.md).
+That reconstruction credits Takada, Bartlett, and Williamson's
+[fold-transversal cultivation construction](https://arxiv.org/html/2609.16929v1#A1)
+for its check/cat schedules, and Higgott et al.'s
+[surface-code growth construction](https://quantum-journal.org/papers/q-2021-08-05-517/)
+for its growth circuit. These are reused reconstruction artifacts and design
+influences, not author-supplied f7 circuits or new algorithms in this checkpoint.
+
 Clifft benefited from Wan and Zapirain's
 [exact cultivation corpus](https://github.com/kh428/exact_ler_for_msc/tree/b99452de7e300324e7bbf5cd9347241c3e289bae)
 through the released Chan circuit models and four-fault witness used to

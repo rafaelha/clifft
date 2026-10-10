@@ -1,0 +1,50 @@
+{
+  "baseline_revision": "847757e2bc8c4f7439b9e92011550fd61719eb85",
+  "build": {
+    "source_revision": "847757e2bc8c4f7439b9e92011550fd61719eb85",
+    "source_clean": true,
+    "source_directory": "/home/exedev/.codex/worktrees/e0da/clifft-codex",
+    "cmake_build_directory": "/tmp/clifft-panel-baseline-build",
+    "configuration": "Release, GCC 13.3, C++20, native ISA, OpenMP enabled; OMP_NUM_THREADS=1",
+    "compiler": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "python_native_sha256": "52bc994be7acbc47993f4ce0a13b3a628c9348b12e551ebaa15dd8eb7cb06987",
+    "files": {
+      "/tmp/clifft-panel-baseline-package/clifft/_clifft_core.abi3.so": "52bc994be7acbc47993f4ce0a13b3a628c9348b12e551ebaa15dd8eb7cb06987",
+      "/tmp/clifft-panel-baseline-build/src/clifft/libclifft_core.a": "8858edc6614281268d7ce595f4118a772cb9fa11d3d911b075586609af4285bc",
+      "/tmp/clifft-complete-panel/bin/phase_exporter": "1a4c2aac8082c5c4191e5eaee5e33d2ab5bd16de2e15727e6878ba4f76e21ab9",
+      "/tmp/clifft-complete-panel/bin/phase_worker": "5ff90a333292c8515bca69946410ffd02b5e01cea1683e06db45bb0c319b87c9"
+    },
+    "platform": "Linux-6.12.93-x86_64-with-glibc2.39",
+    "cpu_model": "AMD EPYC 9554P 64-Core Processor"
+  },
+  "reducer_revision": "d8bc2f3fa52f25ec7b411370d77dd92c1f852413",
+  "reducer_changes": "none; all frozen existing profile source hashes verified",
+  "new_code_scope": "input reconstruction, guarded public executor assessment, and validation adapters only",
+  "selection_sequence": [
+    "32-physical control is ordinary-affordable; retained as control",
+    "64-physical source and reducer hashes frozen before its phase run",
+    "32 complete draws at seed 1010202601; native width-16 worker refuses all",
+    "same draws, unchanged export through public compiler/executor, width budget 24",
+    "same draws, fault-only ablation; all 96 full-record physical-source comparisons pass"
+  ],
+  "validation_scope": {
+    "independent_small_aer": "11 full physical states and exhaustive distributions",
+    "large_physical_source": "32 histories, 96 native probability comparisons; shares Clifft engine",
+    "independent_large_aer": "MPS reference interrupted before first result; no agreement claimed"
+  },
+  "artifact_sha256": {
+    "heldout-iqp-control-input.json.gz": "9377af1c01123387f27c9143300a3e9fef225192c88d8009b6560e20263d95bc",
+    "heldout-iqp-control-results.json.gz": "478183766c565e45d350d8f1a9112552005968890d91360779176be96b0e3eb3",
+    "heldout-iqp-input.json.gz": "45b87da94ff4b052264bc1a9b7e829380ffa53e0c0ee25fc40eba728265d4253",
+    "heldout-iqp-large-audit.json.gz": "57fbeae461ff9c4d998761d5bc52f76ac984f0faac4530008795a779ad698425",
+    "heldout-iqp-results-conditional_export.json.gz": "314096b1a9a4c870ec6f649723e0aa4eb6b611354094d65413b71ada15c501a2",
+    "heldout-iqp-results-fixed_fault.json.gz": "8656bd64b5fb189e214e0fbcd08578e8cb8d31742edd3e04f49137ffe8e2cede",
+    "heldout-iqp-results.json.gz": "35d405c8704ba1fb2d4c7108f0bc875d5c71ba1edb86e0350299b4dbf718df2d",
+    "heldout-iqp-small-audit.json.gz": "b6d9e7a5243d9a9e5a3cab4ab89795750e4e4d1697c2bae9ff01a434cbc885a6"
+  },
+  "source_sha256": {
+    "tools/profile/study_heldout_encoded_iqp.py": "2fff7a145bd12581796c12ebd64c055e008f0fdc756993c59fa2aaac79b3a6cf",
+    "tools/profile/audit_heldout_encoded_iqp.py": "309fc6158c0a774918cbf6cca042b7ba4767ea916ab90c4ad919d35c201e4909"
+  },
+  "report": "HELDOUT_IQP.md"
+}

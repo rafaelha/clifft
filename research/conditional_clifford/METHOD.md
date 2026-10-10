@@ -75,11 +75,59 @@ another generic phase synthesis to that non-Clifford input. Multiple surviving
 rotations similarly remain ordinary work. This is why the carrier's existence
 does not establish unrestricted multi-region chaining.
 
-The later [Chan boundary study](CHAN_BOUNDARY.md) identifies an additional
-algebraic route: a complete measured inverse-T check can act as a Clifford
-instrument on a suitably certified one-T entry. That result is outside the
-current frontend described here. Its bounded reconstruction oracle does not
-implement scalable recognition or a general coherent-sum carrier.
+## Measured-check reduction
+
+The [algebraic continuation](CHAN_ALGEBRAIC_CONTINUATION.md) implements a
+second route beyond the original [boundary oracle](CHAN_BOUNDARY.md).
+A certified inverse-T parity sandwich gives a record-conditioned map
+proportional to a known Clifford byproduct times `(I + (-1)^m C)/2`.
+Here `C = D-dagger P D` is a Hermitian Clifford: D is the supported signed
+single-T layer and P is the measured Pauli. Actual faults and flag records
+determine the byproduct and signs. The two terms must remain coherent;
+their relative phase cannot be inferred from a Clifford tableau alone.
+
+Write the incoming state as `F(|0>^(n-r) tensor |psi_r>)`, with signed
+dormant stabilizers S. The update intersects S with `C S C-dagger` by binary
+linear algebra, including signs. It certifies that this common subspace
+contains the input and is invariant under C, then restricts C to its
+unfixed coordinates. A physical amplitude fixes the restricted Clifford's
+global phase; Hermiticity is checked before evaluating the projector.
+Compression uses the resulting state's actual stabilizers.
+
+The efficiency condition is small **codimension of the signed intersection
+on the actual history**, followed by a compact outgoing state. A code's
+distance, a transversal gate, or a small ideal logical state alone proves
+none of these conditions. A measured check can increase the conditional
+core even though each branch separately has a compact description.
+
+## Structural conditions versus incidental assumptions
+
+| Layer | Phase route | Measured-check route |
+| --- | --- | --- |
+| Algebraic condition | Conditional stabilizer preparation has affine support; CNOT/diagonal evolution admits a mod-eight phase polynomial; supported Pauli faults change its non-Clifford part only by Clifford corrections | A complete instrument has a coherent two-branch Clifford form with known relative phase; its signed common subspace contains the input and is invariant |
+| Efficiency condition | Fixed residual non-Clifford work, history-dependent corrections, encoder and full continuation fit the complete execution budget | Signed intersection has low codimension, and projected output stays compact through the complete continuation |
+| Current implementation restrictions | Supported Clifford+T syntax, at most 128 support variables and 200,000 phase terms; at most eight regions; individual record nodes for continuation reuse; reuse requires a Clifford tail; native research worker caps width at 16 | Recognized inverse single-T layers and inverse CNOT networks; matching prepared/read flag bases; no early flag readout or flag distinguishing the coherent branches; temporary core at most three and compression to at most one; exporter requires stabilizer-or-T orbit |
+| Family-specific facts that are not premises | Factory/BT code identities happen to simplify their polynomials; neither their code matrices nor one-logical-qubit assumptions enter the reducer | Chan/SOFT/RP2 schedules happen to satisfy the envelope, intersection and output certificates; the driver receives no code matrices or distance |
+
+The restrictions above describe the existing programs, not impossibility
+theorems. For example, the common-subspace mathematics allows a larger bounded
+core, whereas the current measured-check compression and exporter do not.
+Likewise a valid phase certificate does not imply a cheap residual computation.
+The [held-out encoded IQP test](HELDOUT_IQP.md) separates these issues using
+24 interacting logical qubits and the unchanged phase reducer.
+
+The measured-check parser also recognizes terminal `D-dagger MPP D` and
+open `D MPP` patterns. An open physical D layer remains part of the output;
+that path is not a certificate for subsequent quantum continuation. An
+ungrouped T gate cannot expand an already nonempty core. Noise interrupting
+the outer layers can prevent current envelope recognition even when a more
+general algebraic treatment might exist.
+
+Both routes must preserve the full categorical noise law, records, rejected
+attempts, and conditional physical output, or explicitly refuse the required
+operation. A sampled set of successful histories is evidence of transfer,
+not a worst-case resource guarantee. Planning and certificate checks belong
+to setup or explicit host boundaries, never ordinary hot dispatch.
 
 ## Compilation reuse and remaining per-shot work
 
@@ -120,7 +168,9 @@ All paths below are relative to `tools/profile/`.
 | Continuation responses and worker interface | `continuation_trace_reuse.py` |
 | Native fragment composition and execution | `profile_prefix_trace_reuse.cpp` |
 | Certified scheduling and coordinate policy | `squeeze_schedule_reuse.h`, `coordinate_reuse.cpp`, `coordinate_reuse.h` |
-| Current whole-circuit assessment | `survey_conditional_capability.py` |
+| Measured-check envelope and actual conditional trajectory | `parity_envelope_audit.py`, `chan_algebraic_continuation.py` |
+| Signed stabilizer intersection and coherent projector | `conditional_clifford_core.py` |
+| Whole-circuit assessments | `survey_conditional_capability.py`, `complete_circuit_panel.py`, `study_heldout_encoded_iqp.py` |
 
 The native coordinate experiment compiles the existing planner implementation
 under a research entry point and wraps its coordinate conversion. Production

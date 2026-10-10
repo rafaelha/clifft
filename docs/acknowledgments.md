@@ -1,5 +1,13 @@
 # Acknowledgments
 
+Clifft benefited from Bluvstein et al.'s
+[logical neutral-atom processor](https://doi.org/10.1038/s41586-023-06927-3)
+through the encoded IQP gate vocabulary and block connectivity used to
+construct the [held-out conditional-compilation input](../research/conditional_clifford/HELDOUT_IQP.md).
+This is a literature-inspired reconstruction, not reused author code or an
+exact experimental schedule. Qiskit Aer supplies its independent small
+physical-state and full-distribution validation.
+
 Clifft benefited from the existing
 [folded research implementation](https://github.com/unitaryfoundation/clifft/tree/b87c0da396b4bbde54fbee5535aeac1116170605/tools/profile)
 through direct reuse of its reconstructed physical f7 circuit, coherent-path

@@ -1,5 +1,14 @@
 # Conditional Clifford reduction: research review
 
+The latest [structural transfer checkpoint](HELDOUT_IQP.md) pauses folded/FEC
+work and tests unchanged phase reduction on a held-out, reconstructed encoded
+IQP circuit with 24 logical qubits. Ordinary noisy width 32 becomes 20-24,
+but fixing the sampled faults without phase reduction already gives width
+21 and lower complete cost. The result favors a general conditional-compilation
+host with structurally certified optional reductions, rather than another
+family-specific algorithm. [METHOD.md](METHOD.md) separates reusable algebra,
+efficiency conditions, implementation restrictions and family-specific facts.
+
 The [complete-circuit checkpoint](COMPLETE_CIRCUIT_CHECKPOINT.md) freezes BT81
 direct-X, Steane E, Chan four-round d5, RP2 d5, and reconstructed folded f7
 against current Clifft `847757e2`. It reuses the existing programs and reports

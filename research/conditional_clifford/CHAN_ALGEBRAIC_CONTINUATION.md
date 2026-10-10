@@ -1,5 +1,10 @@
 # Algebraic continuation through the complete Chan circuit
 
+Later [SOFT/RP2 transfer](FAMILY_TRANSFER.md) adds X-basis flags, rotations
+inside the existing core, and exact handling of a terminal open phase layer.
+It retains a fresh Chan regression artifact; the results below describe the
+original checkpoint and its source hashes.
+
 Follow-up: [larger color-code scaling controls](COLOR_CHECK_SCALING.md) test
 this update at larger distances. Their constructed schedules are distinct
 from the supplied complete Chan circuits validated below.

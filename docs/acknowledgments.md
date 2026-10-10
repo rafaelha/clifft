@@ -8,6 +8,16 @@ their physical noise sites and measurement conventions. The algebraic
 continuation is a Clifft research implementation, not reused upstream
 simulation code.
 
+Clifft benefited from the same corpus through its actual-T RP2 model conversions
+and retained SOFT circuits in the
+[cross-family conditional-state study](../research/conditional_clifford/FAMILY_TRANSFER.md).
+Clifft benefited from [Chen et al.'s RP2 code](https://github.com/Zihan-Chen-PhMA/Cultiv_T_RP2)
+through those source-derived morphed-code and X-flag schedules, and from
+[SOFT](https://github.com/haoliri0/SOFT) through its physical cultivation circuits
+used directly for full-record and conditional-output validation. The RP2
+upstream MIT notice is retained inside the input archive. Actual-T conversion
+and the model's omission of escape and decoding remain explicit.
+
 Clifft benefited from [Stim](https://github.com/quantumlib/Stim) through direct
 use of its Clifford tableaux, stabilizer generators, and independent
 stabilizer-state references in this research. Clifft benefited from

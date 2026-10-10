@@ -282,10 +282,19 @@ class SmallState:
         return float(probability)
 
     def rotate_t(self, p: stim.PauliString, sign: int) -> None:
-        """Accept injection when there is no pre-existing non-stabilizer core."""
-        if self.width:
-            raise Refused("An ungrouped T gate encountered an existing quantum core")
+        """Inject one coordinate or rotate within the existing certified core."""
         decoded = self.decode(p)
+        if self.width:
+            inactive = self.n - self.width
+            if any(decoded[q] in (1, 2) for q in range(inactive)):
+                raise Refused("An ungrouped T gate expands the existing quantum core")
+            local = decoded[inactive:]
+            local.sign = decoded.sign
+            self.vector = np.cos(np.pi / 8) * self.vector - (
+                1j * sign * np.sin(np.pi / 8) * apply(local, self.vector)
+            )
+            self.compress()
+            return
         pivot = next((q for q, axis in enumerate(decoded) if axis in (1, 2)), None)
         if pivot is None:
             return

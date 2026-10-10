@@ -79,6 +79,23 @@ class ConditionalChecks:
             if regions and ops[a].line <= regions[-1][1]:
                 continue
             regions.append((ops[a].line, ops[d - 1].line, certificate))
+        if ts:
+            a, b = ts[-1]
+            if (
+                b - a > 1
+                and len(ops[b:]) == 1
+                and ops[b].name == "MPP"
+                and (not regions or ops[a].line > regions[-1][1])
+            ):
+                signs = {op.qubits[0]: 1 if op.name == "T" else -1 for op in ops[a:b]}
+                if len(signs) == b - a:
+                    regions.append(
+                        (
+                            ops[a].line,
+                            len(source_lines),
+                            dict(phase_signs=signs, terminal=True, open_output=True),
+                        )
+                    )
         lines = source.splitlines()
         self.segments = []
         start, offset = 1, 0
@@ -140,6 +157,7 @@ class ConditionalChecks:
         product_resets = 0
         max_width = 0
         decision_index = 0
+        output_layer = ""
 
         def bit(p0: float, *, visible: bool, flip: int = 0) -> int:
             nonlocal probability, decision_index
@@ -223,6 +241,11 @@ class ConditionalChecks:
                         p = stim.PauliString(self.n)
                         p[int(targets[0])] = "Z"
                         state.rotate_t(p, 1 if gate == "T" else -1)
+                    elif bare == "R_PAULI":
+                        angle = float(gate[len("R_PAULI(") : -1])
+                        if abs(angle) != 0.25:
+                            raise Refused("Only quarter-Pauli rotations are supported")
+                        state.rotate_t(observable("MPP", targets), 1 if angle > 0 else -1)
                     elif any(t.startswith("rec[") for t in targets):
                         if gate not in {"CX", "CY", "CZ"} or not targets[0].startswith("rec["):
                             raise Refused("Unsupported classical control")
@@ -231,6 +254,8 @@ class ConditionalChecks:
                     else:
                         state.clifford(stim.Circuit(line))
                     max_width = max(max_width, state.width)
+                if checkpoint is not None:
+                    checkpoint(state, records, segment, source)
                 continue
 
             cert = segment.certificate
@@ -238,7 +263,12 @@ class ConditionalChecks:
             lines = source.splitlines()
             if cert.get("terminal"):
                 # The terminal inverse-T sandwich has no internal faults or other work.
-                middle = [line for line in lines if not line.startswith(("T ", "T_DAG "))]
+                middle = [
+                    line
+                    for line in lines
+                    if not line.startswith(("T ", "T_DAG "))
+                    and line.split()[0].split("(")[0] not in ANNOTATIONS
+                ]
                 if len(middle) != 1 or not middle[0].startswith("MPP "):
                     raise Refused("The terminal sandwich has unsupported internal operations")
                 p = observable("MPP", middle[0].split()[1:])
@@ -248,7 +278,18 @@ class ConditionalChecks:
                 chance, metadata = state.clifford_projector(operator, outcome)
                 if chance < 1e-12:
                     return dict(probability=0.0, records=records, reductions=reductions)
-                record(outcome)
+                for line in lines:
+                    if line.startswith("MPP "):
+                        record(outcome)
+                    elif line.split()[0].split("(")[0] in ANNOTATIONS:
+                        classical.append(line)
+                if cert.get("open_output"):
+                    # The physical output is D times the projected state in D's input frame.
+                    output_layer = (
+                        "\n".join(line for line in lines if line.startswith(("T ", "T_DAG ")))
+                        + "\n"
+                    )
+                    metadata["deferred_output_phase"] = True
             else:
                 root = cert["central_qubit"]
                 flags = {int(q): axis for q, axis in cert["flags"].items()}
@@ -267,8 +308,12 @@ class ConditionalChecks:
                 inverse.sign = inverse.sign.conjugate()
                 relative = inverse * b
                 operator = MonomialClifford(relative, signs)
-                root_line = next(line for line in lines if line.startswith("MX "))
-                if any(line.startswith("M ") for line in lines[: lines.index(root_line)]):
+                root_line = next(
+                    line
+                    for line in lines
+                    if line.split()[0] == "MX" and int(line.split()[1].lstrip("!")) == root
+                )
+                if any(line.startswith(("M ", "MX ")) for line in lines[: lines.index(root_line)]):
                     raise Refused("A flag is read before the central outcome")
                 flip = int(root_line.split()[1].startswith("!"))
                 p0, _ = state.clifford_projector(operator, None)
@@ -282,17 +327,21 @@ class ConditionalChecks:
                 for index, line in enumerate(lines):
                     gate, *targets = line.split()
                     bare = gate.split("(")[0]
-                    if gate == "MX":
+                    if gate == "MX" and int(targets[0].lstrip("!")) == root:
                         record(outcome ^ int(targets[0].startswith("!")))
-                    elif gate == "M":
+                    elif gate in {"M", "MX"}:
                         q = int(targets[0].lstrip("!"))
                         p = stim.PauliString(self.n)
-                        p[q] = "Z"
+                        p[q] = flags[q]
                         expectation = state.expectation(p)
                         if abs(abs(expectation) - 1) > 1e-8:
                             raise Refused("A closing flag distinguishes coherent paths")
                         later = (
-                            sum(suffix in {f"X {q}", f"Y {q}"} for suffix in lines[index + 1 :]) % 2
+                            sum(
+                                suffix in {f"{axis} {q}" for axis in "XYZ" if axis != flags[q]}
+                                for suffix in lines[index + 1 :]
+                            )
+                            % 2
                         )
                         flag_value = int(expectation < 0) ^ later ^ int(targets[0].startswith("!"))
                         if (
@@ -321,5 +370,6 @@ class ConditionalChecks:
             hidden_random=hidden_random,
             product_resets=product_resets,
             peak_carry_width=max_width,
-            final_source=state.source() + "\n" + "\n".join(classical) + "\n",
+            output_layer=output_layer,
+            final_source=state.source() + "\n" + output_layer + "\n".join(classical) + "\n",
         )

@@ -294,11 +294,14 @@ def branch_frames(
                 p[root] = "Z"
             frames = [p * f for f in frames]
             between = False
-        elif gate == "R" and qs[0] in flags:
+        elif gate in {"R", "RX"} and qs[0] in flags:
+            if flags[qs[0]] != ("X" if gate == "RX" else "Z"):
+                raise ValueError("Flag reset basis differs from its certificate")
             for p in frames:
                 p[qs[0]] = "I"
-        elif gate == "M" and qs[0] in flags:
-            pass
+        elif gate in {"M", "MX"} and qs[0] in flags:
+            if flags[qs[0]] != ("X" if gate == "MX" else "Z"):
+                raise ValueError("Flag readout basis differs from its certificate")
         else:
             raise ValueError(f"Unexpected bound operation {line}")
     return frames[0], frames[1]

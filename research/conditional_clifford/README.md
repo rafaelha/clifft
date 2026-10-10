@@ -1,5 +1,10 @@
 # Conditional Clifford reduction: research review
 
+The [SOFT/RP2 transfer study](FAMILY_TRANSFER.md) validates the same bounded
+update on complete supplied d3/d5 cultivation-only models. RP2's morphed code
+remains compact on the tested histories. SOFT d5 requires preserving a final
+physical T layer, so its exact output export still has width 8-10.
+
 The [larger color-code scaling study](COLOR_CHECK_SCALING.md) tests the same
 conditional update on constructed d7/d9/d11 checks, with explicit physical
 noise and independent coherent-state validation. These are scaling controls;

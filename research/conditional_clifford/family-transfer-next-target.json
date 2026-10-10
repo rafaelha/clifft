@@ -1,0 +1,14 @@
+{
+  "reference_revision": "b87c0da396b4bbde54fbee5535aeac1116170605",
+  "fixture": "tools/profile/fixtures/folded_msc/f7_fed_p1e-3.stim",
+  "sha256": "fff72e8f48a0509a00d52133d8cb334a1743fc7c74ce1f40eeeccc9785909545",
+  "scope": "Complete reconstructed f7 through final error detection, not an author-supplied export.",
+  "ordinary_active_width": 44,
+  "records": 351,
+  "ccz_gates": 0,
+  "three_qubit_noise_sites": 112,
+  "recognized_inverse_t_checks": 0,
+  "ideal_frontend_refusal": "Refused: An ungrouped T gate expands the existing quantum core",
+  "noisy_frontend_refusal": "FaultModel rejects DEPOLARIZE3; no circuit altered to claim full noisy coverage.",
+  "interpretation": "Frontend incompatibility, not evidence for an intrinsic core-width lower bound. Existing folded contraction remains the separately validated method."
+}

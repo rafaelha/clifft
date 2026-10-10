@@ -1,6 +1,15 @@
 # Conditional Clifford reduction: research review
 
-The latest [structural transfer checkpoint](HELDOUT_IQP.md) pauses folded/FEC
+The latest [fault-only panel comparison](FAULT_ONLY_PANEL.md) reuses all 80
+retained fault histories across the frozen five inputs. Fault conditioning
+alone leaves BT81, Steane E and folded f7 over budget. The phase route adds
+sampling capability for BT81/E; ordinary Clifft remains fastest for Chan/RP2;
+f7 still needs its existing specialized runner. Together with IQP, this
+supports a small optional cold host with fault-only and certified phase
+policies, rather than a shared quantum-state representation. The checkpoint
+stops at that proposal, with no new production mode or folded/FEC work.
+
+The preceding [structural transfer checkpoint](HELDOUT_IQP.md) pauses folded/FEC
 work and tests unchanged phase reduction on a held-out, reconstructed encoded
 IQP circuit with 24 logical qubits. Ordinary noisy width 32 becomes 20-24,
 but fixing the sampled faults without phase reduction already gives width

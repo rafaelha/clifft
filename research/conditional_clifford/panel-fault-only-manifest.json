@@ -1,0 +1,65 @@
+{
+  "baseline_revision": "847757e2bc8c4f7439b9e92011550fd61719eb85",
+  "build": {
+    "source_revision": "847757e2bc8c4f7439b9e92011550fd61719eb85",
+    "source_clean": true,
+    "source_directory": "/home/exedev/.codex/worktrees/e0da/clifft-codex",
+    "cmake_build_directory": "/tmp/clifft-panel-baseline-build",
+    "configuration": "Release, GCC 13.3, C++20, native ISA, OpenMP enabled; OMP_NUM_THREADS=1",
+    "compiler": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+    "python_native_sha256": "52bc994be7acbc47993f4ce0a13b3a628c9348b12e551ebaa15dd8eb7cb06987",
+    "files": {
+      "/tmp/clifft-panel-baseline-package/clifft/_clifft_core.abi3.so": "52bc994be7acbc47993f4ce0a13b3a628c9348b12e551ebaa15dd8eb7cb06987",
+      "/tmp/clifft-panel-baseline-build/src/clifft/libclifft_core.a": "8858edc6614281268d7ce595f4118a772cb9fa11d3d911b075586609af4285bc",
+      "/tmp/clifft-complete-panel/bin/phase_exporter": "1a4c2aac8082c5c4191e5eaee5e33d2ab5bd16de2e15727e6878ba4f76e21ab9",
+      "/tmp/clifft-complete-panel/bin/phase_worker": "5ff90a333292c8515bca69946410ffd02b5e01cea1683e06db45bb0c319b87c9",
+      "/tmp/clifft-complete-panel/bin/folded_retained": "a8a6bd2f1c74d05511b97e39f08e70f30c50b87d44f053b854819ac811381f5b",
+      "/tmp/clifft-complete-panel/bin/replay": "b2ef66da260dd1183627665e711cd60d3112663bf50ad02185231fd06e6a3f43"
+    },
+    "platform": "Linux-6.12.93-x86_64-with-glibc2.39",
+    "cpu_model": "AMD EPYC 9554P 64-Core Processor"
+  },
+  "prior_research_revision": "831d446428cebb1299a43840abf902c4e7555a9d",
+  "scope": "five unchanged complete panel inputs, all 16 retained faults per input; no new circuits or folded/FEC refinements",
+  "mode": "existing noise binders plus default Clifft compiler and executor",
+  "allocation_width_budget": 24,
+  "coefficient_bytes_at_budget": 268435456,
+  "timing": "serial; one CPU; one OpenMP/OpenBLAS thread; all attempts including rejections; guarded cases report time to refusal only",
+  "folded_faults": "same 2189 sites and four partitions via pinned physical fault binder; no native RNG draw or complete execution time claimed",
+  "result_counts": {
+    "assessed": 80,
+    "completed": 32,
+    "resource_refusals": 48,
+    "retained_probability_checks": 32,
+    "new_record_reachability_checks": 32
+  },
+  "artifact_sha256": {
+    "complete-panel-inputs.json.gz": "a514334314bfd31a6ecc2aeafdbd4b00cdc3e87e3c07e9d195cf7f301e430d98",
+    "complete-panel-results.json.gz": "b384a84bfd4ba4204a48f27dfc1e76ada1c729238662d16934c9bf335956c158",
+    "complete-panel-audits.json.gz": "ede451a042b19e778d3c84ffce28d8069a1e730ab965463cfb1c375c35390002",
+    "panel-fault-only-results.json.gz": "9a4f5c4a42a8e7c24f858569f49022eb670658ef45446f568ada755033118f6f",
+    "panel-fault-only-audits.json.gz": "7ab5c7d90667c8aebdcf3600d15d10433b22e1e72b98ccf99f88ffa453988ab1"
+  },
+  "new_source_sha256": {
+    "tools/profile/compare_panel_fault_conditioning.py": "fafb125205c74d94c004298688f51bc22d32dadaa0b617d5e5c518f222dc7973"
+  },
+  "reused_source_sha256": {
+    "automatic_specialization.py": "391738d9b0c78e7a0658a1d1a5c3e6ad9e85bff1ed0e921b8d7c9272a573bc90",
+    "complete_circuit_panel.py": "2d517ad84b0163a4e18b13d6ee128717acb0b052e50236de6a2edac41a6bd6cc",
+    "chan_algebraic_continuation.py": "e7b671f525fc7de4a8f0708f6d77ea383719c678a83bfce82234834bd7af8281",
+    "study_conditional_family_transfer.py": "eeaf4dcbc2e2a2c558263d2684019222214b9cb51a86cd878c6eb6f18b3bc0e6",
+    "validate_chan_algebraic.py": "29227be21183b5dc60f61e1a8853454cf602ab516678799b33e5c1e309b11a22",
+    "study_automatic_specialization.py": "74431fb97bc22dc0af4cf1758e92faaa9dc0b00f53c646a95f57f15d5c6d1013"
+  },
+  "folded_reference": "b87c0da396b4bbde54fbee5535aeac1116170605",
+  "folded_binding_source_sha256": {
+    "tools/profile/audit_folded_msc_family.py": "d078a15315904709fc4b20793369bfb7a6d5738a2ffe02394397f0fb2f9c145e",
+    "tools/profile/benchmark_folded_msc.py": "4f76f7dc136fa1f812a88c39313f8e38b8115f6eb75ccff3161c903be57c38f7",
+    "tools/profile/folded_msc.py": "75f6b6a78b159a3689b2a0c588903a045376cad24f1ace4b6a4cfe7ae8354373",
+    "tools/profile/folded_msc_family.py": "ed1e88cb10d8d7575090b0406a1b521f74d608d37df409042c2350ef68b89d19",
+    "tools/profile/test_folded_msc.py": "b71bf7013531f221810af4749b280876d72d35ec126372f3c54c4a65527a7470",
+    "tools/profile/test_folded_msc_family.py": "5d0c1272339d5c9c975b35c8979fee1c3dd7a56bbd202331e63f9b74e2f0ae27",
+    "tools/profile/validate_folded_msc.py": "d9e2dbef02e0cbcf913a2faaca16e579d7f407a47bde05c5beb76bc2e53ccfe6"
+  },
+  "report": "FAULT_ONLY_PANEL.md"
+}

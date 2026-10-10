@@ -1,5 +1,10 @@
 # Structural transfer to a held-out encoded IQP circuit
 
+The subsequent [frozen five-circuit comparison](FAULT_ONLY_PANEL.md) tests the
+fault-only baseline on the earlier panel. It is insufficient for BT81/E/f7,
+so IQP's simpler route does not generalize to every large-width case. That
+comparison gives the current smallest shared implementation proposal.
+
 The phase algebra transfers unchanged to a complete reconstructed circuit
 with 24 logical qubits. The stronger finding is that **conditioning the
 faults alone already makes this circuit affordable**, and is faster than

@@ -13,6 +13,8 @@ Clifft benefited from the existing
 through direct reuse of its reconstructed physical f7 circuit, coherent-path
 contractions, signed-code growth transfer, and independent physical-history
 oracle in the [complete-circuit checkpoint](../research/conditional_clifford/COMPLETE_CIRCUIT_CHECKPOINT.md).
+Its categorical outcome ordering and physical fault binder are also reused
+unchanged in the [fault-only comparison](../research/conditional_clifford/FAULT_ONLY_PANEL.md).
 That reconstruction credits Takada, Bartlett, and Williamson's
 [fold-transversal cultivation construction](https://arxiv.org/html/2609.16929v1#A1)
 for its check/cat schedules, and Higgott et al.'s

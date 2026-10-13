@@ -239,10 +239,12 @@ performance targets.
 
 BT81's natural phase support has 87 variables, beyond the 64-bit parity
 representation. The bounded policy reports cap hits and keeps small synthesis
-blocks there. A separate follow-up should evaluate multiword parity keys and
-sparse cubic algebra on that 87-variable case with explicit work budgets and
-the existing rewrite cost guards. No conditional corrections or execution
-architecture changes are needed for the current policy.
+blocks there. Multiword parity keys, sparse cubic algebra, and rewrites with
+unresolved symbolic signs remain separate research questions, with explicit
+work budgets and the existing rewrite cost guards required for any extension.
+These measurements describe a single static compilation using constraints
+valid on every trajectory and the noiseless reference. They do not measure
+per-history specialization or a conditional-sampling host.
 
 ## Probability queries
 

@@ -70,6 +70,12 @@ Measurements and resets can recover useful facts after earlier non-Clifford
 work, including in later regions of the circuit. Constraints must also hold
 for the noiseless reference; postselection supplies no additional facts.
 
+These are static rewrites shared by all shots. Unresolved affine signs do not
+produce conditional rewrites or per-history specialization. To disable recovered
+constraint rewrites, omit both passes from a custom `HirPassManager`, or use
+`hir_passes=None` to disable all HIR optimization. Equivalent plans preserve
+output distributions but do not guarantee historical fixed-seed samples.
+
 ---
 
 ## HIR Passes

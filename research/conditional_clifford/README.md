@@ -1,5 +1,8 @@
 # Conditional Clifford reduction: research review
 
+Start with the [standalone project summary](PROJECT_SUMMARY.md) for the owner's
+goals, all four approaches, current evidence, literature sources, and review questions.
+
 The latest [fault-only panel comparison](FAULT_ONLY_PANEL.md) reuses all 80
 retained fault histories across the frozen five inputs. Fault conditioning
 alone leaves BT81, Steane E and folded f7 over budget. The phase route adds

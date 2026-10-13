@@ -246,6 +246,64 @@ These measurements describe a single static compilation using constraints
 valid on every trajectory and the noiseless reference. They do not measure
 per-history specialization or a conditional-sampling host.
 
+### Bounded BT81 static probe
+
+`profile_wide_phase` is an opt-in compiler experiment, outside the default
+optimizer. It uses two-word 128-bit masks to collect one contiguous commuting
+region. It retains the existing synthesis limit of 64 core variables and 128
+odd parity terms, rejects T-count or active-width cost increases, and falls back
+to ordinary compilation on exhausted budgets or unsupported regions. The probe
+defaults to 128 support variables, 200,000 live polynomial terms, and 50 million
+polynomial updates. `CLIFFT_PROBE_VARIABLES`, `CLIFFT_PROBE_TERMS`, and
+`CLIFFT_PROBE_UPDATES` allow smaller limits for fallback checks.
+
+The noiseless **direct X readout** input from research revision
+`dbbc8865fe2babe0855ea28024790c509ff44463` has SHA-256
+`2db837e4ab23eb30288da1b7983b929c25a84c6bca5c9ea810c71f61b2c6262a`.
+It has neither postselection nor an inverse logical scoring gate. Local medians
+of five trials after warmup, alternating order on one EPYC 9554P CPU, were:
+
+| Compiler variant | T count | Preparation width | Execution width | Compile time | Peak RSS |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Ordinary optimizer | 648 | 87 | 56 | 0.105 s | 9.0 MiB |
+| Widening alone | 145 | 9 | 9 | 1.026 s | 16.0 MiB |
+| Widening and output-aligned basis | 23 | 9 | 6 | 0.644 s | 13.2 MiB |
+| Same analysis before peephole fusion | 23 | 9 | 6 | 0.184 s | 11.6 MiB |
+
+Compile time includes parsing, HIR optimization, planning, and executable-plan
+preparation; it excludes the separate preparation-width and constraint probes.
+Peak RSS covers the whole native process, including those diagnostics. These
+are local measurements with a GCC 13 Release core, not portable targets.
+
+The existing symbolic analysis recovers all 243 fixed data stabilizers, checked
+by record-free Stim flows from the initialized input. The complete 87-variable
+polynomial agrees exactly with the research reducer before peephole fusion:
+six cubic terms on nine variables. After fusion the difference is 384 Clifford
+terms, whose compensating operations are retained in the tableau. Widening alone
+projects to 145 odd parity terms and hits the synthesis work guard. Choosing
+coordinates from the final HIR tableau reduces that input to 48; unchanged TOHPE
+reaches 23, and ordinary measurement-aware squeezing reaches width six. No
+measurement history is supplied to this static rewrite. Noisy cases remain
+separate.
+
+Build the two opt-in targets, then reproduce the independent comparison:
+
+```bash
+cmake --build build-profile --target profile_wide_phase check_wide_phase
+./build-profile/check_wide_phase
+.venv/bin/python tools/profile/check_wide_phase.py \
+  --research-checkout /path/to/research-at-dbbc8865 \
+  --probe ./build-profile/profile_wide_phase --output /tmp/bt81-static
+```
+
+The comparison checks the fixed constraints and complete polynomials, forces
+all three budget fallbacks, and validates 65,536 complete 405-record samples
+against Aer logical probabilities and Stim preparation-record support. The
+algebra check covers 18,432 assignments at widths 65, 87, and 128. The executable
+probe derives its basis from the HIR; the research reducer supplies only the
+independent comparison. Promoting this experiment into the default optimizer
+still requires general integration and performance review.
+
 ## Probability queries
 
 `profile_probability` uses a unitary-only circuit because measurements,

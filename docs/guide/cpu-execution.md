@@ -176,13 +176,19 @@ active.
 The default `batch_size="auto"` considers packed execution only when:
 
 - at least 64 shots were requested;
-- the program has no post-selection;
-- peak active width is at most 5; and
+- peak active width and post-selection satisfy the policy below; and
 - estimated packed work and memory stay within automatic budgets.
 
-Long width-5 plans can still use scalar execution. Automatic survivor sampling
-also stays scalar because survivor lifetimes cannot be predicted reliably from
-the static plan.
+| Program | Automatic packed capacity limit |
+| --- | --- |
+| No post-selection, width 0-4 | 2048 lanes |
+| No post-selection, width 5 | Up to 1024 lanes; sustained work stays scalar |
+| Post-selected, width 0-4 | 256 lanes |
+| Width above 5, or post-selected width 5 | Scalar |
+
+Capacities are also bounded by the requested shots and memory budgets. When
+early detectors reject most shots, packed execution can be slower than scalar
+execution.
 
 Set `batch_size=1` to require scalar execution. A positive integer requests a
 capacity of up to 2048 lanes, bounded by the shot count and safety limits:

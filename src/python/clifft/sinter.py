@@ -64,8 +64,7 @@ class PerfectionistSampler(sinter.Sampler):
             are capped, not rejected. This is separate from Sinter's
             ``max_batch_size``, which defaults to 1024 in Sinter 1.15. Increase
             that limit to use larger native batches. Use 1 for scalar execution
-            or ``"auto"`` for Clifft's core policy, which currently selects
-            scalar execution for postselection.
+            or ``"auto"`` for Clifft's core policy.
     """
 
     batch_size: int | Literal["auto"] = 1024

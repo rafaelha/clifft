@@ -9,10 +9,11 @@
 
 namespace clifft::sampling {
 
-// Fills one signed sine per live lane. Keeping this materialization explicit
-// lets the arithmetic kernels vectorize across contiguous shot coefficients.
+// Materializing signed sines lets arithmetic kernels vectorize across contiguous
+// shot coefficients. The output span selects active lanes after compaction;
+// packed signs can retain the executor's full capacity.
 void prepare_interleaved_rotation_sines(std::span<double> output, double sine,
-                                        std::span<const uint8_t> signs) noexcept;
+                                        std::span<const uint64_t> signs) noexcept;
 
 void apply_interleaved_rotation(InterleavedBatchState& state, const PreparedRotation& rotation,
                                 std::span<const double> signed_sines) noexcept;

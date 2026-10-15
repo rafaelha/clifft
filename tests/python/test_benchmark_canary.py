@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -27,6 +28,10 @@ REPOSITORY = "unitaryfoundation/clifft"
 HEAD_REPOSITORY = "contributor/clifft"
 BASE_SHA = "1" * 40
 HEAD_SHA = "2" * 40
+
+
+def _registered_workloads() -> list[str]:
+    return re.findall(r'->Name\("([^"]+)"\)', benchmark_canary.BENCHMARK_SOURCE.read_text())
 
 
 def _write_results(
@@ -77,7 +82,7 @@ def _write_fork_evidence(path: Path) -> Path:
     ):
         directory = path / directory_name
         directory.mkdir()
-        for index, name in enumerate(benchmark_canary.DISPLAY_NAMES, start=1):
+        for index, name in enumerate(_registered_workloads(), start=1):
             _write_results(directory / f"{name}.json", {name: index * 100.0 * multiplier})
     benchmark_canary.write_manifest(
         path / "manifest.json",
@@ -229,14 +234,35 @@ def test_inconclusive_summary_retains_improvements() -> None:
     assert "1 benchmark comparison was inconclusive." in summary
 
 
-def test_report_links_workload_name_to_source_rationale(monkeypatch: pytest.MonkeyPatch) -> None:
+@pytest.mark.parametrize(
+    ("name", "label", "rationale"),
+    [
+        ("squeeze_parallel_t_8192", "Squeeze 8192 T gates", "// Expansion-only suffixes"),
+        (
+            "phase_measurement_barriers_4096",
+            "Phase pass, 4,096 measurement barriers",
+            "// Unsupported observers",
+        ),
+        (
+            "phase_clifford_regions_4096",
+            "Phase pass, 4,096 Clifford regions",
+            "// Repeated Clifford extraction",
+        ),
+        (
+            "phase_rank_limited_region_32000",
+            "Phase pass, 32,000 rank-limited rotations",
+            "// Forty independent axes",
+        ),
+    ],
+)
+def test_report_links_workload_name_to_source_rationale(
+    monkeypatch: pytest.MonkeyPatch, name: str, label: str, rationale: str
+) -> None:
     monkeypatch.setenv("GITHUB_SERVER_URL", "https://github.example")
     monkeypatch.setenv("GITHUB_REPOSITORY", "unitaryfoundation/clifft")
     source_lines = benchmark_canary.BENCHMARK_SOURCE.read_text().splitlines()
     rationale_line = next(
-        index
-        for index, line in enumerate(source_lines, start=1)
-        if line.startswith("// Expansion-only suffixes")
+        index for index, line in enumerate(source_lines, start=1) if line.startswith(rationale)
     )
     source_links = benchmark_canary._benchmark_source_links("abcdef0")
     assert benchmark_canary.DISPLAY_NAMES.keys() <= source_links.keys()
@@ -244,7 +270,7 @@ def test_report_links_workload_name_to_source_rationale(monkeypatch: pytest.Monk
         linked_line = int(source_link.rsplit("#L", 1)[1])
         assert source_lines[linked_line - 1].startswith("//")
     comparison = benchmark_canary.Comparison(
-        name="squeeze_parallel_t_8192",
+        name=name,
         base_ns=100.0,
         head_ns=100.0,
         change=0.0,
@@ -272,7 +298,7 @@ def test_report_links_workload_name_to_source_rationale(monkeypatch: pytest.Monk
         f"benchmarks/clifft_benchmarks.cc#L{rationale_line}"
     )
     assert "<summary>View 1 benchmark result</summary>" in report
-    assert f"| [Squeeze 8192 T gates]({expected_link}) |" in report
+    assert f"| [{label}]({expected_link}) |" in report
 
 
 def test_failure_report_uses_succinct_heading() -> None:
@@ -341,7 +367,7 @@ def test_fork_report_validates_evidence_and_uses_base_workloads(
         run_url="https://github.example/run/456",
     )
 
-    workload_count = len(benchmark_canary.DISPLAY_NAMES)
+    workload_count = len(_registered_workloads())
     assert (
         f"**Possible regression detected:** {workload_count} of {workload_count} "
         "benchmarks were at least 10% slower." in report
@@ -351,6 +377,12 @@ def test_fork_report_validates_evidence_and_uses_base_workloads(
     assert "Runner CPU: ` Example CPU `" in report
     assert "Workloads and fixtures come from the base revision for fork isolation." in report
     assert "[View workflow run](https://github.example/run/456)" in report
+    for label in (
+        "Phase pass, 4,096 measurement barriers",
+        "Phase pass, 4,096 Clifford regions",
+        "Phase pass, 32,000 rank-limited rotations",
+    ):
+        assert f"| [{label}](" in report
 
 
 def test_fork_report_rejects_manifest_not_bound_to_run(tmp_path: Path) -> None:
@@ -395,11 +427,41 @@ def test_fork_report_rejects_base_revision_not_bound_to_artifact(tmp_path: Path)
         )
 
 
-def test_fork_report_rejects_unexpected_workload_files(tmp_path: Path) -> None:
+def test_fork_report_accepts_workloads_independent_of_display_labels(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     evidence = _write_fork_evidence(tmp_path / "evidence")
-    _write_results(evidence / "base-first" / "invented.json", {"invented": 100.0})
+    for leg in ("base-first", "head-first", "head-second", "base-second"):
+        _write_results(evidence / leg / "new_workload.json", {"new_workload": 100.0})
+    monkeypatch.setattr(
+        benchmark_canary, "DISPLAY_NAMES", {"only_in_newer_main": "A newer workload"}
+    )
 
-    with pytest.raises(ValueError, match="unexpected file set"):
+    report = benchmark_canary.render_fork_report(
+        evidence,
+        expected_repository=REPOSITORY,
+        expected_pr_number=123,
+        expected_base_label="main",
+        expected_base_sha=BASE_SHA,
+        expected_head_repository=HEAD_REPOSITORY,
+        expected_head_sha=HEAD_SHA,
+        expected_run_id=456,
+        run_url="https://github.example/run/456",
+    )
+
+    assert "| new_workload | 100 ns | 100 ns | +0.0% | No material change |" in report
+    assert "A newer workload" not in report
+
+
+@pytest.mark.parametrize("legs", [("base-first",), ("base-first", "base-second")])
+def test_fork_report_rejects_inconsistent_workload_sets(
+    tmp_path: Path, legs: tuple[str, ...]
+) -> None:
+    evidence = _write_fork_evidence(tmp_path / "evidence")
+    for leg in legs:
+        _write_results(evidence / leg / "new_workload.json", {"new_workload": 100.0})
+
+    with pytest.raises(ValueError, match="different (benchmarks|workloads)"):
         benchmark_canary.render_fork_report(
             evidence,
             expected_repository=REPOSITORY,
@@ -411,6 +473,50 @@ def test_fork_report_rejects_unexpected_workload_files(tmp_path: Path) -> None:
             expected_run_id=456,
             run_url="https://github.example/run/456",
         )
+
+
+@pytest.mark.parametrize(
+    ("filename", "name", "error"),
+    [
+        ("bad-name.json", "bad-name", "invalid filename"),
+        ("notes.txt", "new_workload", "invalid filename"),
+        ("new_workload.json", "another_workload", "does not match its filename"),
+        ("new_workload.json", "[link](https://example.invalid)", "does not match its filename"),
+    ],
+)
+def test_fork_results_reject_malformed_workload_names(
+    tmp_path: Path, filename: str, name: str, error: str
+) -> None:
+    _write_results(tmp_path / filename, {name: 100.0})
+
+    with pytest.raises(ValueError, match=error):
+        benchmark_canary._validate_fork_results(tmp_path, 3)
+
+
+@pytest.mark.parametrize("count", [0, benchmark_canary.MAX_BENCHMARK_FILES + 1])
+def test_fork_results_reject_invalid_file_counts(tmp_path: Path, count: int) -> None:
+    for index in range(count):
+        (tmp_path / f"workload_{index}.json").write_text("{}")
+
+    with pytest.raises(ValueError, match="invalid file count"):
+        benchmark_canary._validate_fork_results(tmp_path, 3)
+
+
+def test_fork_results_reject_multiple_workloads_in_one_file(tmp_path: Path) -> None:
+    _write_results(tmp_path / "one.json", {"one": 100.0, "two": 200.0})
+
+    with pytest.raises(ValueError, match="does not match its filename"):
+        benchmark_canary._validate_fork_results(tmp_path, 3)
+
+
+def test_fork_results_reject_incomplete_repetitions(tmp_path: Path) -> None:
+    path = _write_results(tmp_path / "one.json", {"one": 100.0})
+    payload = json.loads(path.read_text())
+    payload["benchmarks"].pop(0)
+    path.write_text(json.dumps(payload))
+
+    with pytest.raises(ValueError, match="unexpected repetition count"):
+        benchmark_canary._validate_fork_results(tmp_path, 3)
 
 
 def test_fork_report_rejects_multiline_environment_text(tmp_path: Path) -> None:

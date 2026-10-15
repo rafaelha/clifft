@@ -4,6 +4,26 @@
 With `CLIFFT_ENABLE_CUDA=ON`, `clifft_cuda_bench` adds CPU-versus-CUDA sampling
 and CUDA sampler construction cases. Both use Google Benchmark.
 
+## CPU canary
+
+The PR canary runs every benchmark registered in `clifft_benchmarks.cc`.
+Add a useful workload by implementing and registering it there, using a name
+containing only lowercase letters, digits, and underscores. `DISPLAY_NAMES`
+in `tools/ci/benchmark_canary.py` provides optional report labels; workloads
+without a label appear under their registered name.
+
+Build and run the same suite locally:
+
+```bash
+cmake -S benchmarks -B build/canary -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build/canary --target clifft_benchmarks -j
+./build/canary/clifft_benchmarks \
+    --benchmark_min_time=0.5s --benchmark_repetitions=3
+```
+
+Use `--benchmark_list_tests=true` to inspect the suite or
+`--benchmark_filter='^phase_'` to run only the phase cases.
+
 ## CUDA driver
 
 Build with a CUDA toolkit; running the CUDA cases also requires a compatible

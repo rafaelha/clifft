@@ -26,11 +26,16 @@ CANARY_MIN_TIME = 0.5
 CANARY_WARMUP_TIME = 0.2
 MAX_MANIFEST_BYTES = 16 * 1024
 MAX_RESULT_BYTES = 1024 * 1024
+MAX_BENCHMARK_FILES = 100
 MAX_BENCHMARK_ROWS = 100
 BENCHMARK_SOURCE = Path(__file__).resolve().parents[2] / "benchmarks" / "clifft_benchmarks.cc"
 
+# Optional labels; benchmark registration determines which workloads run.
 DISPLAY_NAMES = {
     "squeeze_parallel_t_8192": "Squeeze 8192 T gates",
+    "phase_measurement_barriers_4096": "Phase pass, 4,096 measurement barriers",
+    "phase_clifford_regions_4096": "Phase pass, 4,096 Clifford regions",
+    "phase_rank_limited_region_32000": "Phase pass, 32,000 rank-limited rotations",
     "compile_plan_cultivation_d5": "Compile/plan cultivation d5",
     "compile_schedule_plan_coherent_d5_r5": "Compile+schedule+plan, coherent QEC d5/r5",
     "schedule_pass_coherent_d5_r5": "Schedule pass, coherent QEC d5/r5",
@@ -293,7 +298,7 @@ def _benchmark_source_links(head_sha: str) -> dict[str, str]:
 
     lines = BENCHMARK_SOURCE.read_text().splitlines()
     function_lines = {}
-    function_pattern = re.compile(r"^void ([a-z0-9_]+)\(benchmark::State& state\) \{$")
+    function_pattern = re.compile(r"^void ([a-z0-9_]+)\(benchmark::State& state(?:, [^)]*)?\) \{$")
     for index, line in enumerate(lines):
         match = function_pattern.match(line)
         if not match:
@@ -305,7 +310,9 @@ def _benchmark_source_links(head_sha: str) -> dict[str, str]:
             comment_index -= 1
         function_lines[match.group(1)] = source_line
 
-    registration_pattern = re.compile(r'^BENCHMARK\(([a-z0-9_]+)\)->Name\("([^"]+)"\);$')
+    registration_pattern = re.compile(
+        r'^BENCHMARK(?:_CAPTURE)?\(([a-z0-9_]+)(?:, [^)]*)?\)->Name\("([^"]+)"\);$'
+    )
     links = {}
     for line in lines:
         match = registration_pattern.match(line)
@@ -598,25 +605,23 @@ def _load_fork_manifest(
 
 
 def _validate_fork_results(path: Path, repetitions: int) -> None:
-    expected_names = set(DISPLAY_NAMES)
-    expected_files = {f"{name}.json" for name in expected_names}
     if path.is_symlink() or not path.is_dir():
         raise ValueError(f"benchmark evidence directory is missing: {path.name}")
     entries = list(path.iterdir())
-    if {entry.name for entry in entries} != expected_files:
-        raise ValueError(f"benchmark evidence has an unexpected file set: {path.name}")
+    if not 1 <= len(entries) <= MAX_BENCHMARK_FILES:
+        raise ValueError(f"benchmark evidence has an invalid file count: {path.name}")
     for result_path in entries:
+        if not re.fullmatch(r"[a-z0-9_]+\.json", result_path.name):
+            raise ValueError(f"benchmark evidence has an invalid filename: {result_path.name}")
         if result_path.is_symlink() or not result_path.is_file():
             raise ValueError(f"benchmark evidence is not a regular file: {result_path.name}")
         if result_path.stat().st_size > MAX_RESULT_BYTES:
             raise ValueError(f"benchmark evidence is too large: {result_path.name}")
-
-    estimates = parse_google_benchmarks(path)
-    if set(estimates) != expected_names:
-        raise ValueError(f"benchmark evidence has an unexpected workload set: {path.name}")
-    for name, estimate in estimates.items():
-        if estimate.sample_count != repetitions:
-            raise ValueError(f"benchmark {name!r} has an unexpected repetition count")
+        estimates = parse_google_benchmarks(result_path)
+        if set(estimates) != {result_path.stem}:
+            raise ValueError(f"benchmark name does not match its filename: {result_path.name}")
+        if estimates[result_path.stem].sample_count != repetitions:
+            raise ValueError(f"benchmark {result_path.stem!r} has an unexpected repetition count")
 
 
 def render_fork_report(
@@ -651,7 +656,7 @@ def render_fork_report(
         _validate_fork_results(result_directory, CANARY_REPETITIONS)
     comparisons, added, removed = compare_runs(*result_directories)
     if added or removed:
-        raise ValueError("fork benchmark evidence changed the trusted workload set")
+        raise ValueError("fork benchmark runs contain different workloads")
     return render_report(
         comparisons,
         base_label=expected_base_label,

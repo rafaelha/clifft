@@ -147,6 +147,8 @@ void phase_clifford_regions(benchmark::State& state, int64_t size) {
     }
 }
 
+// Forty independent axes repeatedly exhaust the default 32-variable cap,
+// exposing collection costs across many rank-limited regions.
 void phase_rank_limited_region(benchmark::State& state, int64_t size) {
     HirModule original(40, static_cast<size_t>(size));
     for (int64_t i = 0; i < size; ++i) {
@@ -419,15 +421,8 @@ void sample_exp_val(benchmark::State& state) {
 
 BENCHMARK(squeeze_parallel_t)->Name("squeeze_parallel_t_8192");
 #ifdef CLIFFT_BENCHMARK_HAS_PHASE_POLYNOMIAL
-BENCHMARK_CAPTURE(phase_measurement_barriers, 256, 256)->Name("phase_measurement_barriers_256");
-BENCHMARK_CAPTURE(phase_measurement_barriers, 1024, 1024)->Name("phase_measurement_barriers_1024");
 BENCHMARK_CAPTURE(phase_measurement_barriers, 4096, 4096)->Name("phase_measurement_barriers_4096");
-BENCHMARK_CAPTURE(phase_clifford_regions, 256, 256)->Name("phase_clifford_regions_256");
-BENCHMARK_CAPTURE(phase_clifford_regions, 1024, 1024)->Name("phase_clifford_regions_1024");
 BENCHMARK_CAPTURE(phase_clifford_regions, 4096, 4096)->Name("phase_clifford_regions_4096");
-BENCHMARK_CAPTURE(phase_rank_limited_region, 2000, 2000)->Name("phase_rank_limited_region_2000");
-BENCHMARK_CAPTURE(phase_rank_limited_region, 4096, 4096)->Name("phase_rank_limited_region_4096");
-BENCHMARK_CAPTURE(phase_rank_limited_region, 16384, 16384)->Name("phase_rank_limited_region_16384");
 BENCHMARK_CAPTURE(phase_rank_limited_region, 32000, 32000)->Name("phase_rank_limited_region_32000");
 #endif
 BENCHMARK(compile_plan_cultivation_d5)->Name("compile_plan_cultivation_d5");

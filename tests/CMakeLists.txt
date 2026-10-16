@@ -28,8 +28,10 @@ add_executable(clifft_tests
     test_sampling_kernels.cc
     test_interleaved_batch_kernels.cc
     test_optimizer.cc
+    test_known_stabilizers.cc
     test_phase_polynomial.cc
     test_phase_polynomial_pass.cc
+    test_wide_phase_region.cc
     test_rotation_simplification_pass.cc
     test_active_width_analysis.cc
     test_source_map.cc

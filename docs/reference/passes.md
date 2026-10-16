@@ -13,13 +13,13 @@ The default HIR pipeline:
 
 These passes are complementary; the default manager runs them in the order shown.
 
-Use `clifft.default_hir_pass_manager()` to get these defaults. To configure a
-default pass while retaining the rest of the pipeline:
+Use `clifft.default_hir_pass_manager()` to get these defaults. To opt into
+128-variable phase collection while retaining the rest of the pipeline:
 
 ```python
 import clifft
 
-phase = clifft.PhasePolynomialPass(max_variables=64)
+phase = clifft.PhasePolynomialPass(max_variables=128)
 pm = clifft.default_hir_pass_manager(overrides=[phase])
 program = clifft.compile("H 0\nT 0\nM 0", hir_passes=pm)
 ```
@@ -74,6 +74,21 @@ pipeline and does not currently accept custom pass managers. See
 [Leakage and Loss](../guide/leakage-and-loss.md#why-there-is-no-compile-step)
 for how continuations are compiled and resumed.
 
+## Constraints from Measurement and Feedback
+
+`PhasePolynomialPass` and `RotationSimplificationPass` recover fixed-sign
+stabilizer constraints through measurement and feedback, including after earlier
+non-Clifford work. Constraints must hold for every trajectory and the noiseless
+reference; postselection supplies no additional constraints. See
+[Optimization for Simulation](../theory/stabilizer-optimization.md) for the
+analysis and reduction principles.
+
+These are static rewrites shared by all shots. Unresolved affine signs do not
+produce conditional rewrites or per-history specialization. To disable recovered
+constraint rewrites, omit both passes from a custom `HirPassManager`, or use
+`hir_passes=None` to disable all HIR optimization. Equivalent plans preserve
+output distributions but do not guarantee historical fixed-seed samples.
+
 ---
 
 ## HIR Passes
@@ -102,10 +117,35 @@ all constraints; postselection supplies none. Use this pass only on complete
 circuits with an all-zero input; prior scheduling across noise causes it to skip
 the circuit.
 
-`max_variables` limits how many independent phase variables the pass analyzes
-together (default `32`, range `0` to `64`; zero disables it). Circuits can have
-more qubits than this limit. Raising it may uncover more simplifications but
-increases compilation cost. The pass rejects rewrites that increase T count
+`max_variables` is a hard ceiling on independent phase variables analyzed
+together (default `64`, range `0` to `128`; zero disables the pass). Circuits
+can have more physical qubits than this limit. Collection starts at
+`min(32, max_variables)`, then tries a complete region up to 64 variables.
+`max_variables=32` disables expansion. Fixed-constraint recovery through
+measurement and feedback remains enabled with the default 64-variable ceiling.
+
+Set `max_variables=128` explicitly to enable wider collection. If the 64-variable
+attempt is capped, the pass can try a complete contiguous commuting T region
+using two-word coordinates. This optional path keeps an
+ordinary-basis candidate and tries one basis derived from the final Clifford
+tableau. It crosses no measurement, feedback, noise, or instrument boundaries.
+Synthesis still supports at most 64 core variables and searches at most 128 odd
+parity terms. A signature-rank precheck rejects unsupported cores before cubic
+polynomial expansion.
+
+`max_wide_work` (default `50000000`) bounds deterministic work units shared by
+all optional attempts and both basis candidates in one pass. The units include
+polynomial updates, charged row operations, and an allowance for synthesis.
+Work units are not a wall-clock limit; their cost depends on the polynomial.
+Wide search can add substantial compilation time even when it finds no benefit,
+so it is disabled by default.
+`max_wide_terms` (default `200000`) bounds each polynomial's size. Setting either
+to zero disables the optional path. Exhaustion retains a completed valid
+candidate or falls back to the ordinary smaller-region policy. These limits
+control compiler effort and do not change the execution representation.
+
+Larger complete regions can uncover additional reductions, at extra compilation
+cost. The pass rejects rewrites that increase T count
 or peak active width; at unchanged width, estimated sampling work must not
 increase either. Actual sampling speedups depend on the complete optimization
 pipeline. Equivalent rewrites preserve sampling distributions but can change
@@ -113,6 +153,9 @@ samples for a fixed random seed.
 
 After a run, `input_t_count`, `output_t_count`, `blocks_reduced` and
 `pauli_pullbacks` describe the accepted rewrite; `applied` reports acceptance.
+`wide_attempts`, `wide_rewrites`, `wide_work`, and `wide_budget_exhausted` report
+the optional search, including rejected candidates; `wide_rewrites` counts only
+accepted rewrites. All counters reset on each run.
 {% endif %}
 
 {% if p['name'] == 'RotationSimplificationPass' %}

@@ -48,6 +48,13 @@ gates and express the remaining rotations, measurements, noise, feedback, and
 outputs in the Heisenberg frame. HIR passes then simplify this representation
 using Pauli algebra and dataflow. Neither stage fixes a sampling data layout.
 
+The phase-polynomial and rotation-simplification passes recover stabilizer
+constraints through measurement and feedback, then use only fixed-sign
+constraints to justify static rewrites shared by all shots. This analysis stays
+local to compilation; it adds no conditional execution or runtime analysis.
+See [Optimization for Simulation](stabilizer-optimization.md) for the principles
+and [Optimization Passes](../reference/passes.md) for configuration and limits.
+
 ### Semantic Planning
 
 The planner chooses active stabilizer coordinates, resolves basis changes,

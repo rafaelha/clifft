@@ -1,6 +1,6 @@
 # Native Profiling Tools
 
-Three native C++ harnesses isolate production compile, sampling, and
+Native C++ harnesses isolate production compile, sampling, and
 strong-simulation costs for `perf` or another sampling profiler:
 
 - `profile_compile` repeatedly runs parse, trace and HIR optimization,
@@ -22,12 +22,13 @@ cmake -B build-profile \
 cmake --build build-profile --target profile_compile profile_probability profile_sample -j$(nproc)
 ```
 
-The equivalent build command is `just profile-build`.
+`just profile-build` builds the timing harnesses.
 
 ## Compilation
 
-`profile_compile` reports parse, trace and optimization, plan, prepare, and
-total time separately. File I/O is outside the timed loop.
+`profile_compile` runs `default_hir_pass_manager()` and reports parse, trace,
+optimization, scheduling, plan, prepare, and total time separately. File I/O
+is outside the timed loop.
 
 ```bash
 CLIFFT_COMPILE_ITERATIONS=200 \
@@ -135,6 +136,17 @@ changed with `--batches`; scalar (`1`) and `auto` are always required. Use
 `active_width5_sustained.stim` have the same peak active width but different
 coefficient-state lifetimes. They exercise the automatic work cutoff without
 assuming that peak width alone predicts whether batching is profitable.
+
+## External circuit fixtures
+
+The Merlin BT27 and direct-X BT81 fixture headers contain their pinned upstream
+revision and construction recipes. BT81's added logical X measurements use no
+postselection or inverse logical scoring gate. Keep the original record order
+when regenerating either fixture.
+
+Use matching Release build settings and CPU affinity when comparing compiler
+revisions. Large unreduced fixtures should be inspected with `trace`, HIR passes,
+and `active_width_trace` without constructing an exponential statevector.
 
 ## Probability queries
 

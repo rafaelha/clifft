@@ -345,6 +345,13 @@ class PlanSourceMap {
     std::vector<uint32_t> offsets_{0};
 };
 
+// A missing value means the symbolic frame could not prove a constant parity;
+// amplitude-dependent branches may still be deterministic.
+struct SyndromeConstants {
+    std::vector<std::optional<bool>> detectors;
+    std::vector<std::optional<bool>> observables;
+};
+
 struct SamplingPlan {
     uint32_t num_qubits = 0;
 
@@ -363,6 +370,10 @@ struct SamplingPlan {
     uint32_t num_detectors = 0;
     uint32_t num_observables = 0;
     uint32_t num_exp_vals = 0;
+
+    // Reference computation requests this analysis before executable lowering.
+    // Values include expected-parity offsets and ignore postselection assumptions.
+    std::optional<SyndromeConstants> syndrome_constants;
 
     // Present only for pure-state plans eligible for exact final-state
     // queries. It maps the final stabilizer coordinates used by the action

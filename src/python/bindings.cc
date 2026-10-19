@@ -942,7 +942,7 @@ NB_MODULE(_clifft_core, m) {
         m, "RemoveNoisePass",
         "Strips all stochastic noise and readout noise ops from the HIR.\n"
         "Not included in the default pass list. Used internally by\n"
-        "compute_reference_syndrome() for noiseless reference shots.")
+        "compute_reference_syndrome() for noiseless reference analysis.")
         .def(nb::init<>());
 
     nb::class_<clifft::DropNonUnitaryPass, clifft::HirPass>(
@@ -966,6 +966,10 @@ NB_MODULE(_clifft_core, m) {
         },
         nb::arg("hir"),
         "Compute noiseless reference syndrome for an HirModule.\n\n"
+        "Strips stochastic and readout noise, optimizes non-Clifford operations,\n"
+        "and extracts symbolically proven constant parities without sampling.\n"
+        "Coherent rotations remain in the reference circuit. Raises ValueError\n"
+        "naming the first detector or observable that cannot be proved deterministic.\n"
         "Returns a dict with 'detectors' and 'observables' lists.");
 
     nb::class_<clifft::HirPassManager>(m, "HirPassManager",
@@ -1178,9 +1182,9 @@ NB_MODULE(_clifft_core, m) {
         "Compile a quantum circuit string to an executable program.\n\n"
         "Compilation plans optimized HIR and prepares it for Clifft's sampler.\n"
         "\n"
-        "When normalize_syndromes=True, a noiseless reference shot is\n"
-        "executed internally to extract expected detector and observable\n"
-        "parities. Detectors and observables are then XOR-normalized so\n"
+        "When normalize_syndromes=True, the noise-stripped circuit must have\n"
+        "symbolically provable constant detector and observable parities, or\n"
+        "compilation raises ValueError. These constants are XOR-normalized so\n"
         "that 0 means 'matches noiseless reference' and 1 means 'error'.\n"
         "\n"
         "Args:\n"
@@ -1190,8 +1194,8 @@ NB_MODULE(_clifft_core, m) {
         "        that abort the shot early if their parity is non-zero.\n"
         "    expected_detectors: Optional noiseless reference parities for detectors.\n"
         "    expected_observables: Optional noiseless reference parities for observables.\n"
-        "    normalize_syndromes: If True, auto-compute reference parities from a\n"
-        "        noiseless reference shot (mutually exclusive with explicit parities).\n"
+        "    normalize_syndromes: If True, prove and extract noiseless reference\n"
+        "        parities (mutually exclusive with explicit parities).\n"
         "    hir_passes: Optional HirPassManager to run on the HIR before lowering.\n");
 
     m.def(

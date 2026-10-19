@@ -50,7 +50,10 @@ OwnedPlanOptions build_plan_options(const HirModule& hir, const PlantedCircuit& 
     if (hir.num_detectors == 0 && hir.num_observables == 0) {
         return owned;
     }
-    owned.reference = compute_reference_syndrome(hir);
+    // Scaffolds include random output parities. Explicit offsets keep both
+    // independent evaluators on the same convention without a sampled reference.
+    owned.reference.detectors.assign(hir.num_detectors, 0);
+    owned.reference.observables.assign(hir.num_observables, 1);
     if (postselect_checks && !planted.check_detectors.empty()) {
         owned.postselection_mask.assign(hir.num_detectors, 0);
         for (uint32_t det : planted.check_detectors) {

@@ -314,9 +314,9 @@ def compile(
     Ordinary compilation runs parse -> trace -> [HIR optimize], then plans and
     prepares the result as a reusable sampling program.
 
-    When ``normalize_syndromes=True``, a noiseless reference shot is
-    executed internally to extract expected detector and observable
-    parities. Detectors and observables are then XOR-normalized so
+    When ``normalize_syndromes=True``, the noise-stripped circuit must have
+    symbolically provable constant detector and observable parities, or
+    compilation raises ``ValueError``. These constants are XOR-normalized so
     that 0 means 'matches noiseless reference' and 1 means 'error'.
 
     Args:
@@ -326,8 +326,9 @@ def compile(
             that abort the shot early if their parity is non-zero.
         expected_detectors: Optional noiseless reference parities for detectors.
         expected_observables: Optional noiseless reference parities for observables.
-        normalize_syndromes: If True, auto-compute reference parities from a
-            noiseless reference shot (mutually exclusive with explicit parities).
+        normalize_syndromes: If True, prove and extract noiseless reference
+            parities (mutually exclusive with explicit parities). Coherent
+            rotations remain in the reference circuit.
         hir_passes: HirPassManager to run on the HIR before lowering.
             Defaults to ``default_hir_pass_manager()``. Pass ``None`` to skip.
         input_format: ``"stim"`` for Clifft's Stim-compatible syntax or

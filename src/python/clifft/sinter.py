@@ -39,7 +39,10 @@ class PerfectionistSampler(sinter.Sampler):
     with no detectors, an absent or empty mask is accepted.
 
     Detector and observable bits are normalized against the noiseless
-    reference. On surviving shots, any observable flip counts as one error,
+    reference. Compilation raises ``ValueError`` if any noiseless detector or
+    observable cannot be proved deterministic. This adapter does not expose
+    explicit reference overrides; use the native Clifft API for those tasks.
+    On surviving shots, any observable flip counts as one error,
     using zero observable prediction. Observable postselection and arbitrary
     decoders are unsupported. Leave Sinter's ``count_detection_events`` and
     ``count_observable_error_combos`` options false; Sinter rejects these

@@ -10,7 +10,7 @@ namespace clifft {
 ///
 /// This pass is NOT included in the default pass list. It is used
 /// internally by compute_reference_syndrome() to produce a clean
-/// noiseless copy of the circuit for reference-shot extraction.
+/// noiseless copy of the circuit for reference-parity analysis.
 class RemoveNoisePass : public HirPass {
   public:
     void run(HirModule& hir) override;

@@ -418,6 +418,11 @@ void SamplingPlan::validate() const {
     if (source_map.has_value() && !source_map->is_valid_for(actions.size())) {
         invalid_plan("source map does not match the action stream");
     }
+    if (syndrome_constants.has_value() &&
+        (syndrome_constants->detectors.size() != num_detectors ||
+         syndrome_constants->observables.size() != num_observables)) {
+        invalid_plan("syndrome constants do not match the output counts");
+    }
     if (presampled_noise_sites.size() > std::numeric_limits<uint32_t>::max() ||
         instrument_distributions.size() > std::numeric_limits<uint32_t>::max()) {
         invalid_plan("noise or instrument site count exceeds uint32 range");

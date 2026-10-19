@@ -537,6 +537,11 @@ SamplingPlan plan_sampling(const HirModule& hir, SamplingPlanOptions options) {
     plan.num_detectors = hir.num_detectors;
     plan.num_observables = hir.num_observables;
     plan.num_exp_vals = hir.num_exp_vals;
+    if (options.retain_syndrome_constants) {
+        plan.syndrome_constants.emplace();
+        plan.syndrome_constants->detectors.resize(hir.num_detectors);
+        plan.syndrome_constants->observables.resize(hir.num_observables);
+    }
     if (options.retain_source_map) {
         if (hir.source_map.size() != hir.ops.size()) {
             throw std::invalid_argument(
@@ -711,6 +716,13 @@ SamplingPlan plan_sampling(const HirModule& hir, SamplingPlanOptions options) {
                     (void)require_record(RecordSlot{record}, i);
                 }
                 const bool expected = option_bit(options.expected_detectors, detector_index);
+                if (plan.syndrome_constants.has_value()) {
+                    const AffineBool value = record_parity(targets, i);
+                    if (value.terms().empty()) {
+                        plan.syndrome_constants->detectors[detector_index] =
+                            value.constant() != expected;
+                    }
+                }
                 const bool postselected = option_bit(options.postselection_mask, detector_index);
                 append_action(
                     plan,
@@ -787,6 +799,9 @@ SamplingPlan plan_sampling(const HirModule& hir, SamplingPlanOptions options) {
     for (uint32_t observable = 0; observable < observables.size(); ++observable) {
         PendingObservable& pending = observables[observable];
         pending.historical_value ^= option_bit(options.expected_observables, observable);
+        if (plan.syndrome_constants.has_value() && pending.historical_value.terms().empty()) {
+            plan.syndrome_constants->observables[observable] = pending.historical_value.constant();
+        }
         canonicalize_record_snapshots(pending.record_snapshots);
         const bool records_are_current =
             std::ranges::all_of(pending.record_snapshots, [&](const auto& reference) {

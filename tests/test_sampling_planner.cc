@@ -109,6 +109,59 @@ TEST_CASE("Sampling planner validates detector records before XOR cancellation")
     }
 }
 
+TEST_CASE("Sampling planner proves complete syndrome parities independently of postselection") {
+    for (const char* preparation : {"H 0", "H 0\nT 0"}) {
+        CAPTURE(preparation);
+        const HirModule hir = clifft::trace(clifft::parse(std::string(preparation) + R"(
+            MX 0
+            Z 0
+            MX 0
+            DETECTOR rec[-1] rec[-2]
+            DETECTOR rec[-1]
+            OBSERVABLE_INCLUDE(0) rec[-2]
+            OBSERVABLE_INCLUDE(0) rec[-1]
+            OBSERVABLE_INCLUDE(2) rec[-1]
+        )"));
+        REQUIRE_FALSE(plan_sampling(hir).syndrome_constants.has_value());
+        const std::array<uint8_t, 2> postselection{1, 1};
+        const std::array<uint8_t, 2> expected_detectors{1, 0};
+        const std::array<uint8_t, 3> expected_observables{1, 1, 0};
+        const auto plan = plan_sampling(hir, {.postselection_mask = postselection,
+                                              .expected_detectors = expected_detectors,
+                                              .expected_observables = expected_observables,
+                                              .retain_syndrome_constants = true});
+        REQUIRE(plan.syndrome_constants.has_value());
+        const auto& constants = *plan.syndrome_constants;
+        REQUIRE(constants.detectors[0] == false);
+        REQUIRE(constants.observables[0] == false);
+        REQUIRE(constants.observables[1] == true);
+        if (std::string_view(preparation) == "H 0\nT 0") {
+            REQUIRE_FALSE(constants.detectors[1].has_value());
+            REQUIRE_FALSE(constants.observables[2].has_value());
+        } else {
+            REQUIRE(constants.detectors[1] == true);
+            REQUIRE(constants.observables[2] == true);
+        }
+        REQUIRE_NOTHROW(plan.validate());
+    }
+}
+
+TEST_CASE("Sampling planner cancels dormant measurement branches in syndrome constants") {
+    const auto plan = plan_sampling(clifft::trace(clifft::parse(R"(
+        H 0
+        M 0
+        DETECTOR rec[-1]
+        M 0
+        DETECTOR rec[-2] rec[-1]
+        OBSERVABLE_INCLUDE(0) rec[-2]
+        OBSERVABLE_INCLUDE(0) rec[-1]
+    )")),
+                                    {.retain_syndrome_constants = true});
+    REQUIRE_FALSE(plan.syndrome_constants->detectors[0].has_value());
+    REQUIRE(plan.syndrome_constants->detectors[1] == false);
+    REQUIRE(plan.syndrome_constants->observables[0] == false);
+}
+
 TEST_CASE("Sampling planner promotes rotations and keeps later active support") {
     HirModule hir(1, 2);
     clifft::test::append_tgate(hir, X(0), 0, false);
@@ -593,23 +646,31 @@ TEST_CASE("Sampling planner falls back for historical observable records") {
     const SamplingPlan plan = plan_sampling(clifft::trace(clifft::parse(R"(
         X 0
         M 0
+        DETECTOR rec[-1]
         OBSERVABLE_INCLUDE(0) rec[-1]
         OBSERVABLE_INCLUDE(2) rec[-1]
         READOUT_NOISE(1) rec[-1]
+        DETECTOR rec[-1]
         OBSERVABLE_INCLUDE(1) rec[-1]
         OBSERVABLE_INCLUDE(2) rec[-1]
-    )")));
+    )")),
+                                            {.retain_syndrome_constants = true});
 
-    REQUIRE(plan.actions.size() == 5);
-    const auto& readout = action_as<ApplyReadoutNoise>(plan, 1);
-    const auto& before = action_as<WriteObservable>(plan, 2);
-    const auto& after = action_as<WriteObservable>(plan, 3);
-    const auto& straddled = action_as<WriteObservable>(plan, 4);
+    REQUIRE(plan.actions.size() == 7);
+    const auto& readout = action_as<ApplyReadoutNoise>(plan, 2);
+    const auto& before = action_as<WriteObservable>(plan, 4);
+    const auto& after = action_as<WriteObservable>(plan, 5);
+    const auto& straddled = action_as<WriteObservable>(plan, 6);
     REQUIRE(std::get<AffineBool>(before.outcome) == AffineBool(true));
     REQUIRE(std::holds_alternative<RecordParity>(after.outcome));
     REQUIRE(std::get<RecordParity>(after.outcome).records() ==
             std::vector<RecordSlot>{RecordSlot{0}});
     REQUIRE(std::get<AffineBool>(straddled.outcome) == AffineBool::symbol(readout.flip));
+    REQUIRE(plan.syndrome_constants->detectors[0] == true);
+    REQUIRE_FALSE(plan.syndrome_constants->detectors[1].has_value());
+    REQUIRE(plan.syndrome_constants->observables[0] == true);
+    REQUIRE_FALSE(plan.syndrome_constants->observables[1].has_value());
+    REQUIRE_FALSE(plan.syndrome_constants->observables[2].has_value());
 }
 
 TEST_CASE("Sampling planner cancels observable snapshots before freshness testing") {

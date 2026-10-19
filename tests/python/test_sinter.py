@@ -173,6 +173,25 @@ def test_no_detectors_accepts_absent_mask() -> None:
     assert (stats.shots, stats.errors, stats.discards) == (5, 0, 0)
 
 
+@pytest.mark.parametrize(
+    ("annotation", "offender"),
+    [("DETECTOR rec[-1]", "detector 0"), ("OBSERVABLE_INCLUDE(2) rec[-1]", "observable 2")],
+)
+def test_reject_unproven_noiseless_reference(annotation: str, offender: str) -> None:
+    task = all_detector_task("H 0\nM 0\n" + annotation)
+    with pytest.raises(ValueError, match=f"Cannot prove noiseless {offender} deterministic"):
+        PerfectionistSampler().compiled_sampler_for_task(task)
+
+
+def test_random_measurements_with_fixed_parities(sampler: PerfectionistSampler) -> None:
+    task = all_detector_task(
+        "H 0\nM 0\nX 0\nM 0\nDETECTOR rec[-2] rec[-1]\n"
+        "OBSERVABLE_INCLUDE(0) rec[-2]\nOBSERVABLE_INCLUDE(0) rec[-1]"
+    )
+    stats = sampler.compiled_sampler_for_task(task).sample(131)
+    assert (stats.shots, stats.errors, stats.discards) == (131, 0, 0)
+
+
 def test_absent_mask_selects_every_detector(sampler: PerfectionistSampler) -> None:
     task = sinter.Task(
         circuit=stim.Circuit(

@@ -84,6 +84,12 @@ postselection, observable postselection, and arbitrary decoders are not
 supported. For non-Clifford circuits, use
 [Clifft's native sampling workflows](simulation.md).
 
+Every detector and observable must have a provably deterministic noiseless
+parity. The adapter raises `ValueError` when this cannot be established, rather
+than choosing a sampled reference. It does not expose explicit reference
+overrides; use the native API's `expected_detectors` and `expected_observables`
+when supplying a reference from an ideal circuit.
+
 Start with the defaults: each Sinter worker uses one Clifft thread and up to
 1024 packed shots. For longer runs, try `PerfectionistSampler(batch_size=2048)`
 with `sinter.collect(max_batch_size=16384, ...)` and compare the complete run

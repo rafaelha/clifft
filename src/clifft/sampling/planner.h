@@ -18,6 +18,8 @@ struct SamplingPlanOptions {
     // complete parallel source map. Sampling and ordinary lowering do not
     // require or retain it.
     bool retain_source_map = false;
+    // Avoid expanding detector parities during ordinary noisy compilation.
+    bool retain_syndrome_constants = false;
 };
 
 // EXP_VAL probes become plan actions. Exact final-state queries instead retain

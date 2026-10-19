@@ -154,9 +154,28 @@ assert not result.observables.any()
 ```
 
 `normalize_syndromes=True` cannot be combined with `expected_detectors` or
-`expected_observables`. Most users should prefer automatic normalization;
-callers that need to inspect the reference directly can use
+`expected_observables`. Automatic normalization requires every detector and
+observable parity to be provably constant after stochastic and readout noise
+are removed. Individual measurements may be random if their randomness cancels
+in those parities. The compiler optimizes the stripped copy and derives the
+constants without sampling. Callers that need to inspect the reference can use
 [`compute_reference_syndrome()`](../reference/python-api.md#clifft.compute_reference_syndrome).
+
+If the symbolic analysis cannot prove a constant parity, both APIs raise
+`ValueError` naming the first affected detector or observable index. This check
+is conservative: some deterministic circuits require amplitude information that
+the symbolic frame does not retain. For such circuits, supply known
+`expected_detectors` and `expected_observables` with automatic normalization
+disabled. Ordinary sampling and explicit reference values do not require this
+proof.
+
+For example, the `cultivation_d5.stim` test fixture currently requires explicit
+reference parities because the symbolic analysis cannot prove all of its checks.
+Its intended ideal detector and observable parities are all zero.
+
+Coherent rotations remain in the reference circuit. When rotations model
+coherent errors, compute explicit reference values from the intended ideal
+circuit and supply them when compiling the circuit with errors.
 
 ### Expectation values
 

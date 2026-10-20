@@ -184,10 +184,11 @@ def define_env(env: Any) -> None:
             "summary": "Strips all noise from the HIR.",
             "detail": (
                 "Removes all stochastic noise and readout noise ops, and clears "
-                "the noise_sites, readout_noise side-tables and source_map. "
+                "the noise_sites and readout_noise side-tables while filtering "
+                "source provenance when available. "
                 "Not included in the default pipeline. Used internally by "
                 "compute_reference_syndrome() to produce a noiseless circuit copy "
-                "for reference-shot extraction."
+                "for symbolic reference-parity analysis."
             ),
         },
         {

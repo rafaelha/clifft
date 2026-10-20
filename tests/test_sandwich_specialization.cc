@@ -1,6 +1,8 @@
 // Checks the sandwich projection and record ops: their HIR representation,
 // how other passes treat them, the pass that replaces recognized T-sandwich
-// blocks with them, and the sampling plans built from the result.
+// blocks with them, and the sampling plans built from the result. Plans are
+// compared against the unspecialized plan of the same module by replaying
+// record rows under one fixed noise realization.
 
 #include "clifft/circuit/parser.h"
 #include "clifft/frontend/frontend.h"
@@ -11,6 +13,10 @@
 #include "clifft/optimizer/peephole.h"
 #include "clifft/optimizer/sandwich_blocks.h"
 #include "clifft/optimizer/sandwich_specialization_pass.h"
+#include "clifft/sampling/executable_plan.h"
+#include "clifft/sampling/executor.h"
+#include "clifft/sampling/plan.h"
+#include "clifft/sampling/planner.h"
 #include "clifft/util/hir_introspection.h"
 #include "clifft/util/symplectic.h"
 
@@ -18,9 +24,12 @@
 
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <span>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -28,6 +37,10 @@
 
 using namespace clifft;
 using Catch::Matchers::ContainsSubstring;
+using sampling::ExecutablePlan;
+using sampling::Executor;
+using sampling::ReplayResult;
+using sampling::SamplingPlan;
 
 namespace {
 
@@ -53,7 +66,7 @@ SandwichKey uniform_key(size_t width, bool flip, bool support) {
                        std::vector<uint8_t>(width, support ? 1 : 0)};
 }
 
-HirModule specialized(const HirModule& hir, std::vector<SandwichKey> keys) {
+HirModule specialize(const HirModule& hir, std::vector<SandwichKey> keys) {
     HirModule result = hir;
     SandwichSpecializationPass pass(std::move(keys));
     pass.run(result);
@@ -73,6 +86,10 @@ PauliMaskHandle claim_axis(HirModule& hir, uint64_t destab, uint64_t stab, bool 
     });
 }
 
+void fill_x0(MutablePauliMaskView slot) {
+    slot.x().words[0] = test::X(0);
+}
+
 // One site whose axes are Z0 and X1, a projection on X0 and a visible
 // record of it. Extra mask capacity lets callers append more ops.
 HirModule projection_module(size_t extra_masks = 0) {
@@ -84,10 +101,8 @@ HirModule projection_module(size_t extra_masks = 0) {
     site.check_record = 0;
     hir.sandwich_sites.push_back(site);
     hir.num_measurements = 1;
-    hir.append_sandwich_projection(
-        SandwichSiteIdx{0}, [](MutablePauliMaskView slot) { slot.x().words[0] = test::X(0); });
-    hir.append_sandwich_record(MeasRecordIdx{0}, SandwichSiteIdx{0}, false,
-                               [](MutablePauliMaskView slot) { slot.x().words[0] = test::X(0); });
+    hir.append_sandwich_projection(SandwichSiteIdx{0}, fill_x0);
+    hir.append_sandwich_record(MeasRecordIdx{0}, SandwichSiteIdx{0}, false, fill_x0);
     return hir;
 }
 
@@ -95,12 +110,227 @@ std::string format_op(const HirModule& hir, size_t index) {
     return format_hir_op(hir.ops[index], hir.mask_view(hir.ops[index]));
 }
 
+// One fired Pauli channel. `channel` indexes the site's channel list.
+struct FiredChannel {
+    uint32_t site = 0;
+    uint32_t channel = 0;
+};
+
+PauliMaskView channel_mask(const HirModule& hir, const FiredChannel& fired) {
+    return hir.noise_channel_masks.at(hir.noise_sites[fired.site].channels[fired.channel].mask);
+}
+
+// The error a realization has accumulated at some point of an HIR: the fired
+// channels plus the feedback they trigger by flipping the records that
+// conditional Paulis read. The planner's frame carries the same noise terms.
+class AccumulatedError {
+  public:
+    explicit AccumulatedError(const HirModule& hir)
+        : x_(hir.pauli_masks.num_words(), 0),
+          z_(hir.pauli_masks.num_words(), 0),
+          record_flips_(static_cast<size_t>(hir.num_measurements) + hir.num_hidden_measurements,
+                        0) {}
+
+    void advance(const HirModule& hir, const HeisenbergOp& op,
+                 const std::vector<FiredChannel>& fired) {
+        switch (op.op_type()) {
+            case OpType::NOISE:
+                for (const FiredChannel& channel : fired) {
+                    if (channel.site == static_cast<uint32_t>(op.noise_site_idx())) {
+                        apply(channel_mask(hir, channel));
+                    }
+                }
+                break;
+            case OpType::MEASURE:
+                record_flips_.at(static_cast<uint32_t>(op.meas_record_idx())) =
+                    anticommutes(hir.mask_view(op)) ? 1 : 0;
+                break;
+            case OpType::SANDWICH_RECORD:
+                record_flips_.at(static_cast<uint32_t>(op.sandwich_record_idx())) =
+                    anticommutes(hir.mask_view(op)) ? 1 : 0;
+                break;
+            case OpType::CONDITIONAL_PAULI:
+                if (record_flips_.at(static_cast<uint32_t>(op.controlling_meas())) != 0) {
+                    apply(hir.mask_view(op));
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    [[nodiscard]] bool anticommutes(PauliMaskView mask) const {
+        return anti_commute(MaskView{x_}, MaskView{z_}, mask.x(), mask.z());
+    }
+
+  private:
+    void apply(PauliMaskView mask) {
+        MutableMaskView{x_}.xor_with(mask.x());
+        MutableMaskView{z_}.xor_with(mask.z());
+    }
+
+    std::vector<uint64_t> x_;
+    std::vector<uint64_t> z_;
+    std::vector<uint8_t> record_flips_;
+};
+
+// The class of a realization: per block, the axes the accumulated error
+// reverses at its opening, and the axes the product of its fired interior
+// channels anticommutes with (interior feedback commutes with every axis).
+// Feedback can carry an error onto an axis it does not touch directly, so
+// the flips come from the accumulated error rather than from the fired
+// channels alone. Each block is keyed in the module with the earlier blocks
+// specialized, because their corrections conjugate the later masks the
+// planner reads. Noise sites keep their indices through the pass.
+std::vector<SandwichKey> keys_for(const HirModule& hir, const std::vector<FiredChannel>& fired) {
+    const std::vector<SandwichBlock> original = find_sandwich_blocks(hir);
+    std::vector<SandwichKey> keys;
+    for (size_t b = 0; b < original.size(); ++b) {
+        const HirModule current = keys.empty() ? hir : specialize(hir, keys);
+        const SandwichBlock block = find_sandwich_blocks(current).at(0);
+        REQUIRE(block.opening_ops.size() == original[b].opening_ops.size());
+        const size_t width = block.opening_ops.size();
+        SandwichKey key{std::vector<uint8_t>(width, 0), std::vector<uint8_t>(width, 0)};
+
+        AccumulatedError error(current);
+        for (size_t i = 0; i < block.opening_ops.front(); ++i) {
+            error.advance(current, current.ops[i], fired);
+        }
+        for (size_t j = 0; j < width; ++j) {
+            key.axis_flip[j] =
+                error.anticommutes(current.mask_view(current.ops[block.opening_ops[j]])) ? 1 : 0;
+        }
+        for (const size_t op : block.interior_noise_ops) {
+            const auto site = static_cast<uint32_t>(current.ops[op].noise_site_idx());
+            for (const FiredChannel& channel : fired) {
+                if (channel.site != site) {
+                    continue;
+                }
+                const std::vector<uint8_t> flags =
+                    axis_anticommutation(current, block, channel_mask(current, channel));
+                for (size_t j = 0; j < width; ++j) {
+                    key.internal_support[j] ^= flags[j];
+                }
+            }
+        }
+        keys.push_back(std::move(key));
+    }
+    return keys;
+}
+
+// Presampled values in ascending SymbolId order with the fired channels set.
+std::vector<uint8_t> presampled_values(const HirModule& hir, const SamplingPlan& plan,
+                                       const std::vector<FiredChannel>& fired) {
+    std::vector<uint32_t> ordinal(plan.symbols.size(), 0);
+    uint32_t count = 0;
+    for (size_t symbol = 0; symbol < plan.symbols.size(); ++symbol) {
+        ordinal[symbol] = count;
+        count += plan.symbols[symbol] == sampling::SymbolKind::Presampled ? 1 : 0;
+    }
+    std::vector<uint8_t> values(count, 0);
+    for (const FiredChannel& channel : fired) {
+        uint32_t local = 0;
+        const auto& channels = hir.noise_sites[channel.site].channels;
+        for (uint32_t c = 0; c < channel.channel; ++c) {
+            local += channels[c].prob != 0.0 ? 1 : 0;
+        }
+        const auto symbol = plan.presampled_noise_sites.at(channel.site).outcomes.at(local).symbol;
+        values[ordinal[sampling::index(symbol)]] = 1;
+    }
+    return values;
+}
+
+// Generic and specialized plans of one HIR for one noise realization.
+struct PlanPair {
+    SamplingPlan generic_plan;
+    SamplingPlan specialized_plan;
+    ExecutablePlan generic;
+    ExecutablePlan specialized;
+    std::vector<uint8_t> generic_presampled;
+    std::vector<uint8_t> specialized_presampled;
+
+    PlanPair(const HirModule& hir, const std::vector<FiredChannel>& fired)
+        : generic_plan(sampling::plan_sampling(hir)),
+          specialized_plan(sampling::plan_sampling(specialize(hir, keys_for(hir, fired)))),
+          generic(generic_plan),
+          specialized(specialized_plan),
+          generic_presampled(presampled_values(hir, generic_plan, fired)),
+          specialized_presampled(presampled_values(hir, specialized_plan, fired)) {
+        specialized_plan.validate();
+    }
+};
+
+// Replays every record pattern through both plans. Returns the total
+// probability of the reachable patterns under the specialized plan.
+double check_all_patterns_agree(PlanPair& plans) {
+    const uint32_t num_records =
+        plans.generic.num_visible_records() + plans.generic.num_hidden_records();
+    REQUIRE(num_records <= 16);
+    Executor generic(plans.generic);
+    Executor specialized(plans.specialized);
+    std::vector<uint8_t> records(num_records);
+    double total = 0.0;
+    for (uint32_t pattern = 0; pattern < (uint32_t{1} << num_records); ++pattern) {
+        for (uint32_t r = 0; r < num_records; ++r) {
+            records[r] = static_cast<uint8_t>((pattern >> r) & 1U);
+        }
+        const ReplayResult expected = generic.replay_shot(records, plans.generic_presampled);
+        const ReplayResult actual = specialized.replay_shot(records, plans.specialized_presampled);
+        INFO("record pattern " << pattern);
+        REQUIRE(actual.reachable == expected.reachable);
+        if (expected.reachable) {
+            CHECK(std::abs(actual.log_probability - expected.log_probability) < 1e-9);
+            total += std::exp(actual.log_probability);
+        }
+    }
+    return total;
+}
+
+// Every realization with at most two fired channels on distinct sites.
+std::vector<std::vector<FiredChannel>> small_realizations(const HirModule& hir) {
+    std::vector<FiredChannel> singles;
+    for (uint32_t site = 0; site < hir.noise_sites.size(); ++site) {
+        for (uint32_t c = 0; c < hir.noise_sites[site].channels.size(); ++c) {
+            singles.push_back(FiredChannel{site, c});
+        }
+    }
+    std::vector<std::vector<FiredChannel>> realizations{{}};
+    for (size_t a = 0; a < singles.size(); ++a) {
+        realizations.push_back({singles[a]});
+        for (size_t b = a + 1; b < singles.size(); ++b) {
+            if (singles[b].site != singles[a].site) {
+                realizations.push_back({singles[a], singles[b]});
+            }
+        }
+    }
+    return realizations;
+}
+
+// A planned module whose only quantum content is one hand-built projection
+// on one qubit in |0>, with `check` the projected Pauli and `axis` the single
+// opening axis.
+HirModule single_projection(uint64_t check_x, uint64_t check_z, uint64_t axis_x, uint64_t axis_z) {
+    HirModule hir(2, 3);
+    SandwichSite site;
+    site.axes = {claim_axis(hir, axis_x, axis_z, false)};
+    site.axis_dagger = {0};
+    site.axis_flip = {0};
+    hir.sandwich_sites.push_back(site);
+    hir.num_measurements = 1;
+    const auto fill = [&](MutablePauliMaskView slot) {
+        slot.x().words[0] = check_x;
+        slot.z().words[0] = check_z;
+    };
+    hir.append_sandwich_projection(SandwichSiteIdx{0}, fill);
+    hir.append_sandwich_record(MeasRecordIdx{0}, SandwichSiteIdx{0}, false, fill);
+    return hir;
+}
+
 }  // namespace
 
 TEST_CASE("Sandwich ops carry their site and record payloads", "[sandwich]") {
     HirModule hir = projection_module(1);
-    hir.append_sandwich_record(MeasRecordIdx{1}, SandwichSiteIdx{0}, true,
-                               [](MutablePauliMaskView slot) { slot.x().words[0] = test::X(0); });
+    hir.append_sandwich_record(MeasRecordIdx{1}, SandwichSiteIdx{0}, true, fill_x0);
 
     const HeisenbergOp& projection = hir.ops[0];
     CHECK(projection.op_type() == OpType::SANDWICH_PROJECTION);
@@ -184,10 +414,8 @@ TEST_CASE("Peephole fusion conjugates sandwich masks downstream", "[sandwich]") 
     site.axis_flip = {0};
     hir.sandwich_sites.push_back(site);
     hir.num_measurements = 1;
-    hir.append_sandwich_projection(
-        SandwichSiteIdx{0}, [](MutablePauliMaskView slot) { slot.x().words[0] = test::X(0); });
-    hir.append_sandwich_record(MeasRecordIdx{0}, SandwichSiteIdx{0}, false,
-                               [](MutablePauliMaskView slot) { slot.x().words[0] = test::X(0); });
+    hir.append_sandwich_projection(SandwichSiteIdx{0}, fill_x0);
+    hir.append_sandwich_record(MeasRecordIdx{0}, SandwichSiteIdx{0}, false, fill_x0);
 
     PeepholeFusionPass pass;
     pass.run(hir);
@@ -283,7 +511,7 @@ TEST_CASE("SandwichSpecializationPass copies the key flips and opening direction
     const HirModule hir = hir_of(text);
     REQUIRE(find_sandwich_blocks(hir).size() == 1);
 
-    const HirModule result = specialized(hir, {SandwichKey{{1, 0, 1}, {0, 0, 0}}});
+    const HirModule result = specialize(hir, {SandwichKey{{1, 0, 1}, {0, 0, 0}}});
     REQUIRE(result.sandwich_sites.size() == 1);
     CHECK(result.sandwich_sites[0].axis_dagger == std::vector<uint8_t>{1, 1, 1});
     CHECK(result.sandwich_sites[0].axis_flip == std::vector<uint8_t>{1, 0, 1});
@@ -292,7 +520,7 @@ TEST_CASE("SandwichSpecializationPass copies the key flips and opening direction
 TEST_CASE("SandwichSpecializationPass folds the internal correction into later ops", "[sandwich]") {
     const HirModule hir = hir_of(kToySandwich);
     const SandwichBlock block = find_sandwich_blocks(hir).at(0);
-    const HirModule result = specialized(hir, {SandwichKey{{0, 0, 0}, {1, 0, 0}}});
+    const HirModule result = specialize(hir, {SandwichKey{{0, 0, 0}, {1, 0, 0}}});
     const size_t after_closing = *std::ranges::max_element(block.closing_ops) + 1;
 
     // Ops after the closing layer shift left by the five dropped gates.
@@ -315,7 +543,7 @@ TEST_CASE("SandwichSpecializationPass folds the internal correction into later o
     CHECK(anticommuting > 0);
 
     // Without internal support the later ops are untouched.
-    const HirModule plain = specialized(hir, {uniform_key(3, false, false)});
+    const HirModule plain = specialize(hir, {uniform_key(3, false, false)});
     for (size_t i = after_closing; i < hir.ops.size(); ++i) {
         CHECK(plain.mask_view(plain.ops[i - 5]) == hir.mask_view(hir.ops[i]));
     }
@@ -404,5 +632,91 @@ TEST_CASE("SandwichSpecializationPass rejects invalid keys and blocks", "[sandwi
         REQUIRE_FALSE(copy.logical_noise_prefix_matches_schedule());
         SandwichSpecializationPass pass({uniform_key(3, false, false)});
         CHECK_THROWS_WITH(pass.run(copy), ContainsSubstring("logical positions"));
+    }
+}
+
+TEST_CASE("Specialized sandwich plans replay every record of a noiseless block", "[sandwich]") {
+    const HirModule hir = hir_of(kToySandwich);
+    PlanPair plans(hir, {});
+    CHECK(plans.specialized.peak_active_width() <= plans.generic.peak_active_width());
+    CHECK(plans.specialized.requires_scalar_execution());
+    CHECK_THAT(plans.specialized_plan.inspect(), ContainsSubstring("PROJECT_ACTIVE_UNITARY"));
+    CHECK(std::abs(check_all_patterns_agree(plans) - 1.0) < 1e-9);
+}
+
+TEST_CASE("Specialized sandwich plans replay every record of a noisy block", "[sandwich]") {
+    // Depolarizing sites before the opening, inside the block before the
+    // check and after the reset, and after the closing layer. The terminal
+    // variant has no closing layer, so its interior runs to the end.
+    const auto [name, text] = GENERATE(table<std::string, std::string>({
+        {"closed T block",
+         "RX 3\nDEPOLARIZE1(0.1) 0\nT 0 1 2\nDEPOLARIZE1(0.1) 2 3\nCX 3 0 3 1 3 2\nMX 3\n"
+         "RX 3\nDEPOLARIZE1(0.1) 1\nCX 3 0 3 1 3 2\nT_DAG 0 1 2\nDEPOLARIZE1(0.1) 0\n"
+         "MX 0 1 2\n"},
+        {"closed mixed block",
+         "RX 3\nDEPOLARIZE1(0.1) 1\nT_DAG 0 1\nT 2\nDEPOLARIZE1(0.1) 0 3\nCX 3 0 3 1 3 2\n"
+         "MX 3\nRX 3\nDEPOLARIZE1(0.1) 2\nCX 3 0 3 1 3 2\nT 0 1\nT_DAG 2\nM 0 1 2\n"},
+        {"terminal block",
+         "RX 3\nDEPOLARIZE1(0.1) 0\nT 0 1 2\nCX 3 0 3 1 3 2\nDEPOLARIZE1(0.1) 1 3\nMX 3\n"
+         "RX 3\nDEPOLARIZE1(0.1) 2\n"},
+    }));
+    CAPTURE(name);
+    const HirModule hir = hir_of(text);
+    const std::vector<SandwichBlock> blocks = find_sandwich_blocks(hir);
+    REQUIRE(blocks.size() == 1);
+    REQUIRE(blocks[0].supported);
+    REQUIRE_FALSE(blocks[0].interior_noise_ops.empty());
+
+    size_t flipped = 0;
+    size_t supported = 0;
+    for (const std::vector<FiredChannel>& fired : small_realizations(hir)) {
+        const std::vector<SandwichKey> keys = keys_for(hir, fired);
+        flipped += std::ranges::count(keys[0].axis_flip, 1) > 0 ? 1 : 0;
+        supported += std::ranges::count(keys[0].internal_support, 1) > 0 ? 1 : 0;
+        PlanPair plans(hir, fired);
+        CHECK(std::abs(check_all_patterns_agree(plans) - 1.0) < 1e-9);
+    }
+    // Both parts of the key vary across the realizations.
+    CHECK(flipped > 0);
+    CHECK(supported > 0);
+}
+
+TEST_CASE("The sandwich planner rejects malformed projections", "[sandwich]") {
+    SECTION("a record before its projection") {
+        HirModule hir = single_projection(test::X(0), 0, 0, test::Z(0));
+        std::swap(hir.ops[0], hir.ops[1]);
+        CHECK_THROWS_WITH(sampling::plan_sampling(hir), ContainsSubstring("precedes"));
+    }
+
+    SECTION("a projection without its check record") {
+        HirModule hir = single_projection(test::X(0), 0, 0, test::Z(0));
+        hir.ops.pop_back();
+        CHECK_THROWS_WITH(sampling::plan_sampling(hir), ContainsSubstring("check record"));
+    }
+
+    SECTION("a site whose flags do not match its axes") {
+        HirModule hir = single_projection(test::X(0), 0, 0, test::Z(0));
+        hir.sandwich_sites[0].axis_flip.push_back(0);
+        CHECK_THROWS_WITH(sampling::plan_sampling(hir), ContainsSubstring("malformed"));
+    }
+
+    SECTION("axes that all commute with the check") {
+        const HirModule hir = single_projection(test::X(0), 0, 0, test::Z(1));
+        CHECK_THROWS_WITH(sampling::plan_sampling(hir), ContainsSubstring("no axis"));
+    }
+
+    SECTION("an observable that leaves the dormant state") {
+        // C = Z0 exp(-i pi/4 X0) maps the dormant stabilizer Z0 to a Y.
+        const HirModule hir = single_projection(0, test::Z(0), test::X(0), 0);
+        CHECK_THROWS_WITH(sampling::plan_sampling(hir), ContainsSubstring("not closed"));
+    }
+
+    SECTION("a projection wider than the dense matrix limit") {
+        // Nine T gates on |+> qubits are active before the toy block opens.
+        const HirModule hir = specialize(
+            hir_of("H 4 5 6 7 8 9 10 11 12\nT 4 5 6 7 8 9 10 11 12\n" + std::string(kToySandwich)),
+            {uniform_key(3, false, false)});
+        REQUIRE(count_ops(hir, OpType::SANDWICH_PROJECTION) == 1);
+        CHECK_THROWS_WITH(sampling::plan_sampling(hir), ContainsSubstring("exceeds the maximum"));
     }
 }

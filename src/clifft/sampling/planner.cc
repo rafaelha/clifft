@@ -6,7 +6,10 @@
 #include "clifft/util/symplectic.h"
 
 #include <algorithm>
+#include <array>
+#include <bit>
 #include <cmath>
+#include <complex>
 #include <cstdint>
 #include <limits>
 #include <optional>
@@ -14,6 +17,7 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 namespace clifft::sampling {
@@ -173,6 +177,13 @@ void canonicalize_record_snapshots(std::vector<ObservableRecordReference>& refer
 struct PlanningRecord {
     std::optional<AffineBool> value;
     uint32_t generation = 0;
+};
+
+struct PlannedSandwich {
+    size_t action = 0;
+    SymbolId branch{};
+    AffineBool outcome_correction;
+    bool check_recorded = false;
 };
 
 struct PendingObservable {
@@ -336,7 +347,10 @@ PlanningRequirements inspect_planning_requirements(const HirModule& hir, NoiseSi
             case OpType::OBSERVABLE:
                 break;
             case OpType::SANDWICH_PROJECTION:
+                add(1);
+                break;
             case OpType::SANDWICH_RECORD:
+                break;
             case OpType::NUM_OP_TYPES:
                 throw std::invalid_argument("sampling planner does not support HIR operation " +
                                             op_type_to_str(op.op_type()) + " at index " +
@@ -529,6 +543,442 @@ void process_instrument(const HirModule& hir, const HeisenbergOp& op, uint32_t n
                   source_lines);
 }
 
+// A sandwich block measures C = P * prod_{j in A} exp(-i pi/4 s_j P_j), where
+// A holds the opening axes that anticommute with the check P and s_j is the
+// rotation direction in effect for the specialized noise class. Bodies are
+// Hermitian with positive sign in the current coordinates.
+struct SandwichAxis {
+    Pauli body;
+    bool positive = true;
+    // Earlier sampled outcomes that also reverse this axis in the frame.
+    std::vector<SymbolId> sampled_terms;
+};
+
+struct SandwichObservable {
+    Pauli check;
+    std::vector<SandwichAxis> axes;
+};
+
+// The specialized class fixes which pre-block errors fired, so the parity of
+// the noise symbols in an axis sign is the key's flip. Terms from outcomes
+// sampled during the shot stay with the axis; the caller verifies that they
+// cannot change the projection.
+SandwichObservable resolve_sandwich_observable(const HirModule& hir, const HeisenbergOp& op,
+                                               const SandwichSite& site, const SamplingPlan& plan,
+                                               CoordinateFrame& coordinates,
+                                               SymbolicPauliFrame& symbolic_frame) {
+    SandwichObservable result{
+        resolve_pauli(pauli_from_hir(hir, op), AffineBool{}, coordinates, symbolic_frame).body, {}};
+    for (size_t j = 0; j < site.axes.size(); ++j) {
+        const PauliMaskHandle handle = site.axes[j];
+        ResolvedPauli axis = resolve_pauli(pauli_from_mask(hir, handle),
+                                           AffineBool(hir.pauli_masks.at(handle).sign()),
+                                           coordinates, symbolic_frame);
+        // An axis that commutes with the check cancels from U^dag P U.
+        if (axis.body.view().commutes(result.check.view())) {
+            continue;
+        }
+        std::vector<SymbolId> sampled_terms;
+        for (const SymbolId term : axis.sign.terms()) {
+            if (plan.symbols.at(index(term)) != SymbolKind::Presampled) {
+                sampled_terms.push_back(term);
+            }
+        }
+        const bool negative =
+            axis.sign.constant() ^ (site.axis_flip[j] != 0) ^ (site.axis_dagger[j] != 0);
+        result.axes.push_back(
+            SandwichAxis{std::move(axis.body), !negative, std::move(sampled_terms)});
+    }
+    return result;
+}
+
+// Sampled outcomes are values the plan cannot fix. Enumerating their
+// assignments bounds the plan-time work of proving the projection
+// independent of them.
+constexpr size_t kMaxSandwichSampledSymbols = 10;
+
+std::vector<SymbolId> sampled_symbols(const SandwichObservable& observable) {
+    std::vector<SymbolId> symbols;
+    for (const SandwichAxis& axis : observable.axes) {
+        symbols.insert(symbols.end(), axis.sampled_terms.begin(), axis.sampled_terms.end());
+    }
+    std::ranges::sort(symbols);
+    symbols.erase(std::unique(symbols.begin(), symbols.end()), symbols.end());
+    if (symbols.size() > kMaxSandwichSampledSymbols) {
+        throw std::invalid_argument("sampling planner sandwich axes depend on " +
+                                    std::to_string(symbols.size()) + " sampled outcomes; at most " +
+                                    std::to_string(kMaxSandwichSampledSymbols) + " are supported");
+    }
+    return symbols;
+}
+
+// The observable the frame describes when the sampled symbols take the
+// values in `assignment`, bit k standing for symbols[k].
+SandwichObservable with_sampled_values(const SandwichObservable& observable,
+                                       const std::vector<SymbolId>& symbols, uint32_t assignment) {
+    SandwichObservable result = observable;
+    for (SandwichAxis& axis : result.axes) {
+        bool reversed = false;
+        for (const SymbolId term : axis.sampled_terms) {
+            const auto k =
+                static_cast<size_t>(std::ranges::lower_bound(symbols, term) - symbols.begin());
+            reversed ^= ((assignment >> k) & 1U) != 0;
+        }
+        axis.positive ^= reversed;
+    }
+    return result;
+}
+
+// Returns the dormant coordinates q whose stabilizer Z_q the observable maps
+// to -Z^v. Each anticommuting factor exp(-i pi/4 s P) sends Z_q to
+// Z_q (i s P), and conjugation by P negates an anticommuting image. A closed
+// block maps every dormant Z_q to a signed product of dormant Z's.
+std::vector<uint32_t> projection_sign_mismatches(const SandwichObservable& observable,
+                                                 uint32_t active_width) {
+    const uint32_t n = observable.check.num_qubits();
+    std::vector<uint32_t> mismatched;
+    for (uint32_t q = active_width; q < n; ++q) {
+        Pauli image(n);
+        image.set_pauli(q, false, true);
+        for (const SandwichAxis& axis : observable.axes) {
+            if (axis.body.x().bit_get(q)) {
+                image.right_multiply(axis.body.view());
+                image.add_phase(axis.positive ? 1 : 3);
+            }
+        }
+        if (!image.view().commutes(observable.check.view())) {
+            image.add_phase(2);
+        }
+        bool closed = image.x().is_zero();
+        for (uint32_t low = 0; closed && low < active_width; ++low) {
+            closed = !image.z().bit_get(low);
+        }
+        if (!closed) {
+            throw std::invalid_argument("sandwich block is not closed in the current frame");
+        }
+        // Without X support the canonical Hermitian phase is zero.
+        if (image.phase() == 2) {
+            mismatched.push_back(q);
+        } else if (image.phase() != 0) {
+            throw std::logic_error("sampling planner sandwich image is not Hermitian");
+        }
+    }
+    return mismatched;
+}
+
+using BitRow = std::vector<uint64_t>;
+
+void xor_into(BitRow& target, const BitRow& source) {
+    for (size_t w = 0; w < target.size(); ++w) {
+        target[w] ^= source[w];
+    }
+}
+
+bool row_is_zero(const BitRow& row) {
+    return std::ranges::all_of(row, [](uint64_t word) { return word == 0; });
+}
+
+BitRow dormant_x(const Pauli& pauli, uint32_t active_width) {
+    BitRow row(pauli.x().words.begin(), pauli.x().words.end());
+    for (uint32_t q = 0; q < active_width; ++q) {
+        row[q / 64] &= ~(uint64_t{1} << (q % 64));
+    }
+    return row;
+}
+
+// Solutions of XOR_{j in T} x_dormant(P_j) = x_dormant(P) over subsets T of
+// the axes: a particular subset and a basis of the homogeneous solutions.
+// Terms of the product expansion outside this affine space move the dormant
+// |0...0> to an orthogonal state, so only these reach the active matrix.
+struct AxisSubsets {
+    BitRow particular;
+    std::vector<BitRow> null_basis;
+};
+
+AxisSubsets solve_dormant_cancellation(const SandwichObservable& observable,
+                                       uint32_t active_width) {
+    const size_t num_axes = observable.axes.size();
+    const size_t subset_words = (num_axes + 63) / 64;
+    struct Pivot {
+        BitRow vector;
+        BitRow subset;
+        size_t bit;
+    };
+    std::vector<Pivot> pivots;
+    AxisSubsets result;
+
+    const auto reduce = [&](BitRow& vector, BitRow& subset) {
+        for (const Pivot& pivot : pivots) {
+            if ((vector[pivot.bit / 64] >> (pivot.bit % 64)) & 1U) {
+                xor_into(vector, pivot.vector);
+                xor_into(subset, pivot.subset);
+            }
+        }
+    };
+    const auto lowest_bit = [](const BitRow& row) {
+        for (size_t w = 0; w < row.size(); ++w) {
+            if (row[w] != 0) {
+                return w * 64 + static_cast<size_t>(std::countr_zero(row[w]));
+            }
+        }
+        return row.size() * 64;
+    };
+
+    for (size_t j = 0; j < num_axes; ++j) {
+        BitRow vector = dormant_x(observable.axes[j].body, active_width);
+        BitRow subset(subset_words, 0);
+        subset[j / 64] |= uint64_t{1} << (j % 64);
+        reduce(vector, subset);
+        if (row_is_zero(vector)) {
+            result.null_basis.push_back(std::move(subset));
+            continue;
+        }
+        const size_t bit = lowest_bit(vector);
+        // Keep earlier pivots reduced so a single pass reduces later vectors.
+        for (Pivot& pivot : pivots) {
+            if ((pivot.vector[bit / 64] >> (bit % 64)) & 1U) {
+                xor_into(pivot.vector, vector);
+                xor_into(pivot.subset, subset);
+            }
+        }
+        pivots.push_back(Pivot{std::move(vector), std::move(subset), bit});
+    }
+
+    BitRow target = dormant_x(observable.check, active_width);
+    result.particular.assign(subset_words, 0);
+    reduce(target, result.particular);
+    if (!row_is_zero(target)) {
+        throw std::logic_error(
+            "sampling planner sandwich observable has no support on the dormant state");
+    }
+    return result;
+}
+
+std::complex<double> i_power(uint8_t exponent) {
+    static constexpr std::array<std::complex<double>, 4> kPowers{
+        std::complex<double>{1.0, 0.0}, std::complex<double>{0.0, 1.0},
+        std::complex<double>{-1.0, 0.0}, std::complex<double>{0.0, -1.0}};
+    return kPowers[exponent & 3U];
+}
+
+// Expands C = 2^(-|A|/2) sum_T P prod_{j in T} (-i s_j P_j) and keeps the
+// terms that act on the dormant |0...0> as +1. Each remaining term is
+// i^phase X^x Z^z on the active coordinates.
+std::vector<std::complex<double>> projection_matrix(const SandwichObservable& observable,
+                                                    uint32_t active_width) {
+    const AxisSubsets subsets = solve_dormant_cancellation(observable, active_width);
+    const size_t dimension = size_t{1} << active_width;
+    // Coefficients of X^x Z^z, indexed by (x << width) | z.
+    std::vector<std::complex<double>> coefficients(dimension * dimension);
+    const double scale = std::pow(2.0, -0.5 * static_cast<double>(observable.axes.size()));
+
+    // Gray-code order changes one null-space generator per step. The factors
+    // commute, so leaving T multiplies by the inverse factor i s_j P_j.
+    BitRow subset(subsets.particular.size(), 0);
+    Pauli term = observable.check;
+    term.set_sign(false);
+    const auto toggle = [&](const BitRow& change) {
+        for (size_t j = 0; j < observable.axes.size(); ++j) {
+            if (((change[j / 64] >> (j % 64)) & 1U) == 0) {
+                continue;
+            }
+            const SandwichAxis& axis = observable.axes[j];
+            const bool entering = ((subset[j / 64] >> (j % 64)) & 1U) == 0;
+            term.right_multiply(axis.body.view());
+            term.add_phase(entering == axis.positive ? 3 : 1);
+            subset[j / 64] ^= uint64_t{1} << (j % 64);
+        }
+    };
+    const auto accumulate = [&]() {
+        uint64_t x = 0;
+        uint64_t z = 0;
+        for (uint32_t q = 0; q < active_width; ++q) {
+            x |= static_cast<uint64_t>(term.x().bit_get(q)) << q;
+            z |= static_cast<uint64_t>(term.z().bit_get(q)) << q;
+        }
+        coefficients[(x << active_width) | z] += scale * i_power(term.phase());
+    };
+
+    toggle(subsets.particular);
+    const size_t null_dimension = subsets.null_basis.size();
+    if (null_dimension >= 63) {
+        throw std::overflow_error("sampling planner sandwich expansion has too many terms");
+    }
+    const uint64_t num_terms = uint64_t{1} << null_dimension;
+    accumulate();
+    for (uint64_t step = 1; step < num_terms; ++step) {
+        toggle(subsets.null_basis[static_cast<size_t>(std::countr_zero(step))]);
+        accumulate();
+    }
+
+    std::vector<std::complex<double>> matrix(dimension * dimension);
+    for (uint64_t x = 0; x < dimension; ++x) {
+        for (uint64_t z = 0; z < dimension; ++z) {
+            const std::complex<double> coefficient = coefficients[(x << active_width) | z];
+            if (coefficient == std::complex<double>{}) {
+                continue;
+            }
+            for (uint64_t column = 0; column < dimension; ++column) {
+                const bool negative = (std::popcount(z & column) & 1) != 0;
+                matrix[(column ^ x) * dimension + column] += negative ? -coefficient : coefficient;
+            }
+        }
+    }
+    return matrix;
+}
+
+constexpr double kSandwichMatrixTolerance = 1e-9;
+
+// Within numerical tolerance, C restricted to the dormant |0...0> subspace
+// must be the Hermitian unitary the plan action requires.
+void require_hermitian_unitary(const std::vector<std::complex<double>>& matrix, size_t dimension) {
+    constexpr double kTolerance = kSandwichMatrixTolerance;
+    const auto entry = [&](size_t row, size_t column) { return matrix[row * dimension + column]; };
+    for (size_t row = 0; row < dimension; ++row) {
+        for (size_t column = 0; column < dimension; ++column) {
+            if (!(std::abs(entry(row, column) - std::conj(entry(column, row))) <= kTolerance)) {
+                throw std::logic_error("sampling planner sandwich matrix is not Hermitian");
+            }
+            std::complex<double> product{};
+            for (size_t middle = 0; middle < dimension; ++middle) {
+                product += entry(row, middle) * entry(middle, column);
+            }
+            const std::complex<double> expected{row == column ? 1.0 : 0.0, 0.0};
+            if (!(std::abs(product - expected) <= kTolerance)) {
+                throw std::logic_error("sampling planner sandwich matrix is not unitary");
+            }
+        }
+    }
+}
+
+// Returns true when `variant` equals -`base`, false when it equals `base`,
+// and nullopt otherwise.
+std::optional<bool> relative_sign(const std::vector<std::complex<double>>& variant,
+                                  const std::vector<std::complex<double>>& base) {
+    bool same = true;
+    bool negated = true;
+    for (size_t entry = 0; entry < base.size(); ++entry) {
+        same &= std::abs(variant[entry] - base[entry]) <= kSandwichMatrixTolerance;
+        negated &= std::abs(variant[entry] + base[entry]) <= kSandwichMatrixTolerance;
+    }
+    if (same) {
+        return false;
+    }
+    if (negated) {
+        return true;
+    }
+    return std::nullopt;
+}
+
+struct PlannedProjection {
+    size_t action = 0;
+    // Sampled symbols whose values negate the projected observable on the
+    // dense subspace; every record of the block includes them.
+    AffineBool outcome_correction;
+};
+
+// Plans the projection at the opening of a specialized block. The returned
+// action's outcome is completed when the check record is reached.
+PlannedProjection process_sandwich_projection(const HirModule& hir, const HeisenbergOp& op,
+                                              const SandwichSite& site, SymbolId branch,
+                                              SamplingPlan& plan, uint32_t& active_width,
+                                              CoordinateFrame& coordinates,
+                                              SymbolicPauliFrame& symbolic_frame,
+                                              std::span<const uint32_t> source_lines) {
+    SandwichObservable observable =
+        resolve_sandwich_observable(hir, op, site, plan, coordinates, symbolic_frame);
+    if (observable.axes.empty()) {
+        // The block would be a plain Pauli measurement, which the recognizer
+        // never reports as a sandwich.
+        throw std::invalid_argument(
+            "sampling planner sandwich projection has no axis anticommuting with its check");
+    }
+
+    // Outcomes sampled during the shot may reverse axes in the frame. The
+    // plan is fixed, so every assignment must project onto the same pair of
+    // eigenspaces of the dense subspace: the reversal can at most exchange
+    // them, as when the outcome's correction acts on the dormant state as a
+    // signed stabilizer. An exchange is linear in the outcomes and moves
+    // into the record expressions.
+    const std::vector<SymbolId> sampled = sampled_symbols(observable);
+    const uint32_t num_assignments = uint32_t{1} << sampled.size();
+    std::vector<uint32_t> mismatched = projection_sign_mismatches(observable, active_width);
+    for (uint32_t assignment = 1; assignment < num_assignments; ++assignment) {
+        if (projection_sign_mismatches(with_sampled_values(observable, sampled, assignment),
+                                       active_width) != mismatched) {
+            throw std::invalid_argument(
+                "sampling planner sandwich projection depends on a sampled outcome");
+        }
+    }
+    if (!mismatched.empty()) {
+        // The observable maps the dormant state to an orthogonal one. Adding
+        // the coordinate whose X flips exactly the mismatched stabilizers
+        // leaves a dormant group that the observable preserves with sign +1.
+        if (active_width + 1 >= kDenseActiveWidthLimit) {
+            throw std::overflow_error(
+                "sampling planner active width would reach " + std::to_string(active_width + 1) +
+                ", but the dense-state limit is " + std::to_string(kDenseActiveWidthLimit));
+        }
+        Pauli promoted(hir.num_qubits);
+        for (const uint32_t q : mismatched) {
+            promoted.set_pauli(q, true, false);
+        }
+        coordinates.promote_dormant(promoted, active_width, mismatched.front());
+        append_action(plan,
+                      PlannedAction{active_width, active_width + 1,
+                                    PromoteDormantRotation{0.0, AffineBool{}}},
+                      source_lines);
+        ++active_width;
+        plan.peak_active_width = std::max(plan.peak_active_width, active_width);
+        observable = resolve_sandwich_observable(hir, op, site, plan, coordinates, symbolic_frame);
+        if (!projection_sign_mismatches(observable, active_width).empty()) {
+            throw std::logic_error(
+                "sampling planner sandwich promotion left a dormant sign mismatch");
+        }
+    }
+
+    if (active_width > kMaxProjectionWidth) {
+        throw std::overflow_error("sampling planner sandwich projection width " +
+                                  std::to_string(active_width) + " exceeds the maximum of " +
+                                  std::to_string(kMaxProjectionWidth));
+    }
+    std::vector<std::complex<double>> matrix = projection_matrix(observable, active_width);
+    require_hermitian_unitary(matrix, size_t{1} << active_width);
+    uint32_t negating = 0;
+    for (uint32_t assignment = 1; assignment < num_assignments; ++assignment) {
+        const std::optional<bool> negated = relative_sign(
+            projection_matrix(with_sampled_values(observable, sampled, assignment), active_width),
+            matrix);
+        // Single-symbol assignments come first in each power-of-two range,
+        // so every combined assignment is checked against their parity.
+        if (std::has_single_bit(assignment) && negated.value_or(false)) {
+            negating |= assignment;
+        }
+        const bool expected = (std::popcount(assignment & negating) & 1) != 0;
+        if (!negated.has_value() || *negated != expected) {
+            throw std::invalid_argument(
+                "sampling planner sandwich projection depends on a sampled outcome");
+        }
+    }
+    AffineBool outcome_correction;
+    for (size_t k = 0; k < sampled.size(); ++k) {
+        if (((negating >> k) & 1U) != 0) {
+            outcome_correction ^= AffineBool::symbol(sampled[k]);
+        }
+    }
+
+    define_symbol(plan, branch, SymbolKind::Branch);
+    const size_t action = plan.actions.size();
+    // The outcome is completed when the check record is reached.
+    append_action(plan,
+                  PlannedAction{active_width, active_width,
+                                ProjectActiveUnitary{active_width, std::move(matrix), branch,
+                                                     AffineBool::symbol(branch),
+                                                     RecordSlot{site.check_record}}},
+                  source_lines);
+    return PlannedProjection{action, std::move(outcome_correction)};
+}
+
 }  // namespace
 
 SamplingPlan plan_sampling(const HirModule& hir, SamplingPlanOptions options) {
@@ -564,6 +1014,7 @@ SamplingPlan plan_sampling(const HirModule& hir, SamplingPlanOptions options) {
     std::vector<PlanningRecord> records(static_cast<size_t>(hir.num_measurements) +
                                         hir.num_hidden_measurements);
     std::vector<PendingObservable> observables(hir.num_observables);
+    std::vector<std::optional<PlannedSandwich>> sandwiches(hir.sandwich_sites.size());
 
     auto require_record = [&](RecordSlot record, size_t operation_index) -> const AffineBool& {
         const uint32_t record_index = index(record);
@@ -765,8 +1216,59 @@ SamplingPlan plan_sampling(const HirModule& hir, SamplingPlanOptions options) {
                     source_lines);
                 break;
             }
-            case OpType::SANDWICH_PROJECTION:
-            case OpType::SANDWICH_RECORD:
+            case OpType::SANDWICH_PROJECTION: {
+                const uint32_t site_index = static_cast<uint32_t>(op.sandwich_site_idx());
+                if (site_index >= hir.sandwich_sites.size() || sandwiches[site_index].has_value()) {
+                    throw std::invalid_argument(
+                        "sampling planner sandwich site is out of range or projected twice");
+                }
+                const SandwichSite& site = hir.sandwich_sites[site_index];
+                if (site.axes.size() != site.axis_dagger.size() ||
+                    site.axes.size() != site.axis_flip.size() ||
+                    site.check_record >= records.size()) {
+                    throw std::invalid_argument("sampling planner sandwich site is malformed");
+                }
+                const SymbolId branch = reserve_symbol(plan);
+                PlannedProjection projection =
+                    process_sandwich_projection(hir, op, site, branch, plan, active_width,
+                                                coordinates, symbolic_frame, source_lines);
+                sandwiches[site_index] = PlannedSandwich{projection.action, branch,
+                                                         std::move(projection.outcome_correction)};
+                break;
+            }
+            case OpType::SANDWICH_RECORD: {
+                const uint32_t site_index = static_cast<uint32_t>(op.sandwich_site_idx());
+                if (site_index >= hir.sandwich_sites.size() ||
+                    !sandwiches[site_index].has_value()) {
+                    throw std::invalid_argument(
+                        "sampling planner sandwich record precedes its projection");
+                }
+                PlannedSandwich& planned = *sandwiches[site_index];
+                const RecordSlot record{static_cast<uint32_t>(op.sandwich_record_idx())};
+                // The projection fixed the eigenvalue of C, and P's frame sign
+                // here already includes the interior errors it has crossed.
+                ResolvedPauli resolved =
+                    resolve_pauli(pauli_from_hir(hir, op), noise_signs.sign_for(i, next_noise_site),
+                                  coordinates, symbolic_frame);
+                AffineBool outcome = std::move(resolved.sign) ^ AffineBool::symbol(planned.branch);
+                outcome ^= planned.outcome_correction;
+                if (index(record) == hir.sandwich_sites[site_index].check_record) {
+                    if (planned.check_recorded) {
+                        throw std::invalid_argument(
+                            "sampling planner sandwich check is recorded twice");
+                    }
+                    std::get<ProjectActiveUnitary>(plan.actions[planned.action].action).outcome =
+                        outcome;
+                    planned.check_recorded = true;
+                } else {
+                    append_action(
+                        plan,
+                        PlannedAction{active_width, active_width, RecordClassical{outcome, record}},
+                        source_lines);
+                }
+                assign_record(record, std::move(outcome), i);
+                break;
+            }
             case OpType::NUM_OP_TYPES:
                 throw std::invalid_argument("sampling planner does not support HIR operation " +
                                             op_type_to_str(op.op_type()) + " at index " +
@@ -774,6 +1276,12 @@ SamplingPlan plan_sampling(const HirModule& hir, SamplingPlanOptions options) {
         }
     }
 
+    if (std::ranges::any_of(sandwiches, [](const std::optional<PlannedSandwich>& planned) {
+            return !planned.has_value() || !planned->check_recorded;
+        })) {
+        throw std::invalid_argument(
+            "sampling planner sandwich site lacks its projection or check record");
+    }
     if (plan.symbols.size() != requirements.symbol_count) {
         throw std::logic_error("sampling planner symbol prepass disagrees with HIR lowering");
     }

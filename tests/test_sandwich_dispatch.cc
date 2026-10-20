@@ -1,7 +1,8 @@
 // Checks per-shot sandwich dispatch: the key map that classifies a shot's
 // presampled noise, program families of specialized plans, and the samplers
 // that run each shot on the plan specialized for its class. Keys are checked
-// against the feedback-aware reference of the specialization tests.
+// against the feedback-aware reference of the specialization tests, and
+// dispatched samples against generic sampling of the same circuit.
 
 #include "clifft/circuit/circuit.h"
 #include "clifft/circuit/parser.h"
@@ -20,6 +21,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
+#include <chrono>
+#include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <optional>
@@ -38,6 +41,7 @@ using sampling::FamilyMember;
 using sampling::FamilySamplingStats;
 using sampling::ProgramFamily;
 using sampling::SamplingPlanOptions;
+using sampling::SamplingResult;
 using sampling::SamplingSurvivorResult;
 using sampling::SandwichKeyMap;
 using sampling::SandwichKeyRows;
@@ -170,6 +174,46 @@ ProgramFamily bench_family(const Circuit& circuit, const HirModule& hir,
     return sampling::build_program_family(hir, members, options);
 }
 
+// Two independent Bernoulli rates agree within `sigmas` standard errors of
+// their difference under the pooled rate.
+void check_rates_agree(uint64_t ones_a, uint64_t shots_a, uint64_t ones_b, uint64_t shots_b,
+                       double sigmas) {
+    const double rate_a = static_cast<double>(ones_a) / static_cast<double>(shots_a);
+    const double rate_b = static_cast<double>(ones_b) / static_cast<double>(shots_b);
+    const double pooled =
+        static_cast<double>(ones_a + ones_b) / static_cast<double>(shots_a + shots_b);
+    const double error =
+        std::sqrt(pooled * (1.0 - pooled) *
+                  (1.0 / static_cast<double>(shots_a) + 1.0 / static_cast<double>(shots_b)));
+    INFO("rates " << rate_a << " and " << rate_b << ", standard error " << error);
+    CHECK(std::abs(rate_a - rate_b) <= sigmas * error);
+}
+
+uint64_t column_ones(const std::vector<uint8_t>& rows, size_t stride, size_t column) {
+    uint64_t ones = 0;
+    for (size_t row = 0; row * stride < rows.size(); ++row) {
+        ones += rows[row * stride + column];
+    }
+    return ones;
+}
+
+// Every detector marginal and observable rate of the two results agree.
+void check_output_rates_agree(const SamplingResult& family, const SamplingResult& generic,
+                              const ExecutablePlan& plan, uint32_t shots) {
+    for (uint32_t detector = 0; detector < plan.num_detectors(); ++detector) {
+        INFO("detector " << detector);
+        check_rates_agree(column_ones(family.detectors, plan.num_detectors(), detector), shots,
+                          column_ones(generic.detectors, plan.num_detectors(), detector), shots,
+                          5.0);
+    }
+    for (uint32_t observable = 0; observable < plan.num_observables(); ++observable) {
+        INFO("observable " << observable);
+        check_rates_agree(
+            column_ones(family.observables, plan.num_observables(), observable), shots,
+            column_ones(generic.observables, plan.num_observables(), observable), shots, 5.0);
+    }
+}
+
 uint64_t member_shots(const FamilySamplingStats& stats) {
     uint64_t total = 0;
     for (const uint64_t count : stats.shots_per_member) {
@@ -178,8 +222,40 @@ uint64_t member_shots(const FamilySamplingStats& stats) {
     return total;
 }
 
+// Each shot ran on the member whose keys are those of the noise it drew,
+// or on the generic plan when no member has them.
+void check_dispatch_follows_keys(const ProgramFamily& family, const FamilySamplingStats& stats,
+                                 uint64_t seed, uint32_t shots) {
+    REQUIRE(stats.dispatched.size() == shots);
+    REQUIRE(member_shots(stats) + stats.fallback_shots == shots);
+    std::vector<uint64_t> counted(family.num_members(), 0);
+    for (uint32_t shot = 0; shot < shots; ++shot) {
+        const std::vector<SandwichKey> keys =
+            family.key_map().keys_for(sampling::family_presampled_values(family, seed, shot));
+        INFO("shot " << shot);
+        if (stats.dispatched[shot].has_value()) {
+            REQUIRE(family.member(*stats.dispatched[shot]).keys == keys);
+            ++counted[*stats.dispatched[shot]];
+        } else {
+            REQUIRE_FALSE(family.find(keys).has_value());
+        }
+    }
+    CHECK(counted == stats.shots_per_member);
+}
+
+// The d5 bench conditions Paulis on noisy measurement records, so readout
+// flips reach later block axes as outcomes sampled during the shot, which no
+// specialized plan can absorb. Its cases keep only the Pauli noise.
+HirModule d5_bench(const Circuit& circuit) {
+    return without_readout_noise(trace(circuit));
+}
+
 std::vector<uint8_t> all_detectors(const HirModule& hir) {
     return std::vector<uint8_t>(hir.num_detectors, 1);
+}
+
+double fast_path_fraction(const FamilySamplingStats& stats, uint32_t shots) {
+    return static_cast<double>(member_shots(stats)) / static_cast<double>(shots);
 }
 
 }  // namespace
@@ -368,6 +444,69 @@ TEST_CASE("Program families reject members they cannot dispatch", "[sandwich]") 
     }
 }
 
+TEST_CASE("Family sampling matches generic sampling on the d3 bench", "[sandwich]") {
+    const Circuit circuit = parse_file(fixture_path("cultivation_d3_bench.stim"));
+    const HirModule hir = trace(circuit);
+    const ProgramFamily family = bench_family(circuit, hir, {Pauli1::X, Pauli1::Y, Pauli1::Z});
+    REQUIRE(family.num_members() > 1);
+    constexpr uint32_t kShots = 20000;
+    constexpr uint64_t kSeed = 11;
+
+    FamilySamplingStats stats;
+    stats.record_dispatch = true;
+    const SamplingResult dispatched = sampling::sample_family(family, kShots, kSeed, &stats);
+    const SamplingResult generic =
+        sampling::sample(family.generic(), kShots, 12, 1, std::nullopt, 1);
+    check_output_rates_agree(dispatched, generic, family.generic(), kShots);
+    check_dispatch_follows_keys(family, stats, kSeed, kShots);
+    WARN("d3 fast-path fraction " << fast_path_fraction(stats, kShots) << " over "
+                                  << family.num_members() << " members");
+    // Most shots must run specialized plans for the comparison to test them
+    // rather than the generic fallback.
+    CHECK(fast_path_fraction(stats, kShots) > 0.5);
+
+    // A seed reproduces the family's own rows.
+    const SamplingResult repeated = sampling::sample_family(family, 200, kSeed);
+    CHECK(std::equal(repeated.measurements.begin(), repeated.measurements.end(),
+                     dispatched.measurements.begin()));
+}
+
+TEST_CASE("Family sampling matches generic sampling on the d5 bench", "[sandwich][expensive]") {
+    const Circuit circuit = parse_file(fixture_path("cultivation_d5_bench.stim"));
+    const HirModule hir = d5_bench(circuit);
+    const ProgramFamily family = bench_family(circuit, hir, {Pauli1::X});
+    constexpr uint32_t kShots = 5000;
+    constexpr uint64_t kSeed = 21;
+
+    FamilySamplingStats stats;
+    stats.record_dispatch = true;
+    const SamplingResult dispatched = sampling::sample_family(family, kShots, kSeed, &stats);
+    const SamplingResult generic =
+        sampling::sample(family.generic(), kShots, 22, 1, std::nullopt, 1);
+    check_output_rates_agree(dispatched, generic, family.generic(), kShots);
+    check_dispatch_follows_keys(family, stats, kSeed, kShots);
+    WARN("d5 fast-path fraction " << fast_path_fraction(stats, kShots) << " over "
+                                  << family.num_members() << " members");
+    // The d5 circuit has more faults per shot, so single-error classes
+    // cover fewer shots; a fifth of the shots still exercises the members.
+    CHECK(fast_path_fraction(stats, kShots) > 0.2);
+}
+
+TEST_CASE("A family without members runs every shot on the generic plan", "[sandwich]") {
+    const HirModule hir = trace(parse_file(fixture_path("cultivation_d3_bench.stim")));
+    const ProgramFamily family = sampling::build_program_family(hir, {});
+    constexpr uint32_t kShots = 5000;
+
+    FamilySamplingStats stats;
+    const SamplingResult dispatched = sampling::sample_family(family, kShots, 31, &stats);
+    const SamplingResult generic =
+        sampling::sample(family.generic(), kShots, 32, 1, std::nullopt, 1);
+    CHECK(stats.shots_per_member.empty());
+    CHECK(stats.fallback_shots == kShots);
+    CHECK(stats.dispatched.empty());
+    check_output_rates_agree(dispatched, generic, family.generic(), kShots);
+}
+
 TEST_CASE("Family survivor sampling keeps only accepted rows", "[sandwich]") {
     const Circuit circuit = parse_file(fixture_path("cultivation_d3_bench.stim"));
     const HirModule hir = trace(circuit);
@@ -395,4 +534,48 @@ TEST_CASE("Family survivor sampling keeps only accepted rows", "[sandwich]") {
     CHECK(kept.measurements.size() ==
           static_cast<size_t>(kept.passed_shots) * family.generic().num_visible_records());
     CHECK(std::ranges::all_of(kept.detectors, [](uint8_t bit) { return bit == 0; }));
+}
+
+TEST_CASE("Family survivor sampling matches generic acceptance on the d5 bench",
+          "[sandwich][expensive]") {
+    const Circuit circuit = parse_file(fixture_path("cultivation_d5_bench.stim"));
+    const HirModule hir = d5_bench(circuit);
+    const std::vector<uint8_t> postselected = all_detectors(hir);
+    SamplingPlanOptions options;
+    options.postselection_mask = postselected;
+    const ProgramFamily family = bench_family(circuit, hir, {Pauli1::X}, options);
+    constexpr uint32_t kShots = 10000;
+
+    FamilySamplingStats stats;
+    const SamplingSurvivorResult dispatched =
+        sampling::sample_family_survivors(family, kShots, 51, false, &stats);
+    const SamplingSurvivorResult generic =
+        sampling::sample_survivors(family.generic(), kShots, 52, false, 1, std::nullopt, 1);
+    WARN("d5 acceptance " << dispatched.passed_shots << " and " << generic.passed_shots << " of "
+                          << kShots << ", fast-path fraction "
+                          << fast_path_fraction(stats, kShots));
+    check_rates_agree(dispatched.passed_shots, kShots, generic.passed_shots, kShots, 5.0);
+}
+
+TEST_CASE("Family sampling throughput on the d5 bench", "[sandwich][expensive]") {
+    const Circuit circuit = parse_file(fixture_path("cultivation_d5_bench.stim"));
+    const HirModule hir = d5_bench(circuit);
+    const ProgramFamily family = bench_family(circuit, hir, {Pauli1::X, Pauli1::Y, Pauli1::Z});
+    constexpr uint32_t kShots = 2000;
+    const auto shots_per_second = [&](auto&& run) {
+        const auto start = std::chrono::steady_clock::now();
+        run();
+        const double seconds =
+            std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+        return static_cast<double>(kShots) / seconds;
+    };
+
+    FamilySamplingStats stats;
+    const double dispatched =
+        shots_per_second([&] { (void)sampling::sample_family(family, kShots, 61, &stats); });
+    const double generic = shots_per_second(
+        [&] { (void)sampling::sample(family.generic(), kShots, 62, 1, std::nullopt, 1); });
+    WARN("d5 family " << dispatched << " shots/s over " << family.num_members()
+                      << " members, generic scalar " << generic << " shots/s, fast-path fraction "
+                      << fast_path_fraction(stats, kShots));
 }

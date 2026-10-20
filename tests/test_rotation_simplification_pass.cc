@@ -4,6 +4,7 @@
 #include "clifft/optimizer/rotation_simplification_pass.h"
 
 #include "instrument_test_helpers.h"
+#include "sampling_equivalence_helpers.h"
 
 #include <catch2/catch_test_macros.hpp>
 #include <stdexcept>
@@ -124,4 +125,55 @@ TEST_CASE("Rotation simplification stops scanning rotations when no stabilizers 
     REQUIRE_FALSE(pass.applied());
     REQUIRE(pass.regions_examined() == 1);
     REQUIRE(hir.ops.size() == 201);
+}
+
+TEST_CASE("Rotation simplification absorbs signed Clifford rotations across observers",
+          "[optimizer]") {
+    // Signed aliases sum to -0.5 and 0.12 half-turns. Absorbing the Clifford
+    // must conjugate downstream probes, noise, measurements, and feedback
+    // while preserving the continuous remainder.
+    auto hir =
+        trace(parse("X 2\n"
+                    "H 0 1\n"
+                    "CX 0 1\n"
+                    "R_PAULI(0.31) Z0*Z2\n"
+                    "R_PAULI(1.06) Z1\n"
+                    "R_PAULI(-0.19) Z0\n"
+                    "R_PAULI(0.94) Z1*Z2\n"
+                    "EXP_VAL X0*Y1\n"
+                    "DEPOLARIZE1(0.05) 0 1\n"
+                    "MX 0\n"
+                    "CX rec[-1] 1\n"
+                    "CZ rec[-1] 1\n"
+                    "R_PAULI(0.41) Z2\n"
+                    "EXP_VAL Z1*Z2\n"
+                    "M 1 2"));
+    const auto baseline = hir;
+    RotationSimplificationPass pass;
+    pass.run(hir);
+    REQUIRE(pass.applied());
+    REQUIRE(pass.rotations_removed() >= 3);
+    Xoshiro256PlusPlus rng(0x707A7101);
+    test::check_exact_equivalent(baseline, hir, rng);
+}
+
+TEST_CASE("Rotation simplification extends a region only after its barrier is removed",
+          "[optimizer]") {
+    for (bool cancels : {false, true}) {
+        CAPTURE(cancels);
+        // The first pair anticommutes with the last rotation. Only cancellation
+        // lets collection extend and use the still-known Z0 to reduce that axis.
+        auto hir = trace(parse(std::string("H 0\nR_Z(0.137) 0\nR_PAULI(") +
+                               (cancels ? "-0.137" : "-0.113") +
+                               ") Z0*Z1\nR_PAULI(0.25) X0*X1\nEXP_VAL Z1\nM 0 1"));
+        const auto baseline = hir;
+        RotationSimplificationPass pass;
+        pass.run(hir);
+        REQUIRE(pass.applied());
+        REQUIRE(pass.regions_examined() == (cancels ? 1 : 2));
+        REQUIRE(pass.rotations_removed() == (cancels ? 2 : 1));
+        REQUIRE(hir.num_t_gates() == 1);
+        Xoshiro256PlusPlus rng(0x707A7102);
+        test::check_exact_equivalent(baseline, hir, rng);
+    }
 }

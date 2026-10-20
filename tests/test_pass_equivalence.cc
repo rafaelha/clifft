@@ -19,6 +19,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <cstdint>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -1130,5 +1131,452 @@ TEST_CASE("Every registered pass is covered by planted equivalence or explicitly
         }
         INFO("Registered pass '" << spec.name << "' did not fire on its primary planted scaffold.");
         REQUIRE(rewrites > 0);
+    }
+}
+
+namespace {
+
+void run_full_hir_pipeline(HirModule& hir) {
+    HirPassManager pm = default_hir_pass_manager();
+    pm.add_pass(std::make_unique<ActiveWidthSchedulePass>());
+    pm.add_pass(std::make_unique<PeepholeFusionPass>());
+    pm.run(hir);
+}
+
+// Constructs HIR modules with a commuting Pauli basis (on either dense qubits
+// or multi-word qubit positions) plus known |0> input stabilizers Z_q.
+// Rotations are emitted in degree-3 TOHPE cubes and stabilizer-aliased
+// multiples so PhasePolynomialPass exercises:
+// - KnownStabilizers canonicalization and multi-generator reduction
+// - Mod-8 coefficient accumulation across c in {0..7}
+// - Quadratic monomial remainders (4*a*b -> S(a)S(b)S_dag(a XOR b))
+// - Cubic TOHPE synthesis
+// - Observer pullbacks (MEASURE, EXP_VAL, NOISE) and stabilizer invalidation.
+HirModule generate_phase_poly_hir(Xoshiro256PlusPlus& rng, std::span<const uint32_t> qubit_map,
+                                  uint32_t total_qubits) {
+    const size_t n_logical = qubit_map.size();
+    REQUIRE(n_logical >= 4);
+
+    HirModule hir(total_qubits, 64, 8);
+    hir.final_tableau.emplace(total_qubits);
+
+    const uint32_t q0 = qubit_map[0];
+    const uint32_t q1 = qubit_map[1];
+    const uint32_t q2 = qubit_map[2];
+    const bool use_full_16_cube = (rng() & 1U) != 0 && n_logical >= 5;
+    // The fourth cube coordinate cannot also supply a fixed Z stabilizer.
+    const uint32_t q_stab = qubit_map[use_full_16_cube ? 4 : 3];
+    const uint32_t q_stab2 = n_logical > 4 ? qubit_map[4] : q_stab;
+
+    auto fill_x_parity_with_stab = [&](MutablePauliMaskView slot, uint32_t parity_bits,
+                                       bool alias_stab1, bool alias_stab2, bool sign) {
+        if (parity_bits & 1U) {
+            slot.x().bit_set(q0, true);
+        }
+        if (parity_bits & 2U) {
+            slot.x().bit_set(q1, true);
+        }
+        if (parity_bits & 4U) {
+            slot.x().bit_set(q2, true);
+        }
+        if (alias_stab1) {
+            slot.z().bit_set(q_stab, true);
+        }
+        if (alias_stab2 && q_stab2 != q_stab) {
+            slot.z().bit_set(q_stab2, true);
+        }
+        slot.set_sign(sign);
+    };
+
+    if (use_full_16_cube) {
+        const uint32_t q3 = qubit_map[3];
+        for (uint32_t term = 1; term <= 16; ++term) {
+            const uint32_t parity = (term == 16) ? 15U : term;
+            const bool alias = (rng() % 3) == 0;
+            hir.append_tgate(false, [&](MutablePauliMaskView slot) {
+                if (parity & 1U)
+                    slot.x().bit_set(q0, true);
+                if (parity & 2U)
+                    slot.x().bit_set(q1, true);
+                if (parity & 4U)
+                    slot.x().bit_set(q2, true);
+                if (parity & 8U)
+                    slot.x().bit_set(q3, true);
+                if (alias)
+                    slot.z().bit_set(q_stab, true);
+            });
+        }
+    } else {
+        for (uint32_t parity = 1; parity <= 7; ++parity) {
+            const uint32_t copies = 1 + static_cast<uint32_t>(rng() % 4);
+            for (uint32_t c = 0; c < copies; ++c) {
+                const bool alias1 = (rng() & 1U) != 0;
+                const bool alias2 = (rng() & 1U) != 0;
+                const bool dagger = (rng() % 5) == 0;
+                const bool sign = (rng() % 4) == 0;
+                hir.append_tgate(dagger, [&](MutablePauliMaskView slot) {
+                    fill_x_parity_with_stab(slot, parity, alias1, alias2, sign);
+                });
+            }
+        }
+    }
+
+    // Interleave a mid-circuit observer (EXP_VAL, MEASURE, or commuting NOISE)
+    // followed by trailing T gates that can merge if their stabilizer aliases
+    // survive the observer.
+    const uint32_t obs_kind = static_cast<uint32_t>(rng() % 4);
+    if (obs_kind == 0) {
+        const bool commuting_probe = (rng() % 3) != 0;
+        const ExpValIdx exp_idx{hir.num_exp_vals++};
+        hir.append_exp_val(exp_idx, [&](MutablePauliMaskView slot) {
+            if (commuting_probe) {
+                slot.x().bit_set(q0, true);
+                if ((rng() & 1U) != 0) {
+                    slot.x().bit_set(q1, true);
+                }
+            } else {
+                slot.z().bit_set(q0, true);
+            }
+            slot.set_sign((rng() & 1U) != 0);
+        });
+    } else if (obs_kind == 1) {
+        const bool measure_commuting = (rng() % 3) != 0;
+        const MeasRecordIdx meas_idx{hir.num_measurements++};
+        hir.append_measure(meas_idx, [&](MutablePauliMaskView slot) {
+            if (measure_commuting) {
+                slot.x().bit_set(q0, true);
+            } else {
+                slot.x().bit_set(q_stab, true);
+            }
+            slot.set_sign((rng() & 1U) != 0);
+        });
+    } else if (obs_kind == 2) {
+        const PauliMaskHandle ch = hir.claim_empty_noise_channel_mask();
+        hir.noise_channel_masks.mut_at(ch).x().bit_set(q1, true);
+        const NoiseSiteIdx site_idx{static_cast<uint32_t>(hir.noise_sites.size())};
+        hir.noise_sites.push_back({0.15, {{ch, 0.15}}});
+        hir.append_noise(site_idx);
+    } else {
+        const ExpValIdx exp_idx{hir.num_exp_vals++};
+        hir.append_exp_val(exp_idx, [&](MutablePauliMaskView slot) {
+            slot.x().bit_set(q1, true);
+            slot.set_sign((rng() & 1U) != 0);
+        });
+        const MeasRecordIdx meas_idx{hir.num_measurements++};
+        hir.append_measure(meas_idx,
+                           [&](MutablePauliMaskView slot) { slot.x().bit_set(q2, true); });
+    }
+
+    for (uint32_t i = 0; i < 4; ++i) {
+        const uint32_t parity = 1 + static_cast<uint32_t>(rng() % 7);
+        const bool alias1 = (rng() & 1U) != 0;
+        const bool dagger = (rng() & 1U) != 0;
+        hir.append_tgate(dagger, [&](MutablePauliMaskView slot) {
+            fill_x_parity_with_stab(slot, parity, alias1, false, false);
+        });
+    }
+
+    // Terminal probe and measurements sensitive to X-basis phase angles and
+    // any absorbed degree-1 / degree-2 Clifford remainder.
+    const ExpValIdx term_exp{hir.num_exp_vals++};
+    hir.append_exp_val(term_exp, [&](MutablePauliMaskView slot) {
+        slot.x().bit_set(q0, true);
+        slot.z().bit_set(q0, true);
+        slot.z().bit_set(q1, true);
+    });
+
+    const uint32_t m0 = hir.num_measurements++;
+    hir.append_measure(MeasRecordIdx{m0},
+                       [&](MutablePauliMaskView slot) { slot.z().bit_set(q0, true); });
+
+    const uint32_t m1 = hir.num_measurements++;
+    hir.append_measure(MeasRecordIdx{m1},
+                       [&](MutablePauliMaskView slot) { slot.z().bit_set(q1, true); });
+
+    const uint32_t m2 = hir.num_measurements++;
+    hir.append_measure(MeasRecordIdx{m2},
+                       [&](MutablePauliMaskView slot) { slot.z().bit_set(q2, true); });
+
+    hir.detector_targets.push_back({m0, m1});
+    hir.ops.push_back(HeisenbergOp::make_detector(DetectorIdx{hir.num_detectors++}));
+
+    hir.observable_targets.push_back({m0, m1, m2});
+    hir.ops.push_back(HeisenbergOp::make_observable(ObservableIdx{0}, 0));
+    hir.num_observables = 1;
+
+    return hir;
+}
+
+// Builds HIR modules where continuous rotations R_PAULI(alpha) share axes up
+// to known |0> stabilizers (or stabilizers surviving across region boundaries)
+// and are separated by commuting rotations or anticommuting barriers.
+// Absorbing an exposed Clifford can let collection cross a barrier.
+HirModule generate_rotation_simp_hir(Xoshiro256PlusPlus& rng, std::span<const uint32_t> qubit_map,
+                                     uint32_t total_qubits) {
+    REQUIRE(qubit_map.size() >= 4);
+
+    HirModule hir(total_qubits, 48, 4);
+    hir.final_tableau.emplace(total_qubits);
+
+    const uint32_t q0 = qubit_map[0];
+    const uint32_t q1 = qubit_map[1];
+    const uint32_t q_stab1 = qubit_map[2];
+    const uint32_t q_stab2 = qubit_map[3];
+
+    static constexpr double kBaseAngles[] = {0.125, 0.25, 0.3, 0.375, 0.5, 0.625, 0.7};
+    for (int region = 0; region < 2; ++region) {
+        const double a1 = kBaseAngles[rng() % std::size(kBaseAngles)];
+        static constexpr double kTargetSums[] = {0.0, 0.25, 0.5, 1.0, 1.5, 0.6};
+        const double target_sum = kTargetSums[rng() % std::size(kTargetSums)];
+        const double a2 = target_sum - a1;
+
+        const bool alias_first = (rng() & 1U) != 0;
+        hir.append_phase_rotation(a1, [&](MutablePauliMaskView slot) {
+            slot.x().bit_set(q0, true);
+            if (alias_first) {
+                slot.z().bit_set(q_stab1, true);
+            }
+        });
+
+        const bool intervening_commutes = (rng() % 3) != 0;
+        const double a_mid = kBaseAngles[rng() % std::size(kBaseAngles)];
+        hir.append_phase_rotation(a_mid, [&](MutablePauliMaskView slot) {
+            slot.x().bit_set(q1, true);
+            if (!intervening_commutes) {
+                slot.z().bit_set(q0, true);
+            }
+        });
+
+        const bool alias_second_1 = !alias_first;
+        const bool alias_second_2 = (rng() & 1U) != 0;
+        const bool flip_sign = (rng() & 1U) != 0;
+        hir.append_phase_rotation(flip_sign ? -a2 : a2, [&](MutablePauliMaskView slot) {
+            slot.x().bit_set(q0, true);
+            if (alias_second_1) {
+                slot.z().bit_set(q_stab1, true);
+            }
+            if (alias_second_2) {
+                slot.z().bit_set(q_stab2, true);
+            }
+            slot.set_sign(flip_sign);
+        });
+
+        if (region == 0) {
+            if ((rng() & 1U) != 0) {
+                const ExpValIdx exp_idx{hir.num_exp_vals++};
+                hir.append_exp_val(exp_idx, [&](MutablePauliMaskView slot) {
+                    slot.z().bit_set(q0, true);
+                    slot.x().bit_set(q1, true);
+                });
+            } else {
+                const MeasRecordIdx meas_idx{hir.num_measurements++};
+                hir.append_measure(meas_idx,
+                                   [&](MutablePauliMaskView slot) { slot.z().bit_set(q0, true); });
+            }
+        }
+    }
+
+    const ExpValIdx exp_idx{hir.num_exp_vals++};
+    hir.append_exp_val(exp_idx, [&](MutablePauliMaskView slot) {
+        slot.z().bit_set(q0, true);
+        slot.z().bit_set(q1, true);
+    });
+
+    const uint32_t m0 = hir.num_measurements++;
+    hir.append_measure(MeasRecordIdx{m0},
+                       [&](MutablePauliMaskView slot) { slot.z().bit_set(q0, true); });
+
+    const uint32_t m1 = hir.num_measurements++;
+    hir.append_measure(MeasRecordIdx{m1},
+                       [&](MutablePauliMaskView slot) { slot.z().bit_set(q1, true); });
+
+    hir.detector_targets.push_back({m0, m1});
+    hir.ops.push_back(HeisenbergOp::make_detector(DetectorIdx{hir.num_detectors++}));
+
+    hir.observable_targets.push_back({m0, m1});
+    hir.ops.push_back(HeisenbergOp::make_observable(ObservableIdx{0}, 0));
+    hir.num_observables = 1;
+
+    return hir;
+}
+
+}  // namespace
+
+TEST_CASE(
+    "Structured phase polynomial HIR generator preserves exact distributions across word "
+    "boundaries",
+    "[pass_equivalence][optimizer]") {
+    Xoshiro256PlusPlus rng(0x51A5E01);
+    Xoshiro256PlusPlus control_rng(0x51A5E02);
+
+    size_t applied_count = 0;
+    size_t blocks_reduced_total = 0;
+    size_t pullbacks_total = 0;
+    size_t t_reduced_cases = 0;
+
+    // Exercise dense single-word qubits and sparse multi-word layouts crossing
+    // the 64-bit and 128-bit boundaries through the calibrated exact oracle.
+    const std::vector<std::pair<uint32_t, std::vector<uint32_t>>> layouts = {
+        {5, {0, 1, 2, 3, 4}},
+        {66, {0, 1, 63, 64, 65}},
+        {130, {0, 63, 64, 128, 129}},
+    };
+
+    for (int trial = 0; trial < 36; ++trial) {
+        const auto& [total_qubits, qubit_map] =
+            layouts[static_cast<size_t>(trial) % layouts.size()];
+        const HirModule original = generate_phase_poly_hir(rng, qubit_map, total_qubits);
+        CAPTURE(trial, total_qubits);
+
+        HirModule phase_opt = original;
+        PhasePolynomialPass pass;
+        pass.run(phase_opt);
+
+        if (pass.applied()) {
+            ++applied_count;
+            blocks_reduced_total += pass.blocks_reduced();
+            pullbacks_total += pass.pauli_pullbacks();
+            if (pass.output_t_count() < pass.input_t_count()) {
+                ++t_reduced_cases;
+            }
+        }
+
+        check_exact_equivalent(original, phase_opt, control_rng);
+
+        // Repeated optimization must preserve behavior even if more rewrites become possible.
+        pass.run(phase_opt);
+        check_exact_equivalent(original, phase_opt, control_rng);
+
+        HirModule full_opt = original;
+        run_full_hir_pipeline(full_opt);
+        check_exact_equivalent(original, full_opt, control_rng);
+    }
+
+    REQUIRE(applied_count >= 24);
+    REQUIRE(blocks_reduced_total >= 24);
+    REQUIRE(pullbacks_total >= 8);
+    REQUIRE(t_reduced_cases >= 20);
+}
+
+TEST_CASE(
+    "Structured rotation simplification HIR generator preserves exact distributions across word "
+    "boundaries",
+    "[pass_equivalence][optimizer]") {
+    Xoshiro256PlusPlus rng(0x707A7101);
+    Xoshiro256PlusPlus control_rng(0x707A7102);
+
+    size_t applied_count = 0;
+    size_t regions_reduced_total = 0;
+    size_t rotations_removed_total = 0;
+
+    const std::vector<std::pair<uint32_t, std::vector<uint32_t>>> layouts = {
+        {4, {0, 1, 2, 3}},
+        {66, {0, 63, 64, 65}},
+        {130, {0, 63, 64, 129}},
+    };
+
+    for (int trial = 0; trial < 36; ++trial) {
+        const auto& [total_qubits, qubit_map] =
+            layouts[static_cast<size_t>(trial) % layouts.size()];
+        const HirModule original = generate_rotation_simp_hir(rng, qubit_map, total_qubits);
+        CAPTURE(trial, total_qubits);
+
+        HirModule rot_opt = original;
+        RotationSimplificationPass pass;
+        pass.run(rot_opt);
+
+        if (pass.applied()) {
+            ++applied_count;
+            regions_reduced_total += pass.regions_reduced();
+            rotations_removed_total += pass.rotations_removed();
+        }
+
+        check_exact_equivalent(original, rot_opt, control_rng);
+
+        pass.run(rot_opt);
+        check_exact_equivalent(original, rot_opt, control_rng);
+
+        HirModule full_opt = original;
+        run_full_hir_pipeline(full_opt);
+        check_exact_equivalent(original, full_opt, control_rng);
+    }
+
+    REQUIRE(applied_count >= 20);
+    REQUIRE(regions_reduced_total >= 20);
+    REQUIRE(rotations_removed_total >= 24);
+}
+
+TEST_CASE("Varied pass sequences preserve exact distributions across hazards",
+          "[pass_equivalence][optimizer]") {
+    Xoshiro256PlusPlus rng(0x9E730001);
+    Xoshiro256PlusPlus control_rng(0x9E730002);
+
+    const PlantedScaffoldKind scaffolds[] = {
+        PlantedScaffoldKind::PhaseSandwich,
+        PlantedScaffoldKind::StabilizerReducedPhase,
+        PlantedScaffoldKind::FeedbackAndReset,
+        PlantedScaffoldKind::MultiRoundSchedule,
+    };
+    const HazardConfig hazard_configs[] = {
+        {},
+        {.pauli_noise = true, .readout_noise = true, .exp_val = true},
+        {.correlated_noise = true, .resets = true, .postselect_check_detectors = true},
+    };
+
+    std::vector<const PassInfo*> non_destructive_passes;
+    for (const PassInfo& info : kRegisteredPasses) {
+        const bool is_destructive = std::find(std::begin(kDestructiveRegisteredPasses),
+                                              std::end(kDestructiveRegisteredPasses),
+                                              info.name) != std::end(kDestructiveRegisteredPasses);
+        if (!is_destructive) {
+            non_destructive_passes.push_back(&info);
+        }
+    }
+
+    for (int trial = 0; trial < 24; ++trial) {
+        const PlantedScaffoldKind scaffold =
+            scaffolds[static_cast<size_t>(trial) % std::size(scaffolds)];
+        const HazardConfig& hazards =
+            hazard_configs[static_cast<size_t>(trial) % std::size(hazard_configs)];
+        const PlantedCircuit planted = generate_planted_scaffold(scaffold, rng, 4);
+        const std::string source = join_lines(inject_boundary_hazards(planted, hazards, rng, 4));
+        CAPTURE(trial, static_cast<int>(scaffold), source);
+
+        const Circuit circuit = clifft::parse(source);
+        const HirModule original = clifft::trace(circuit);
+        const OwnedPlanOptions owned =
+            build_plan_options(original, planted, hazards.postselect_check_detectors);
+        const auto options = owned.as_span_options();
+        const ExactPlanDistribution dense_dist =
+            compute_dense_circuit_distribution(circuit, options);
+
+        HirModule candidate = original;
+        const size_t pipeline_len = 3 + (rng() % 5);
+        for (size_t step = 0; step < pipeline_len; ++step) {
+            const size_t choice = rng() % (non_destructive_passes.size() + 1);
+            const std::string_view pass_name = choice < non_destructive_passes.size()
+                                                   ? non_destructive_passes[choice]->name
+                                                   : "ActiveWidthSchedulePass";
+            CAPTURE(step, pass_name);
+            if (choice < non_destructive_passes.size()) {
+                non_destructive_passes[choice]->make()->run(candidate);
+            } else {
+                ActiveWidthScheduleOptions sched_opts;
+                sched_opts.beam_width = 1 + static_cast<uint32_t>(rng() % 4);
+                sched_opts.noise_transparent = (rng() & 1U) != 0;
+                sched_opts.sink_neutral_rotations = (rng() & 1U) != 0;
+                sched_opts.search_budget =
+                    (rng() & 1U) != 0 ? std::optional<double>(0.0) : std::optional<double>(8.0);
+                ActiveWidthSchedulePass sched(sched_opts);
+                sched.run(candidate);
+                if (sched.applied()) {
+                    REQUIRE(sched.result_peak() <= sched.incumbent_peak());
+                }
+            }
+            require_distributions_equal(dense_dist,
+                                        compute_exact_hir_distribution(candidate, options));
+        }
+
+        check_exact_equivalent(original, candidate, control_rng, 16, options);
     }
 }

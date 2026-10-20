@@ -16,8 +16,11 @@ struct ReferenceSyndrome {
 /// Compute the noiseless reference syndrome for an HirModule.
 /// Strips stochastic and readout noise from a copy, optimizes remaining
 /// non-Clifford operations, and extracts symbolically proven constant parities.
+/// Rejects instrument-bearing HIR, then returns empty vectors immediately if
+/// there are no detectors or observables to normalize.
 /// Throws std::invalid_argument if any detector or observable cannot be proved
-/// deterministic. Coherent rotations are retained as circuit operations.
+/// deterministic or instruments are present. Coherent rotations are retained
+/// as circuit operations.
 [[nodiscard]] ReferenceSyndrome compute_reference_syndrome(const HirModule& hir);
 
 }  // namespace clifft

@@ -528,6 +528,12 @@ void process_instrument(const HirModule& hir, const HeisenbergOp& op, uint32_t n
 }  // namespace
 
 SamplingPlan plan_sampling(const HirModule& hir, SamplingPlanOptions options) {
+    // An instrument's planned suffix covers only the path without a trap;
+    // continuations can change parities beyond the symbolic frame's proof.
+    if (options.retain_syndrome_constants && !hir.instrument_sites.empty()) {
+        throw std::invalid_argument(
+            "Syndrome constant analysis does not support instrument continuations");
+    }
     NoiseSigns noise_signs(hir);
 
     SamplingPlan plan;

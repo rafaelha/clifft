@@ -11,6 +11,14 @@
 namespace clifft {
 
 ReferenceSyndrome compute_reference_syndrome(const HirModule& hir) {
+    if (!hir.instrument_sites.empty()) {
+        throw std::invalid_argument(
+            "Noiseless reference computation does not support instrument continuations");
+    }
+    if (hir.num_detectors == 0 && hir.num_observables == 0) {
+        return {};
+    }
+
     HirModule clean_hir = hir;
     RemoveNoisePass strip;
     strip.run(clean_hir);

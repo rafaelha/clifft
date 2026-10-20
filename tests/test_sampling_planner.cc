@@ -1,3 +1,4 @@
+#include "clifft/api/reference_syndrome.h"
 #include "clifft/circuit/parser.h"
 #include "clifft/frontend/frontend.h"
 #include "clifft/optimizer/hir_pass_manager.h"
@@ -12,6 +13,7 @@
 #include <bit>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <cmath>
 #include <numbers>
 #include <stdexcept>
@@ -366,6 +368,55 @@ TEST_CASE("Sampling planner fixes instrument source handling before execution") 
     const SamplingPlan neglected = plan_for("H 0\nLEVEL_TRANSITION[jump] 0", true);
     REQUIRE(instrument(neglected).mode == InstrumentMode::DormantTrap);
     REQUIRE(neglected.peak_active_width == 0);
+}
+
+TEST_CASE("Syndrome reference analysis rejects instrument continuations") {
+    struct Case {
+        const char* source;
+        bool neglect_damping;
+        InstrumentMode mode;
+    };
+    for (const auto& test : {
+             Case{"H 0\nLEAKAGE(0.1) 0", false, InstrumentMode::DormantTrap},
+             Case{"H 0\nLOSS(0.1) 0", false, InstrumentMode::DormantTrap},
+             Case{"H 0\nLEVEL_TRANSITION[jump] 0", true, InstrumentMode::DormantTrap},
+             Case{"H 0\nLEVEL_TRANSITION[jump] 0", false, InstrumentMode::Activate},
+             Case{"LEVEL_TRANSITION[jump] 0", false, InstrumentMode::Classical},
+             Case{"H 0\nT 0\nLEVEL_TRANSITION[jump] 0", false, InstrumentMode::Active},
+         }) {
+        CAPTURE(test.source, test.neglect_damping);
+        const auto options = clifft::test::source_dependent_jump_options(test.neglect_damping);
+        for (const char* suffix : {"", "\nMX 0\nDETECTOR rec[-1]\nOBSERVABLE_INCLUDE(0) rec[-1]"}) {
+            CAPTURE(suffix);
+            const auto hir =
+                clifft::trace(clifft::parse(std::string(test.source) + suffix), &options);
+            const auto plan = plan_sampling(hir);
+            const auto instrument = std::ranges::find_if(plan.actions, [](const auto& action) {
+                return std::holds_alternative<ApplyInstrument>(action.action);
+            });
+            REQUIRE(instrument != plan.actions.end());
+            REQUIRE(std::get<ApplyInstrument>(instrument->action).mode == test.mode);
+            REQUIRE_NOTHROW(plan.validate());
+            REQUIRE_THROWS_WITH(clifft::compute_reference_syndrome(hir),
+                                Catch::Matchers::ContainsSubstring("instrument continuations"));
+            REQUIRE_THROWS_WITH(plan_sampling(hir, {.retain_syndrome_constants = true}),
+                                Catch::Matchers::ContainsSubstring("instrument continuations"));
+        }
+    }
+}
+
+TEST_CASE("Empty syndrome references do not require a dense execution plan") {
+    // These independent magic states exceed the planner's dense-width limit,
+    // but computing an empty reference needs no quantum execution workspace.
+    std::string source;
+    for (uint32_t q = 0; q < 60; ++q) {
+        source += "H " + std::to_string(q) + "\nT " + std::to_string(q) + "\n";
+    }
+    const auto hir = clifft::trace(clifft::parse(source));
+    REQUIRE_THROWS_AS(plan_sampling(hir), std::overflow_error);
+    const auto reference = clifft::compute_reference_syndrome(hir);
+    REQUIRE(reference.detectors.empty());
+    REQUIRE(reference.observables.empty());
 }
 
 TEST_CASE("Sampling planner keeps prefix symbols stable across continuation suffixes") {

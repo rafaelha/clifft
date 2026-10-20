@@ -19,6 +19,7 @@ struct SamplingPlanOptions {
     // require or retain it.
     bool retain_source_map = false;
     // Avoid expanding detector parities during ordinary noisy compilation.
+    // Analysis rejects instrument-bearing HIR because traps change the suffix.
     bool retain_syndrome_constants = false;
 };
 

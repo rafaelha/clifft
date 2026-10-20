@@ -12,6 +12,8 @@ inline constexpr uint64_t kHipSamplingExecutorDomain = 0x02;
 inline constexpr uint64_t kBatchSamplingExecutorDomain = 0x03;
 inline constexpr uint64_t kCudaSamplingExecutorDomain = 0x04;
 inline constexpr uint64_t kBatchCalibrationDomain = 0x05;
+inline constexpr uint64_t kFamilyNoiseDomain = 0x06;
+inline constexpr uint64_t kFamilyExecutorDomain = 0x07;
 inline constexpr uint64_t kTrajectoryDriverDomain = 0x11;
 inline constexpr uint64_t kTrajectoryExecutorDomain = 0x12;
 

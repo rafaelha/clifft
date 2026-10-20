@@ -81,6 +81,37 @@ size_t ExecutablePlan::num_new_x_instrument_activations() const {
         }));
 }
 
+bool ExecutablePlan::has_same_presampled_noise(const ExecutablePlan& other) const {
+    if (presampled_symbols_.size() != other.presampled_symbols_.size() ||
+        noise_sites_.size() != other.noise_sites_.size() ||
+        noise_outcomes_.size() != other.noise_outcomes_.size() ||
+        noise_hazards_ != other.noise_hazards_) {
+        return false;
+    }
+    const auto ordinal = [](const ExecutablePlan& plan, uint32_t symbol) {
+        return std::ranges::lower_bound(plan.presampled_symbols_, symbol) -
+               plan.presampled_symbols_.begin();
+    };
+    for (size_t site = 0; site < noise_sites_.size(); ++site) {
+        const PreparedNoiseSite& mine = noise_sites_[site];
+        const PreparedNoiseSite& theirs = other.noise_sites_[site];
+        if (mine.outcome_begin != theirs.outcome_begin ||
+            mine.outcome_count != theirs.outcome_count ||
+            mine.conditioned_probability != theirs.conditioned_probability) {
+            return false;
+        }
+    }
+    for (size_t outcome = 0; outcome < noise_outcomes_.size(); ++outcome) {
+        const PreparedNoiseOutcome& mine = noise_outcomes_[outcome];
+        const PreparedNoiseOutcome& theirs = other.noise_outcomes_[outcome];
+        if (mine.cumulative_probability != theirs.cumulative_probability ||
+            ordinal(*this, mine.symbol) != ordinal(other, theirs.symbol)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 std::vector<double> ExecutablePlan::noise_site_probabilities() const {
     std::vector<double> probabilities;
     probabilities.reserve(noise_sites_.size() + num_readout_noise_sites_);

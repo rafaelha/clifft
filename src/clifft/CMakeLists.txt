@@ -48,6 +48,7 @@ add_library(clifft_core STATIC
     sampling/kernels.cc
     sampling/sampler.cc
     sampling/sandwich_keys.cc
+    sampling/program_family.cc
     sampling/state.cc
     api/basis_probabilities.cc
     api/reference_syndrome.cc

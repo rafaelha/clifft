@@ -299,6 +299,51 @@ TEST_CASE("Sampling executor evaluates presampled and derived affine symbols") {
     REQUIRE(executor.state().real_data() == real);
 }
 
+TEST_CASE("Fired presampled ordinals match a full presampled vector") {
+    // Noise reaches rotations, measurements, reset feedback and a detector,
+    // and readout noise keeps drawing from the executor's own stream.
+    const ExecutablePlan executable(plan_from(R"(
+        H 0 1
+        T 0 1
+        DEPOLARIZE1(0.2) 0 1
+        CX 0 1
+        T 1
+        X_ERROR(0.3) 0
+        M(0.1) 0 1
+        R 0
+        DEPOLARIZE1(0.2) 0
+        H 0
+        T 0
+        MX 0
+        DETECTOR rec[-1] rec[-2]
+    )"));
+    const uint32_t count = executable.num_presampled_symbols();
+    REQUIRE(count > 4);
+    Executor full(executable);
+    Executor fired(executable);
+    clifft::Xoshiro256PlusPlus rng(3);
+    std::vector<uint8_t> values(count, 0);
+    std::vector<uint32_t> ordinals;
+    for (uint32_t shot = 0; shot < 64; ++shot) {
+        ordinals.clear();
+        for (uint32_t ordinal = 0; ordinal < count; ++ordinal) {
+            values[ordinal] = static_cast<uint8_t>(rng() % 4 == 0 ? 1 : 0);
+            if (values[ordinal] != 0) {
+                ordinals.push_back(ordinal);
+            }
+        }
+        reseed_for_shot(full, shot);
+        reseed_for_shot(fired, shot);
+        full.run_shot(values);
+        fired.run_shot_fired(ordinals);
+        INFO("shot " << shot);
+        REQUIRE(std::ranges::equal(fired.symbols(), full.symbols()));
+        REQUIRE(std::ranges::equal(fired.visible_records(), full.visible_records()));
+        REQUIRE(std::ranges::equal(fired.hidden_records(), full.hidden_records()));
+        REQUIRE(std::ranges::equal(fired.detectors(), full.detectors()));
+    }
+}
+
 TEST_CASE("Sampling executor applies sampled symbols to later state actions") {
     SamplingPlan plan;
     plan.num_qubits = 2;

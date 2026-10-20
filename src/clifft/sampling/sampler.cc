@@ -4,6 +4,7 @@
 #include "clifft/sampling/batch/policy.h"
 #include "clifft/sampling/batch/tuning.h"
 #include "clifft/sampling/executor.h"
+#include "clifft/sampling/program_family.h"
 #include "clifft/util/fault_sampling.h"
 #include "clifft/util/intra_shot_parallel.h"
 #include "clifft/util/shot_parallel.h"
@@ -744,6 +745,183 @@ SamplingSurvivorResult sample_k_survivors(const ExecutablePlan& plan, uint32_t s
            uint32_t batch) noexcept {
             worker.executor.run_batch(root, first_shot, batch, worker.fault_sampler);
         });
+}
+
+namespace {
+
+void seed_family_noise(Xoshiro256PlusPlus& rng, const SeedRoot& root, uint32_t shot) noexcept {
+    const std::array<uint64_t, 4> words = derive_state(root, shot, kFamilyNoiseDomain);
+    rng.seed_full(words[0], words[1], words[2], words[3]);
+}
+
+// Owns one executor per family plan and the per-shot fired-ordinal and key
+// storage, all allocated before the first shot.
+class FamilyDispatcher {
+  public:
+    explicit FamilyDispatcher(const ProgramFamily& family)
+        : family_(family), generic_(family.generic()), keys_(family.key_map().zero_keys()) {
+        members_.reserve(family.num_members());
+        for (size_t m = 0; m < family.num_members(); ++m) {
+            members_.push_back(std::make_unique<Executor>(family.member(m).plan));
+        }
+        fired_.reserve(family.generic().num_noise_sites());
+    }
+
+    // Runs one shot and returns the executor holding its outputs.
+    Executor& run(const SeedRoot& root, uint32_t shot, FamilySamplingStats* stats) noexcept {
+        seed_family_noise(rng_, root, shot);
+        family_.draw_presampled(rng_, fired_);
+        family_.key_map().assign_keys(fired_, keys_);
+        const std::optional<size_t> member = family_.find(keys_);
+        Executor& executor = member.has_value() ? *members_[*member] : generic_;
+        const std::array<uint64_t, 4> words = derive_state(root, shot, kFamilyExecutorDomain);
+        executor.reseed_full(words[0], words[1], words[2], words[3]);
+        executor.run_shot_fired(fired_);
+        if (stats != nullptr) {
+            if (member.has_value()) {
+                ++stats->shots_per_member[*member];
+            } else {
+                ++stats->fallback_shots;
+            }
+            if (stats->record_dispatch) {
+                stats->dispatched[shot] =
+                    member.has_value() ? std::optional<uint32_t>(static_cast<uint32_t>(*member))
+                                       : std::nullopt;
+            }
+        }
+        return executor;
+    }
+
+  private:
+    const ProgramFamily& family_;
+    Executor generic_;
+    std::vector<std::unique_ptr<Executor>> members_;
+    Xoshiro256PlusPlus rng_;
+    std::vector<uint32_t> fired_;
+    std::vector<SandwichKey> keys_;
+};
+
+void reset_family_stats(FamilySamplingStats* stats, const ProgramFamily& family, uint32_t shots) {
+    if (stats == nullptr) {
+        return;
+    }
+    stats->shots_per_member.assign(family.num_members(), 0);
+    stats->fallback_shots = 0;
+    stats->dispatched.assign(stats->record_dispatch ? shots : 0, std::nullopt);
+}
+
+}  // namespace
+
+SamplingResult sample_family(const ProgramFamily& family, uint32_t shots,
+                             std::optional<uint64_t> seed, FamilySamplingStats* stats) {
+    const ExecutablePlan& plan = family.generic();
+    if (plan.has_postselection()) {
+        throw std::invalid_argument(
+            "fixed-row sampling does not support postselection; use sample_family_survivors");
+    }
+    SamplingResult result;
+    result.measurements.resize(checked_output_size(shots, plan.num_visible_records()));
+    result.detectors.resize(checked_output_size(shots, plan.num_detectors()));
+    result.observables.resize(checked_output_size(shots, plan.num_observables()));
+    result.exp_vals.resize(checked_output_size(shots, plan.num_exp_vals()));
+    reset_family_stats(stats, family, shots);
+    if (shots == 0) {
+        return result;
+    }
+
+    FamilyDispatcher dispatcher(family);
+    const SeedRoot root = make_seed_root(shots, seed);
+    for (uint32_t shot = 0; shot < shots; ++shot) {
+        const Executor& executor = dispatcher.run(root, shot, stats);
+        std::ranges::copy(
+            executor.visible_records(),
+            result.measurements.begin() + static_cast<size_t>(shot) * plan.num_visible_records());
+        std::ranges::copy(
+            executor.detectors(),
+            result.detectors.begin() + static_cast<size_t>(shot) * plan.num_detectors());
+        std::ranges::copy(
+            executor.observables(),
+            result.observables.begin() + static_cast<size_t>(shot) * plan.num_observables());
+        std::ranges::copy(executor.exp_vals(), result.exp_vals.begin() +
+                                                   static_cast<size_t>(shot) * plan.num_exp_vals());
+    }
+    return result;
+}
+
+SamplingSurvivorResult sample_family_survivors(const ProgramFamily& family, uint32_t shots,
+                                               std::optional<uint64_t> seed, bool keep_records,
+                                               FamilySamplingStats* stats) {
+    const ExecutablePlan& plan = family.generic();
+    SamplingSurvivorResult result;
+    result.total_shots = shots;
+    reset_family_stats(stats, family, shots);
+    if (shots == 0) {
+        return result;
+    }
+    result.observable_ones.resize(plan.num_observables(), 0);
+    if (keep_records) {
+        result.measurements.resize(checked_output_size(shots, plan.num_visible_records()));
+        result.detectors.resize(checked_output_size(shots, plan.num_detectors()));
+        result.observables.resize(checked_output_size(shots, plan.num_observables()));
+        result.exp_vals.resize(checked_output_size(shots, plan.num_exp_vals()));
+    }
+    std::vector<uint8_t> survived(keep_records ? shots : 0, 0);
+
+    FamilyDispatcher dispatcher(family);
+    const SeedRoot root = make_seed_root(shots, seed);
+    for (uint32_t shot = 0; shot < shots; ++shot) {
+        const Executor& executor = dispatcher.run(root, shot, stats);
+        if (executor.discarded()) {
+            continue;
+        }
+        ++result.passed_shots;
+        bool logical_error = false;
+        for (uint32_t observable = 0; observable < plan.num_observables(); ++observable) {
+            const bool value = executor.observables()[observable] != 0;
+            result.observable_ones[observable] += static_cast<uint64_t>(value);
+            logical_error |= value;
+        }
+        result.logical_errors += static_cast<uint32_t>(logical_error);
+        if (keep_records) {
+            survived[shot] = 1;
+            std::ranges::copy(executor.visible_records(),
+                              result.measurements.begin() +
+                                  static_cast<size_t>(shot) * plan.num_visible_records());
+            std::ranges::copy(
+                executor.detectors(),
+                result.detectors.begin() + static_cast<size_t>(shot) * plan.num_detectors());
+            std::ranges::copy(
+                executor.observables(),
+                result.observables.begin() + static_cast<size_t>(shot) * plan.num_observables());
+            std::ranges::copy(
+                executor.exp_vals(),
+                result.exp_vals.begin() + static_cast<size_t>(shot) * plan.num_exp_vals());
+        }
+    }
+    if (keep_records) {
+        compact_survivor_rows(result.measurements, survived, plan.num_visible_records(),
+                              result.passed_shots);
+        compact_survivor_rows(result.detectors, survived, plan.num_detectors(),
+                              result.passed_shots);
+        compact_survivor_rows(result.observables, survived, plan.num_observables(),
+                              result.passed_shots);
+        compact_survivor_rows(result.exp_vals, survived, plan.num_exp_vals(), result.passed_shots);
+    }
+    return result;
+}
+
+std::vector<uint8_t> family_presampled_values(const ProgramFamily& family, uint64_t seed,
+                                              uint32_t shot) {
+    Xoshiro256PlusPlus rng;
+    seed_family_noise(rng, seed_root_from_seed(seed), shot);
+    std::vector<uint32_t> fired;
+    fired.reserve(family.generic().num_noise_sites());
+    family.draw_presampled(rng, fired);
+    std::vector<uint8_t> values(family.generic().num_presampled_symbols(), 0);
+    for (const uint32_t ordinal : fired) {
+        values[ordinal] = 1;
+    }
+    return values;
 }
 
 std::vector<double> record_log_probabilities(const ExecutablePlan& plan,

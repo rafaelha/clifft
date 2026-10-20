@@ -5,6 +5,7 @@
 #include "clifft/sampling/kernel_dispatch.h"
 #include "clifft/sampling/kernels.h"
 #include "clifft/sampling/plan.h"
+#include "clifft/util/noise_sampling.h"
 
 #include <cassert>
 #include <cstddef>
@@ -119,6 +120,71 @@ class ExecutablePlan {
     [[nodiscard]] size_t num_new_x_instrument_activations() const;
     [[nodiscard]] uint32_t num_unbound_presampled_symbols() const {
         return static_cast<uint32_t>(unbound_presampled_symbols_.size());
+    }
+    // Ascending ids of the Presampled symbols. run_shot(values) assigns
+    // values[i] to presampled_symbols()[i], so i is the symbol's ordinal.
+    [[nodiscard]] std::span<const uint32_t> presampled_symbols() const noexcept {
+        return presampled_symbols_;
+    }
+    [[nodiscard]] uint32_t num_noise_sites() const noexcept {
+        return static_cast<uint32_t>(noise_sites_.size());
+    }
+    // True when both plans draw presampled noise from the same site
+    // distributions and give each outcome the same ordinal, so one vector of
+    // presampled values means the same realization in either plan.
+    [[nodiscard]] bool has_same_presampled_noise(const ExecutablePlan& other) const;
+
+    // Draws the presampled noise of sites [begin, end) exactly as scalar
+    // execution does: one exponential-gap draw skips to the next firing site,
+    // and a site with several outcomes takes one more draw to pick one.
+    // Calls fire(symbol) for each firing site's outcome, in site order.
+    // Callers that choose a plan from the drawn noise share this so their
+    // shots follow the executor's own distribution.
+    template <typename Uniform, typename Fire>
+    void draw_noise(uint32_t begin, uint32_t end, Uniform&& uniform, Fire&& fire) const noexcept {
+        assert(begin <= end && end <= noise_sites_.size() &&
+               "noise segment must stay inside prepared sites");
+        uint32_t first_candidate = begin;
+        while (first_candidate < end) {
+            const double current_hazard =
+                first_candidate == 0 ? 0.0 : noise_hazards_[first_candidate - 1];
+            if (current_hazard >= noise_hazards_[end - 1]) {
+                return;
+            }
+            const uint32_t site =
+                sample_next_noise_site(noise_hazards_, first_candidate, uniform());
+            if (site == kNoNoiseSite || site >= end) {
+                return;
+            }
+            fire(draw_noise_outcome(site, uniform));
+            first_candidate = site + 1;
+        }
+    }
+
+    // The outcome symbol of a site that fires, chosen by its channel draw.
+    template <typename Uniform>
+    [[nodiscard]] uint32_t draw_noise_outcome(uint32_t site_index,
+                                              Uniform&& uniform) const noexcept {
+        assert(site_index < noise_sites_.size() && "noise site must be prepared");
+        const PreparedNoiseSite& site = noise_sites_[site_index];
+        assert(site.outcome_count > 0 &&
+               "a firing noise site must contain positive-probability outcomes");
+        const uint32_t outcome_end = site.outcome_begin + site.outcome_count;
+        assert(outcome_end <= noise_outcomes_.size() &&
+               noise_outcomes_[outcome_end - 1].cumulative_probability > 0.0 &&
+               "a firing noise site must contain positive-probability outcomes");
+        uint32_t outcome_index = site.outcome_begin;
+        if (site.outcome_count > 1) {
+            const double execution_probability =
+                noise_outcomes_[outcome_end - 1].cumulative_probability;
+            const double channel_draw = uniform() * execution_probability;
+            while (channel_draw >= noise_outcomes_[outcome_index].cumulative_probability) {
+                ++outcome_index;
+                assert(outcome_index < outcome_end &&
+                       "channel draw must select one prepared outcome");
+            }
+        }
+        return noise_outcomes_[outcome_index].symbol;
     }
     [[nodiscard]] std::vector<double> noise_site_probabilities() const;
     // Deterministic target-specific inspection for diagnostics and tooling.

@@ -221,6 +221,25 @@ class Rewriter {
 
 }  // namespace
 
+size_t SandwichKeysHash::operator()(const std::vector<SandwichKey>& keys) const noexcept {
+    // FNV-1a over the flags, with each vector's length mixed in so keys
+    // of different shapes stay distinct.
+    uint64_t hash = 0xcbf29ce484222325ULL;
+    const auto mix = [&hash](uint64_t value) {
+        hash ^= value;
+        hash *= 0x100000001b3ULL;
+    };
+    for (const SandwichKey& key : keys) {
+        for (const auto* flags : {&key.axis_flip, &key.internal_support}) {
+            mix(flags->size());
+            for (const uint8_t flag : *flags) {
+                mix(flag);
+            }
+        }
+    }
+    return static_cast<size_t>(hash);
+}
+
 SandwichSpecializationPass::SandwichSpecializationPass(std::vector<SandwichKey> keys)
     : keys_(std::move(keys)) {}
 

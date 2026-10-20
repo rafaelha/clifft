@@ -27,6 +27,12 @@ struct SandwichKey {
     friend bool operator==(const SandwichKey&, const SandwichKey&) = default;
 };
 
+// Hashes the per-block keys of one realization class so callers can look up
+// the plan specialized for it.
+struct SandwichKeysHash {
+    [[nodiscard]] size_t operator()(const std::vector<SandwichKey>& keys) const noexcept;
+};
+
 // Replaces recognized T-sandwich blocks with projections onto the Clifford
 // observables they measure, for one noise-realization class per block.
 //

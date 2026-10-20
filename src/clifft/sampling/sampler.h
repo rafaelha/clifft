@@ -12,6 +12,8 @@
 
 namespace clifft::sampling {
 
+class ProgramFamily;
+
 inline constexpr double kDefaultBatchTuningBudgetSeconds = 0.25;
 
 // Sampling pipeline:
@@ -87,5 +89,45 @@ struct ThreadLayout {
     std::optional<ThreadLayout> thread_layout = std::nullopt,
     std::optional<uint32_t> batch_size = std::nullopt,
     std::optional<double> tuning_budget_seconds = std::nullopt);
+
+// Dispatch counts from one family sampling call. The call overwrites them.
+struct FamilySamplingStats {
+    // Shots run on each member, indexed like ProgramFamily::member.
+    std::vector<uint64_t> shots_per_member;
+    // Shots whose keys matched no member and ran on the generic plan.
+    uint64_t fallback_shots = 0;
+    // When set on entry, `dispatched` receives one entry per shot: the member
+    // the shot ran on, or nullopt for the generic plan. This lets a caller
+    // audit dispatch against the drawn noise.
+    bool record_dispatch = false;
+    std::vector<std::optional<uint32_t>> dispatched;
+};
+
+// Samples with per-shot sandwich dispatch. Each shot draws its presampled
+// noise from the generic plan's distributions, computes its keys with the
+// family's key map, and runs the matching member's plan, or the generic plan
+// when none matches, on those presampled values. Outputs follow sample():
+// row-major visible records, detectors, observables and expectation values.
+// Plans that postselect must use sample_family_survivors.
+//
+// Execution is single-threaded and uses the scalar executor, so this takes
+// no thread or batch options. Executors for every plan are built before the
+// first shot. Noise and execution draw from separate per-shot streams
+// derived from the seed, so a seed reproduces this function's rows, but not
+// the rows sample() returns for the same seed.
+[[nodiscard]] SamplingResult sample_family(const ProgramFamily& family, uint32_t shots,
+                                           std::optional<uint64_t> seed = std::nullopt,
+                                           FamilySamplingStats* stats = nullptr);
+
+// Survivor sampling with per-shot sandwich dispatch. Counts and kept rows
+// follow sample_survivors(); dispatch and seeding follow sample_family().
+[[nodiscard]] SamplingSurvivorResult sample_family_survivors(
+    const ProgramFamily& family, uint32_t shots, std::optional<uint64_t> seed = std::nullopt,
+    bool keep_records = false, FamilySamplingStats* stats = nullptr);
+
+// The presampled values, by ordinal, that sample_family and
+// sample_family_survivors draw for `shot` under `seed`.
+[[nodiscard]] std::vector<uint8_t> family_presampled_values(const ProgramFamily& family,
+                                                            uint64_t seed, uint32_t shot);
 
 }  // namespace clifft::sampling

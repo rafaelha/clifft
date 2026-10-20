@@ -62,6 +62,12 @@ class Executor {
     // ascending SymbolId order. This path consumes no quantum-noise RNG draws.
     void run_shot(std::span<const uint8_t> presampled_values) noexcept;
 
+    // Same as run_shot(presampled_values) with exactly the listed distinct
+    // ordinals true, where an ordinal is a position in that ascending order.
+    // Its setup cost scales with the fired ordinals instead of with every
+    // presampled symbol, which dominates a shot of a sparse-noise plan.
+    void run_shot_fired(std::span<const uint32_t> fired_ordinals) noexcept;
+
     // Draw one exact conditioned set of fault sites, choose a Pauli channel
     // within each selected quantum site, and force selected readout flips.
     void run_shot(KFaultSampler& fault_sampler) noexcept;
@@ -131,6 +137,7 @@ class Executor {
     void advance_lazy_noise(uint32_t begin) noexcept;
     void sample_lazy_noise(uint32_t action) noexcept;
     void activate_noise_site(uint32_t site) noexcept;
+    void fire_noise_symbol(uint32_t symbol) noexcept;
     void assign_forced_quantum_faults() noexcept;
     void assign_symbol(uint32_t symbol, bool value) noexcept;
     void propagate_true_symbol(const ExecutablePlan& plan, uint32_t symbol) noexcept;

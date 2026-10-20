@@ -1,6 +1,7 @@
-// Checks the key map that classifies a shot's presampled noise for per-shot
-// sandwich dispatch against the feedback-aware reference keys of the
-// specialization tests.
+// Checks per-shot sandwich dispatch: the key map that classifies a shot's
+// presampled noise, program families of specialized plans, and the samplers
+// that run each shot on the plan specialized for its class. Keys are checked
+// against the feedback-aware reference of the specialization tests.
 
 #include "clifft/circuit/circuit.h"
 #include "clifft/circuit/parser.h"
@@ -8,6 +9,8 @@
 #include "clifft/frontend/hir.h"
 #include "clifft/optimizer/sandwich_blocks.h"
 #include "clifft/optimizer/sandwich_specialization_pass.h"
+#include "clifft/sampling/program_family.h"
+#include "clifft/sampling/sampler.h"
 #include "clifft/sampling/sandwich_keys.h"
 #include "clifft/util/xoshiro.h"
 
@@ -19,6 +22,8 @@
 #include <catch2/matchers/catch_matchers_string.hpp>
 #include <cstddef>
 #include <cstdint>
+#include <optional>
+#include <set>
 #include <span>
 #include <stdexcept>
 #include <string>
@@ -29,6 +34,11 @@ using namespace clifft;
 using namespace clifft::sandwich_test;
 using Catch::Matchers::ContainsSubstring;
 using sampling::compute_sandwich_key_map;
+using sampling::FamilyMember;
+using sampling::FamilySamplingStats;
+using sampling::ProgramFamily;
+using sampling::SamplingPlanOptions;
+using sampling::SamplingSurvivorResult;
 using sampling::SandwichKeyMap;
 using sampling::SandwichKeyRows;
 
@@ -107,6 +117,69 @@ SandwichKeyMap without_support_targets(const SandwichKeyMap& key_map) {
         }
     }
     return SandwichKeyMap(std::move(rows), key_map.num_presampled());
+}
+
+// Data qubits of a block: the targets of the T gates on its opening lines.
+std::vector<uint32_t> opening_qubits(const Circuit& circuit, const HirModule& hir,
+                                     const SandwichBlock& block) {
+    std::set<uint32_t> qubits;
+    for (const size_t op : block.opening_ops) {
+        for (const uint32_t line : hir.source_map.at(op)) {
+            for (const AstNode& node : circuit.nodes) {
+                if (node.source_line == line &&
+                    (node.gate == GateType::T || node.gate == GateType::T_DAG)) {
+                    for (const Target& target : node.targets) {
+                        qubits.insert(target.value());
+                    }
+                }
+            }
+        }
+    }
+    return {qubits.begin(), qubits.end()};
+}
+
+// Distinct keys of the noiseless realization and of each single error of
+// the given kinds on a data qubit just before a block opens.
+std::vector<std::vector<SandwichKey>> single_error_keys(const Circuit& circuit,
+                                                        const HirModule& hir,
+                                                        const std::vector<Pauli1>& paulis) {
+    const SamplingPlan plan = sampling::plan_sampling(hir);
+    const SandwichKeyMap key_map = compute_sandwich_key_map(hir);
+    std::vector<std::vector<SandwichKey>> members{
+        key_map.keys_for(presampled_values(hir, plan, {}))};
+    for (const SandwichBlock& block : find_sandwich_blocks(hir)) {
+        for (const uint32_t qubit : opening_qubits(circuit, hir, block)) {
+            for (const Pauli1 pauli : paulis) {
+                const FiredChannel fired =
+                    find_channel(circuit, hir, 0, block.opening_ops.front(), qubit, pauli, true);
+                std::vector<SandwichKey> keys =
+                    key_map.keys_for(presampled_values(hir, plan, {fired}));
+                if (std::ranges::find(members, keys) == members.end()) {
+                    members.push_back(std::move(keys));
+                }
+            }
+        }
+    }
+    return members;
+}
+
+ProgramFamily bench_family(const Circuit& circuit, const HirModule& hir,
+                           const std::vector<Pauli1>& paulis,
+                           const SamplingPlanOptions& options = {}) {
+    const std::vector<std::vector<SandwichKey>> members = single_error_keys(circuit, hir, paulis);
+    return sampling::build_program_family(hir, members, options);
+}
+
+uint64_t member_shots(const FamilySamplingStats& stats) {
+    uint64_t total = 0;
+    for (const uint64_t count : stats.shots_per_member) {
+        total += count;
+    }
+    return total;
+}
+
+std::vector<uint8_t> all_detectors(const HirModule& hir) {
+    return std::vector<uint8_t>(hir.num_detectors, 1);
 }
 
 }  // namespace
@@ -237,4 +310,89 @@ TEST_CASE("The sandwich key map rejects inputs it cannot classify", "[sandwich]"
         CHECK_THROWS_WITH(SandwichKeyMap(rows, key_map.num_presampled()),
                           ContainsSubstring("later blocks"));
     }
+}
+
+TEST_CASE("Program families reject members they cannot dispatch", "[sandwich]") {
+    const HirModule hir = hir_of(std::string(kNoisyBlock) + "MX 0 1 2\n");
+    const SandwichKeyMap key_map = compute_sandwich_key_map(hir);
+    const std::vector<SandwichKey> noiseless = key_map.zero_keys();
+    const auto member = [&](const HirModule& source, const std::vector<SandwichKey>& keys) {
+        return FamilyMember{keys,
+                            ExecutablePlan(sampling::plan_sampling(specialize(source, keys)))};
+    };
+    const auto family = [&](std::vector<FamilyMember> members) {
+        return ProgramFamily(ExecutablePlan(sampling::plan_sampling(hir)), key_map,
+                             std::move(members));
+    };
+
+    SECTION("a valid family finds its members") {
+        std::vector<SandwichKey> flipped = noiseless;
+        flipped[0].axis_flip[1] = 1;
+        std::vector<FamilyMember> members;
+        members.push_back(member(hir, noiseless));
+        members.push_back(member(hir, flipped));
+        const ProgramFamily valid = family(std::move(members));
+        CHECK(valid.find(noiseless) == std::optional<size_t>{0});
+        CHECK(valid.find(flipped) == std::optional<size_t>{1});
+        flipped[0].internal_support[0] = 1;
+        CHECK_FALSE(valid.find(flipped).has_value());
+    }
+
+    SECTION("repeated keys") {
+        std::vector<FamilyMember> members;
+        members.push_back(member(hir, noiseless));
+        members.push_back(member(hir, noiseless));
+        CHECK_THROWS_WITH(family(std::move(members)), ContainsSubstring("repeats the keys"));
+    }
+
+    SECTION("keys that do not match the blocks") {
+        std::vector<FamilyMember> members;
+        members.push_back(member(hir, noiseless));
+        members[0].keys[0].axis_flip.pop_back();
+        CHECK_THROWS_WITH(family(std::move(members)), ContainsSubstring("one 0 or 1 flag"));
+    }
+
+    SECTION("a plan of another circuit") {
+        const HirModule other = hir_of(std::string(kNoisyBlock) + "MX 0 1\n");
+        std::vector<FamilyMember> members;
+        members.push_back(member(other, noiseless));
+        CHECK_THROWS_WITH(family(std::move(members)), ContainsSubstring("outputs that differ"));
+    }
+
+    SECTION("a plan with different noise") {
+        std::string text = std::string(kNoisyBlock) + "MX 0 1 2\n";
+        text.replace(text.find("DEPOLARIZE1(0.1) 1"), 18, "DEPOLARIZE1(0.2) 1");
+        std::vector<FamilyMember> members;
+        members.push_back(member(hir_of(text), noiseless));
+        CHECK_THROWS_WITH(family(std::move(members)), ContainsSubstring("presampled noise"));
+    }
+}
+
+TEST_CASE("Family survivor sampling keeps only accepted rows", "[sandwich]") {
+    const Circuit circuit = parse_file(fixture_path("cultivation_d3_bench.stim"));
+    const HirModule hir = trace(circuit);
+    const std::vector<uint8_t> postselected = all_detectors(hir);
+    SamplingPlanOptions options;
+    options.postselection_mask = postselected;
+    const ProgramFamily family = bench_family(circuit, hir, {Pauli1::X}, options);
+    constexpr uint32_t kShots = 500;
+
+    CHECK_THROWS_WITH(sampling::sample_family(family, 1, 0), ContainsSubstring("postselection"));
+    FamilySamplingStats stats;
+    const SamplingSurvivorResult kept =
+        sampling::sample_family_survivors(family, kShots, 41, true, &stats);
+    const SamplingSurvivorResult counted = sampling::sample_family_survivors(family, kShots, 41);
+    CHECK(member_shots(stats) + stats.fallback_shots == kShots);
+    CHECK(kept.total_shots == kShots);
+    REQUIRE(kept.passed_shots > 0);
+    CHECK(kept.passed_shots < kShots);
+    CHECK(counted.passed_shots == kept.passed_shots);
+    CHECK(counted.logical_errors == kept.logical_errors);
+    CHECK(counted.observable_ones == kept.observable_ones);
+    CHECK(counted.measurements.empty());
+    REQUIRE(kept.detectors.size() ==
+            static_cast<size_t>(kept.passed_shots) * family.generic().num_detectors());
+    CHECK(kept.measurements.size() ==
+          static_cast<size_t>(kept.passed_shots) * family.generic().num_visible_records());
+    CHECK(std::ranges::all_of(kept.detectors, [](uint8_t bit) { return bit == 0; }));
 }

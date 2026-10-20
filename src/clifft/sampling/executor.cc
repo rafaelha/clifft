@@ -112,6 +112,17 @@ void Executor::run_shot(std::span<const uint8_t> presampled_values) noexcept {
     (void)execute_actions_for_backend<ShotMode::UsePresampledNoise>({});
 }
 
+void Executor::run_shot_fired(std::span<const uint32_t> fired_ordinals) noexcept {
+    plan_ = root_plan_;
+    reset_shot();
+    for (const uint32_t ordinal : fired_ordinals) {
+        assert(ordinal < plan_->presampled_symbols_.size() &&
+               "fired ordinal must name a presampled symbol");
+        fire_noise_symbol(plan_->presampled_symbols_[ordinal]);
+    }
+    (void)execute_actions_for_backend<ShotMode::UsePresampledNoise>({});
+}
+
 void Executor::run_shot(KFaultSampler& fault_sampler) noexcept {
     plan_ = root_plan_;
     assert(fault_sampler.num_sites() ==
@@ -294,23 +305,9 @@ void Executor::assign_presampled_values(std::span<const uint8_t> presampled_valu
 }
 
 void Executor::sample_presampled_noise(uint32_t begin, uint32_t end) noexcept {
-    assert(begin <= end && end <= plan_->noise_sites_.size() &&
-           "noise segment must stay inside prepared sites");
-    uint32_t first_candidate = begin;
-    while (first_candidate < end) {
-        const double current_hazard =
-            first_candidate == 0 ? 0.0 : plan_->noise_hazards_[first_candidate - 1];
-        if (current_hazard >= plan_->noise_hazards_[end - 1]) {
-            return;
-        }
-        const uint32_t site_index =
-            sample_next_noise_site(plan_->noise_hazards_, first_candidate, rng_.next_double());
-        if (site_index == kNoNoiseSite || site_index >= end) {
-            return;
-        }
-        activate_noise_site(site_index);
-        first_candidate = site_index + 1;
-    }
+    plan_->draw_noise(
+        begin, end, [this]() noexcept { return rng_.next_double(); },
+        [this](uint32_t symbol) noexcept { fire_noise_symbol(symbol); });
 }
 
 void Executor::advance_lazy_noise(uint32_t begin) noexcept {
@@ -333,28 +330,13 @@ void Executor::sample_lazy_noise(uint32_t action) noexcept {
 }
 
 void Executor::activate_noise_site(uint32_t site_index) noexcept {
-    assert(site_index < plan_->noise_sites_.size() && "noise site must be prepared");
-    const ExecutablePlan::PreparedNoiseSite& site = plan_->noise_sites_[site_index];
-    assert(site.outcome_count > 0 &&
-           "a firing noise site must contain positive-probability outcomes");
-    const uint32_t outcome_end = site.outcome_begin + site.outcome_count;
-    assert(outcome_end <= plan_->noise_outcomes_.size() &&
-           plan_->noise_outcomes_[outcome_end - 1].cumulative_probability > 0.0 &&
-           "a firing noise site must contain positive-probability outcomes");
-    uint32_t outcome_index = site.outcome_begin;
-    if (site.outcome_count > 1) {
-        const double execution_probability =
-            plan_->noise_outcomes_[outcome_end - 1].cumulative_probability;
-        const double channel_draw = rng_.next_double() * execution_probability;
-        while (channel_draw >= plan_->noise_outcomes_[outcome_index].cumulative_probability) {
-            ++outcome_index;
-            assert(outcome_index < site.outcome_begin + site.outcome_count &&
-                   "channel draw must select one prepared outcome");
-        }
-    }
-    const uint32_t symbol = plan_->noise_outcomes_[outcome_index].symbol;
+    fire_noise_symbol(
+        plan_->draw_noise_outcome(site_index, [this]() noexcept { return rng_.next_double(); }));
+}
+
+void Executor::fire_noise_symbol(uint32_t symbol) noexcept {
     assert(symbol < symbols_.size() && symbols_[symbol] == 0 &&
-           "a noise site may define only one fresh symbol per shot");
+           "a presampled symbol may fire only once per shot");
     assign_symbol(symbol, true);
     previous_presampled_ones_.push_back(symbol);
 }

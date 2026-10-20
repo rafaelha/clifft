@@ -61,6 +61,20 @@ class CliffordAbsorption {
                 transform_mask(hir.pauli_masks.mut_at(site.destination_flip_mask));
                 break;
             }
+            case OpType::SANDWICH_PROJECTION: {
+                transform_mask(hir.mask_at(op));
+                // The site's axes define the projected observable together with
+                // the op's own mask, so they share every frame change.
+                const auto& site =
+                    hir.sandwich_sites[static_cast<uint32_t>(op.sandwich_site_idx())];
+                for (const PauliMaskHandle axis : site.axes) {
+                    transform_mask(hir.pauli_masks.mut_at(axis));
+                }
+                break;
+            }
+            case OpType::SANDWICH_RECORD:
+                transform_mask(hir.mask_at(op));
+                break;
             case OpType::NOISE:
                 for (const auto& channel :
                      hir.noise_sites[static_cast<uint32_t>(op.noise_site_idx())].channels) {

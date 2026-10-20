@@ -104,6 +104,11 @@ bool ops_equal(const HirModule& a, const HeisenbergOp& op_a, const HirModule& b,
             return op_a.alpha() == op_b.alpha();
         case OpType::INSTRUMENT:
             return op_a.instrument_site_idx() == op_b.instrument_site_idx();
+        case OpType::SANDWICH_PROJECTION:
+            return op_a.sandwich_site_idx() == op_b.sandwich_site_idx();
+        case OpType::SANDWICH_RECORD:
+            return op_a.sandwich_record_idx() == op_b.sandwich_record_idx() &&
+                   op_a.sandwich_site_idx() == op_b.sandwich_site_idx();
         case OpType::T_GATE:
         case OpType::NUM_OP_TYPES:
             return true;

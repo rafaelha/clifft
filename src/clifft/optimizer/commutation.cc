@@ -11,6 +11,9 @@ std::optional<uint32_t> get_written_meas_idx(const HeisenbergOp& op, const HirMo
     if (op.op_type() == OpType::MEASURE) {
         return static_cast<uint32_t>(op.meas_record_idx());
     }
+    if (op.op_type() == OpType::SANDWICH_RECORD) {
+        return static_cast<uint32_t>(op.sandwich_record_idx());
+    }
     if (op.op_type() == OpType::READOUT_NOISE) {
         return hir.readout_noise[static_cast<uint32_t>(op.readout_noise_idx())].meas_idx;
     }
@@ -23,6 +26,8 @@ bool accesses_classical_index(const HeisenbergOp& op, uint32_t target_idx, const
     switch (op.op_type()) {
         case OpType::MEASURE:
             return static_cast<uint32_t>(op.meas_record_idx()) == target_idx;
+        case OpType::SANDWICH_RECORD:
+            return static_cast<uint32_t>(op.sandwich_record_idx()) == target_idx;
         case OpType::CONDITIONAL_PAULI:
             return static_cast<uint32_t>(op.controlling_meas()) == target_idx;
         case OpType::READOUT_NOISE:
@@ -94,8 +99,13 @@ bool can_swap(const HeisenbergOp& left, const HeisenbergOp& right, const HirModu
     // after it", and re-entry requires prefix compilation to be a function
     // of the prefix alone. Both carry Pauli masks, so without these
     // clauses the symplectic test below would let commuting ops cross.
+    // A sandwich projection stands for a whole block of rotations and a
+    // check, and its records depend on the projection's position, so both
+    // sandwich kinds keep their places as well.
     if (lt == OpType::EXP_VAL || rt == OpType::EXP_VAL || lt == OpType::INSTRUMENT ||
-        rt == OpType::INSTRUMENT) {
+        rt == OpType::INSTRUMENT || lt == OpType::SANDWICH_PROJECTION ||
+        rt == OpType::SANDWICH_PROJECTION || lt == OpType::SANDWICH_RECORD ||
+        rt == OpType::SANDWICH_RECORD) {
         return false;
     }
 

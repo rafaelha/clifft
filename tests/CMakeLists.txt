@@ -36,6 +36,7 @@ add_executable(clifft_tests
     test_rotation_simplification_pass.cc
     test_active_width_analysis.cc
     test_sandwich_blocks.cc
+    test_sandwich_specialization.cc
     test_source_map.cc
     test_logical_noise_prefix.cc
     test_schedule_dependence.cc

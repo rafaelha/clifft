@@ -289,6 +289,8 @@ bool operation_supports_final_state_queries(OpType type) {
         case OpType::INSTRUMENT:
         case OpType::DETECTOR:
         case OpType::OBSERVABLE:
+        case OpType::SANDWICH_PROJECTION:
+        case OpType::SANDWICH_RECORD:
         case OpType::NUM_OP_TYPES:
             return false;
     }
@@ -333,6 +335,8 @@ PlanningRequirements inspect_planning_requirements(const HirModule& hir, NoiseSi
             case OpType::DETECTOR:
             case OpType::OBSERVABLE:
                 break;
+            case OpType::SANDWICH_PROJECTION:
+            case OpType::SANDWICH_RECORD:
             case OpType::NUM_OP_TYPES:
                 throw std::invalid_argument("sampling planner does not support HIR operation " +
                                             op_type_to_str(op.op_type()) + " at index " +
@@ -761,6 +765,8 @@ SamplingPlan plan_sampling(const HirModule& hir, SamplingPlanOptions options) {
                     source_lines);
                 break;
             }
+            case OpType::SANDWICH_PROJECTION:
+            case OpType::SANDWICH_RECORD:
             case OpType::NUM_OP_TYPES:
                 throw std::invalid_argument("sampling planner does not support HIR operation " +
                                             op_type_to_str(op.op_type()) + " at index " +

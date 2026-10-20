@@ -272,6 +272,11 @@ WidthTransition classify_and_apply(const HirModule& hir, const HeisenbergOp& op,
             }
             return WidthTransition{before, before, WidthEffect::InstrumentActive};
         }
+        // The sampling planner decides a projection's width from the noise
+        // class it is specialized for, which a structural trace cannot see.
+        // Its record is fixed by the projection and changes nothing.
+        case OpType::SANDWICH_PROJECTION:
+        case OpType::SANDWICH_RECORD:
         case OpType::CONDITIONAL_PAULI:
         case OpType::NOISE:
         case OpType::READOUT_NOISE:

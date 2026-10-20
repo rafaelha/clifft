@@ -361,6 +361,8 @@ void SymbolicStabilizers::advance(const HirModule& hir, const HeisenbergOp& op) 
             break;
         }
         case OpType::INSTRUMENT:
+        case OpType::SANDWICH_PROJECTION:
+        case OpType::SANDWICH_RECORD:
             forget();
             break;
         case OpType::EXP_VAL:

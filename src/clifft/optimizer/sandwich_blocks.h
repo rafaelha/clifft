@@ -59,10 +59,11 @@ struct SandwichBlock {
 //    is skipped as a block start.
 // 3. Between the last opening op and the first closing op there must be
 //    exactly one visible MEASURE (the check) and no T_GATE, PHASE_ROTATION,
-//    INSTRUMENT or EXP_VAL. Every hidden MEASURE there must have the check's
-//    unsigned Pauli (an echo, such as the reset of the check qubit). Every
-//    CONDITIONAL_PAULI there must commute with every opening axis. NOISE,
-//    READOUT_NOISE, DETECTOR and OBSERVABLE ops are allowed.
+//    INSTRUMENT, EXP_VAL, SANDWICH_PROJECTION or SANDWICH_RECORD. Every
+//    hidden MEASURE there must have the check's unsigned Pauli (an echo,
+//    such as the reset of the check qubit). Every CONDITIONAL_PAULI there
+//    must commute with every opening axis. NOISE, READOUT_NOISE, DETECTOR
+//    and OBSERVABLE ops are allowed.
 // 4. The check Pauli must anticommute with at least one opening axis.
 //    Otherwise the layer pair is an ordinary cancellation, not a block.
 // 5. After a block, scanning resumes after L_close. A layer whose successor

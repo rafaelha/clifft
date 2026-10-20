@@ -55,6 +55,10 @@ std::string op_type_to_str(OpType type) {
             return "EXP_VAL";
         case OpType::INSTRUMENT:
             return "INSTRUMENT";
+        case OpType::SANDWICH_PROJECTION:
+            return "SANDWICH_PROJECTION";
+        case OpType::SANDWICH_RECORD:
+            return "SANDWICH_RECORD";
         default:
             return "UNKNOWN";
     }
@@ -99,6 +103,17 @@ std::string format_hir_op(const HeisenbergOp& op, std::optional<PauliMaskView> m
         case OpType::INSTRUMENT:
             ss << "INSTRUMENT " << format_pauli_mask(*mask)
                << " site=" << static_cast<uint32_t>(op.instrument_site_idx());
+            break;
+        case OpType::SANDWICH_PROJECTION:
+            ss << "SANDWICH_PROJECTION " << format_pauli_mask(*mask)
+               << " site=" << static_cast<uint32_t>(op.sandwich_site_idx());
+            break;
+        case OpType::SANDWICH_RECORD:
+            ss << "SANDWICH_RECORD " << format_pauli_mask(*mask) << " -> rec["
+               << static_cast<uint32_t>(op.sandwich_record_idx())
+               << "] site=" << static_cast<uint32_t>(op.sandwich_site_idx());
+            if (op.is_hidden())
+                ss << " (hidden)";
             break;
         case OpType::NUM_OP_TYPES:
             break;

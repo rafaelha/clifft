@@ -133,11 +133,30 @@ void apply_virtual_s_downstream(HirModule& hir, size_t start_idx, MaskView x_v, 
                 break;
             }
 
-            case OpType::PHASE_ROTATION: {
+            case OpType::PHASE_ROTATION:
+            case OpType::SANDWICH_RECORD: {
                 auto m = hir.mask_at(op);
                 bool sign_i = m.sign();
                 conjugate_pauli_by_S(x_v, z_v, sign_v, m.x(), m.z(), sign_i, is_dagger);
                 m.set_sign(sign_i);
+                break;
+            }
+
+            case OpType::SANDWICH_PROJECTION: {
+                auto m = hir.mask_at(op);
+                bool sign_i = m.sign();
+                conjugate_pauli_by_S(x_v, z_v, sign_v, m.x(), m.z(), sign_i, is_dagger);
+                m.set_sign(sign_i);
+                // The site's axes define the projected observable with the
+                // op's mask, so they must track the same frame change.
+                const auto& site =
+                    hir.sandwich_sites[static_cast<uint32_t>(op.sandwich_site_idx())];
+                for (const PauliMaskHandle handle : site.axes) {
+                    auto a = hir.pauli_masks.mut_at(handle);
+                    bool sign_a = a.sign();
+                    conjugate_pauli_by_S(x_v, z_v, sign_v, a.x(), a.z(), sign_a, is_dagger);
+                    a.set_sign(sign_a);
+                }
                 break;
             }
 
@@ -185,6 +204,7 @@ void apply_virtual_pauli_downstream(HirModule& hir, size_t start_idx, MaskView x
             case OpType::MEASURE:
             case OpType::CONDITIONAL_PAULI:
             case OpType::EXP_VAL:
+            case OpType::SANDWICH_RECORD:
                 conjugate_mask(hir.mask_at(op));
                 break;
 
@@ -193,6 +213,16 @@ void apply_virtual_pauli_downstream(HirModule& hir, size_t start_idx, MaskView x
                 const auto& site =
                     hir.instrument_sites[static_cast<uint32_t>(op.instrument_site_idx())];
                 conjugate_mask(hir.pauli_masks.mut_at(site.destination_flip_mask));
+                break;
+            }
+
+            case OpType::SANDWICH_PROJECTION: {
+                conjugate_mask(hir.mask_at(op));
+                const auto& site =
+                    hir.sandwich_sites[static_cast<uint32_t>(op.sandwich_site_idx())];
+                for (const PauliMaskHandle handle : site.axes) {
+                    conjugate_mask(hir.pauli_masks.mut_at(handle));
+                }
                 break;
             }
 
@@ -251,9 +281,12 @@ inline bool is_blocked(const HeisenbergOp& op_i, const HeisenbergOp& op_j, const
         case OpType::EXP_VAL:
             return true;
 
-        // Positional barrier: nothing commutes past an instrument site
-        // regardless of mask commutation (see can_swap).
+        // Positional barriers: nothing commutes past an instrument site or a
+        // sandwich projection or record regardless of mask commutation (see
+        // can_swap).
         case OpType::INSTRUMENT:
+        case OpType::SANDWICH_PROJECTION:
+        case OpType::SANDWICH_RECORD:
             return true;
 
         case OpType::DETECTOR:

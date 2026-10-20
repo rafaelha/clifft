@@ -81,6 +81,22 @@
       "display": [
         "INSTRUMENT"
       ]
+    },
+    "SANDWICH_PROJECTION": {
+      "category": "Measurement",
+      "summary": "Projection onto the Clifford observable of a specialized T-sandwich block.",
+      "detail": "Replaces the opening T layer of a block whose layers surround one check measurement. The shown Pauli is the check P; the referenced site holds the opening axes, their T or T_DAG direction, and the per-axis flips of the noise-realization class the module was specialized for. The block measures C = U^dag P U, and the sampling plan projects the active state onto an eigenspace of C here. Produced only by SandwichSpecializationPass, never by tracing, and kept in place by every optimization pass.",
+      "display": [
+        "SANDWICH_PROJECTION"
+      ]
+    },
+    "SANDWICH_RECORD": {
+      "category": "Measurement",
+      "summary": "Record of a specialized sandwich check or echo measurement.",
+      "detail": "Replaces the block's check measurement or a hidden echo of it, such as the reset of the check qubit. The outcome is fixed by the projection's branch combined with the shown Pauli's frame sign at this position, so no state collapse happens here.",
+      "display": [
+        "SANDWICH_RECORD"
+      ]
     }
   },
   "plan_actions": {

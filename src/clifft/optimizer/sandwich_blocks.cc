@@ -144,6 +144,8 @@ std::optional<Interior> scan_interior(const HirModule& hir, size_t first, size_t
             case OpType::PHASE_ROTATION:
             case OpType::INSTRUMENT:
             case OpType::EXP_VAL:
+            case OpType::SANDWICH_PROJECTION:
+            case OpType::SANDWICH_RECORD:
                 return std::nullopt;
             case OpType::MEASURE:
                 if (op.is_hidden()) {

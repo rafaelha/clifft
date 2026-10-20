@@ -654,7 +654,9 @@ NB_MODULE(_clifft_core, m) {
         .value("DETECTOR", clifft::OpType::DETECTOR)
         .value("OBSERVABLE", clifft::OpType::OBSERVABLE)
         .value("EXP_VAL", clifft::OpType::EXP_VAL)
-        .value("INSTRUMENT", clifft::OpType::INSTRUMENT);
+        .value("INSTRUMENT", clifft::OpType::INSTRUMENT)
+        .value("SANDWICH_PROJECTION", clifft::OpType::SANDWICH_PROJECTION)
+        .value("SANDWICH_RECORD", clifft::OpType::SANDWICH_RECORD);
 
     // Python view of a HeisenbergOp paired with the HirModule that owns its
     // mask data. Holds an nb::object ref to the module so the Python
@@ -717,6 +719,13 @@ NB_MODULE(_clifft_core, m) {
                         break;
                     case clifft::OpType::EXP_VAL:
                         d["exp_val_idx"] = static_cast<uint32_t>(op.exp_val_idx());
+                        break;
+                    case clifft::OpType::SANDWICH_PROJECTION:
+                        d["sandwich_site_idx"] = static_cast<uint32_t>(op.sandwich_site_idx());
+                        break;
+                    case clifft::OpType::SANDWICH_RECORD:
+                        d["meas_record_idx"] = static_cast<uint32_t>(op.sandwich_record_idx());
+                        d["sandwich_site_idx"] = static_cast<uint32_t>(op.sandwich_site_idx());
                         break;
                     default:
                         break;

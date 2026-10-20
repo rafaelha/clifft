@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <optional>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 namespace clifft {
@@ -100,6 +101,9 @@ enum class ReadoutNoiseIdx : uint32_t {};
 /// index.
 enum class InstrumentSiteIdx : uint32_t {};
 
+/// Index into HirModule::sandwich_sites side-table.
+enum class SandwichSiteIdx : uint32_t {};
+
 /// Sentinel handle value indicating that an op carries no Pauli mask.
 inline constexpr PauliMaskHandle kNoMask = static_cast<PauliMaskHandle>(~uint32_t{0});
 
@@ -174,19 +178,50 @@ struct InstrumentSite {
     InstrumentProbabilities probabilities;
 };
 
+// =============================================================================
+// Sandwich Sites
+// =============================================================================
+//
+// A T-sandwich block (opening T layer, interior with one check measurement,
+// inverse layer) measures the Clifford observable C = U^dag P U. Within one
+// noise-realization class the block can be replaced by a projection onto an
+// eigenspace of C. The site keeps the opening layer that defines C, because
+// the planner needs the axes in its own coordinates to build the projection
+// matrix.
+//
+// The axes are handles into HirModule::pauli_masks holding each opening
+// rotation axis with its mask sign. Passes that conjugate the op masks after
+// a Clifford must conjugate these slots identically. axis_flip records, per
+// axis, whether the realization class reverses that rotation: the error
+// accumulated before the block, including corrections it triggers through
+// feedback, anticommutes with the axis. It stands in for the noise terms of
+// the axis's frame sign, which a plan fixed for the class cannot leave
+// symbolic.
+
+struct SandwichSite {
+    std::vector<PauliMaskHandle> axes;
+    std::vector<uint8_t> axis_dagger;  // 1 when the opening gate is T_DAG
+    std::vector<uint8_t> axis_flip;    // 1 when the class reverses that rotation
+    uint32_t check_record = 0;         // record slot of the block's check measurement
+
+    [[nodiscard]] bool operator==(const SandwichSite&) const = default;
+};
+
 // Operation types in the HIR
 enum class OpType : uint8_t {
-    T_GATE,             // T or T_dag gate (pi/8 phase) - FLAG_IS_DAGGER distinguishes
-    MEASURE,            // Destructive measurement (Z, X, or multi-Pauli)
-    CONDITIONAL_PAULI,  // Classical feedback: apply Pauli if measurement was 1
-    NOISE,              // Stochastic Pauli channel (references NoiseSite side-table)
-    READOUT_NOISE,      // Classical bit-flip on measurement result
-    PHASE_ROTATION,     // Continuous Z-rotation by angle alpha (half-turns)
-    DETECTOR,           // Parity check over measurement records
-    OBSERVABLE,         // Logical observable accumulator
-    EXP_VAL,            // Non-destructive expectation value probe
-    INSTRUMENT,         // State-dependent jump site (references InstrumentSite side-table)
-    NUM_OP_TYPES        // Sentinel: must remain last for binding completeness checks
+    T_GATE,               // T or T_dag gate (pi/8 phase) - FLAG_IS_DAGGER distinguishes
+    MEASURE,              // Destructive measurement (Z, X, or multi-Pauli)
+    CONDITIONAL_PAULI,    // Classical feedback: apply Pauli if measurement was 1
+    NOISE,                // Stochastic Pauli channel (references NoiseSite side-table)
+    READOUT_NOISE,        // Classical bit-flip on measurement result
+    PHASE_ROTATION,       // Continuous Z-rotation by angle alpha (half-turns)
+    DETECTOR,             // Parity check over measurement records
+    OBSERVABLE,           // Logical observable accumulator
+    EXP_VAL,              // Non-destructive expectation value probe
+    INSTRUMENT,           // State-dependent jump site (references InstrumentSite side-table)
+    SANDWICH_PROJECTION,  // Projection onto a sandwich block's Clifford observable
+    SANDWICH_RECORD,      // Record of a sandwich check or echo, fixed by its projection
+    NUM_OP_TYPES          // Sentinel: must remain last for binding completeness checks
 };
 
 // A single operation in the Heisenberg IR.
@@ -279,6 +314,20 @@ struct HeisenbergOp {
         return static_cast<InstrumentSiteIdx>(instrument_.site_idx);
     }
 
+    [[nodiscard]] SandwichSiteIdx sandwich_site_idx() const {
+        assert((type_ == OpType::SANDWICH_PROJECTION || type_ == OpType::SANDWICH_RECORD) &&
+               "sandwich_site_idx called on a non-sandwich op");
+        return static_cast<SandwichSiteIdx>(type_ == OpType::SANDWICH_PROJECTION
+                                                ? sandwich_projection_.site_idx
+                                                : sandwich_record_.site_idx);
+    }
+
+    [[nodiscard]] MeasRecordIdx sandwich_record_idx() const {
+        assert(type_ == OpType::SANDWICH_RECORD &&
+               "sandwich_record_idx called on non-SANDWICH_RECORD op");
+        return static_cast<MeasRecordIdx>(sandwich_record_.meas_record_idx);
+    }
+
     [[nodiscard]] double alpha() const {
         assert(type_ == OpType::PHASE_ROTATION && "alpha called on non-PHASE_ROTATION op");
         return phase_.alpha;
@@ -339,6 +388,18 @@ struct HeisenbergOp {
     static HeisenbergOp make_instrument(PauliMaskHandle handle, InstrumentSiteIdx site_idx) {
         HeisenbergOp op(OpType::INSTRUMENT, handle);
         op.instrument_.site_idx = static_cast<uint32_t>(site_idx);
+        return op;
+    }
+    static HeisenbergOp make_sandwich_projection(PauliMaskHandle handle, SandwichSiteIdx site_idx) {
+        HeisenbergOp op(OpType::SANDWICH_PROJECTION, handle);
+        op.sandwich_projection_.site_idx = static_cast<uint32_t>(site_idx);
+        return op;
+    }
+    static HeisenbergOp make_sandwich_record(PauliMaskHandle handle, MeasRecordIdx meas_idx,
+                                             SandwichSiteIdx site_idx) {
+        HeisenbergOp op(OpType::SANDWICH_RECORD, handle);
+        op.sandwich_record_.meas_record_idx = static_cast<uint32_t>(meas_idx);
+        op.sandwich_record_.site_idx = static_cast<uint32_t>(site_idx);
         return op;
     }
 
@@ -403,6 +464,13 @@ struct HeisenbergOp {
     struct InstrumentPayload {
         uint32_t site_idx;
     };
+    struct SandwichProjectionPayload {
+        uint32_t site_idx;
+    };
+    struct SandwichRecordPayload {
+        uint32_t meas_record_idx;
+        uint32_t site_idx;
+    };
 
     union {
         MeasurePayload measure_;
@@ -414,6 +482,8 @@ struct HeisenbergOp {
         PhasePayload phase_;
         ExpValPayload exp_val_;
         InstrumentPayload instrument_;
+        SandwichProjectionPayload sandwich_projection_;
+        SandwichRecordPayload sandwich_record_;
     };
 };
 
@@ -439,6 +509,7 @@ struct HirModule {
     std::vector<NoiseSite> noise_sites;
     std::vector<ReadoutNoiseEntry> readout_noise;
     std::vector<InstrumentSite> instrument_sites;
+    std::vector<SandwichSite> sandwich_sites;
     std::vector<std::vector<uint32_t>> detector_targets;
     std::vector<std::vector<uint32_t>> observable_targets;
 
@@ -474,14 +545,15 @@ struct HirModule {
     std::optional<size_t> forced_traceout_slot;
 
     /// True when the evolution is a fixed unitary: no measurements, noise,
-    /// readout noise, or measurement-conditioned Paulis. Deterministic
-    /// modules have a well-defined final state ray; stochastic ones are only
-    /// defined per shot.
+    /// readout noise, measurement-conditioned Paulis, or sandwich
+    /// projections. Deterministic modules have a well-defined final state
+    /// ray; stochastic ones are only defined per shot.
     [[nodiscard]] bool is_deterministic() const {
         for (const auto& op : ops) {
             const OpType type = op.op_type();
             if (type == OpType::MEASURE || type == OpType::NOISE || type == OpType::READOUT_NOISE ||
-                type == OpType::CONDITIONAL_PAULI || type == OpType::INSTRUMENT) {
+                type == OpType::CONDITIONAL_PAULI || type == OpType::INSTRUMENT ||
+                type == OpType::SANDWICH_PROJECTION || type == OpType::SANDWICH_RECORD) {
                 return false;
             }
         }
@@ -617,6 +689,22 @@ struct HirModule {
         ops.push_back(HeisenbergOp::make_instrument(h, idx));
         return ops.back();
     }
+    template <typename Fill>
+    HeisenbergOp& append_sandwich_projection(SandwichSiteIdx site, Fill&& fill) {
+        auto h = claim_empty_pauli_mask();
+        fill(pauli_masks.mut_at(h));
+        ops.push_back(HeisenbergOp::make_sandwich_projection(h, site));
+        return ops.back();
+    }
+    template <typename Fill>
+    HeisenbergOp& append_sandwich_record(MeasRecordIdx record, SandwichSiteIdx site, bool hidden,
+                                         Fill&& fill) {
+        auto h = claim_empty_pauli_mask();
+        fill(pauli_masks.mut_at(h));
+        ops.push_back(HeisenbergOp::make_sandwich_record(h, record, site));
+        ops.back().set_hidden(hidden);
+        return ops.back();
+    }
 
     /// Claim a pauli_masks slot referenced from a side-table entry rather
     /// than an op (e.g. an instrument's destination flip), filled via the
@@ -626,6 +714,25 @@ struct HirModule {
         auto h = claim_empty_pauli_mask();
         fill(pauli_masks.mut_at(h));
         return h;
+    }
+
+    /// Copy of this module whose pauli_masks arena has room for `additional`
+    /// more claims. Existing handles keep their slots. Arenas never grow in
+    /// place because outstanding views would dangle, so a pass that inserts
+    /// mask-carrying ops rebuilds the module through this copy.
+    [[nodiscard]] HirModule with_additional_pauli_masks(size_t additional) const {
+        HirModule result = *this;
+        PauliMaskArena grown(num_qubits, pauli_masks.size() + additional);
+        for (size_t i = 0; i < pauli_masks.size(); ++i) {
+            const auto handle = static_cast<PauliMaskHandle>(i);
+            const PauliMaskView source = pauli_masks.at(handle);
+            MutablePauliMaskView target = grown.mut_at(handle);
+            target.x().xor_with(source.x());
+            target.z().xor_with(source.z());
+            target.set_sign(source.sign());
+        }
+        result.pauli_masks = std::move(grown);
+        return result;
     }
 
     // --- Builders for ops that don't carry a Pauli mask ---

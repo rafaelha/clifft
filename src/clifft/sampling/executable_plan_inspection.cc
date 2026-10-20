@@ -158,6 +158,11 @@ std::string ExecutablePlan::inspect_action(size_t action) const {
                     << typed.correction.register_id
                     << " kernel=" << active_measurement_kernel_name(typed.kernel);
             },
+            [&](const ExecuteProjection& typed) {
+                out << "PROJECT_ACTIVE_UNITARY width=" << typed.width << " branch=s" << typed.branch
+                    << " record=r" << typed.record << " correction=e"
+                    << typed.correction.register_id << " matrix_offset=" << typed.matrix_offset;
+            },
             [&](const ExecuteDormantMeasurement& typed) {
                 out << "MEASURE_DORMANT branch=s" << typed.branch << " record=r" << typed.record
                     << " correction=e" << typed.correction.register_id;

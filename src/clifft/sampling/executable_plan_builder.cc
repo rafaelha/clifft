@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <complex>
 #include <limits>
 #include <optional>
 #include <span>
@@ -176,6 +177,8 @@ CLIFFT_BUILDER_FORCE_INLINE void ExecutablePlanBuilder::initialize_program() {
 
     const ProgramStorageEstimate storage = estimate_program_storage();
     output_.actions_.reserve(source_.actions.size());
+    output_.projection_real_.reserve(storage.projection_entries);
+    output_.projection_imag_.reserve(storage.projection_entries);
     output_.has_postselection_ = storage.has_postselection;
     if (storage.has_postselection && source_.instrument_distributions.empty() &&
         !source_.presampled_noise_sites.empty()) {
@@ -208,11 +211,13 @@ ExecutablePlanBuilder::estimate_program_storage() const {
                               std::is_same_v<T, PromoteDormantRotation>) {
                     num_terms += typed.sign.terms().size();
                 } else if constexpr (std::is_same_v<T, MeasureActivePauli> ||
-                                     std::is_same_v<T, MeasureDormantRandom> ||
-                                     std::is_same_v<T, ProjectActiveUnitary>) {
+                                     std::is_same_v<T, MeasureDormantRandom>) {
                     // The current branch is stored separately so replay can
                     // solve for it from the requested record.
                     num_terms += typed.outcome.terms().size() - 1;
+                } else if constexpr (std::is_same_v<T, ProjectActiveUnitary>) {
+                    num_terms += typed.outcome.terms().size() - 1;
+                    storage.projection_entries += typed.matrix.size();
                 } else if constexpr (std::is_same_v<T, RecordClassical>) {
                     num_terms += typed.outcome.terms().size();
                 } else if constexpr (std::is_same_v<T, DefineSymbol>) {
@@ -241,6 +246,9 @@ ExecutablePlanBuilder::estimate_program_storage() const {
     }
     if (num_terms > std::numeric_limits<uint32_t>::max()) {
         throw std::length_error("sampling executable expression storage exceeds uint32 range");
+    }
+    if (storage.projection_entries > std::numeric_limits<uint32_t>::max()) {
+        throw std::length_error("sampling executable projection storage exceeds uint32 range");
     }
     storage.expression_terms = num_terms;
     return storage;
@@ -366,6 +374,23 @@ ExecutablePlanBuilder::prepare_measurement_correction(const AffineBool& outcome,
     return {register_id};
 }
 
+uint32_t ExecutablePlanBuilder::prepare_projection_matrix(const ProjectActiveUnitary& projection) {
+    // The storage prepass bounds the total, but the offset must also fit the
+    // descriptor field.
+    if (projection.matrix.size() >
+        std::numeric_limits<uint32_t>::max() - output_.projection_real_.size()) {
+        throw std::length_error("sampling executable projection storage exceeds uint32 range");
+    }
+    const uint32_t offset = static_cast<uint32_t>(output_.projection_real_.size());
+    for (const std::complex<double>& entry : projection.matrix) {
+        output_.projection_real_.push_back(entry.real());
+        output_.projection_imag_.push_back(entry.imag());
+    }
+    output_.has_projections_ = true;
+    output_.max_projection_width_ = std::max(output_.max_projection_width_, projection.width);
+    return offset;
+}
+
 CLIFFT_BUILDER_FORCE_INLINE ExecutablePlan::PreparedRecordParity
 ExecutablePlanBuilder::prepare_record_parity(const RecordParity& parity) {
     if (parity.records().size() >
@@ -412,8 +437,10 @@ CLIFFT_BUILDER_FORCE_INLINE void ExecutablePlanBuilder::lower_action(const Plann
                     prepare_measurement_correction(typed.outcome, index(typed.branch)),
                     index(typed.branch), index(typed.record), kernel});
             } else if constexpr (std::is_same_v<T, ProjectActiveUnitary>) {
-                throw std::invalid_argument(
-                    "sampling executable lowering does not support unitary projections yet");
+                output_.actions_.emplace_back(ExecutablePlan::ExecuteProjection{
+                    prepare_projection_matrix(typed), typed.width,
+                    prepare_measurement_correction(typed.outcome, index(typed.branch)),
+                    index(typed.branch), index(typed.record)});
             } else if constexpr (std::is_same_v<T, MeasureDormantRandom>) {
                 output_.actions_.emplace_back(ExecutablePlan::ExecuteDormantMeasurement{
                     prepare_measurement_correction(typed.outcome, index(typed.branch)),
@@ -735,6 +762,18 @@ CLIFFT_BUILDER_FORCE_INLINE void ExecutablePlanBuilder::validate_executable_plan
                     validate_expression(typed.correction);
                 } else if constexpr (std::is_same_v<T, ExecutablePlan::ExecuteDormantMeasurement>) {
                     validate_expression(typed.correction);
+                } else if constexpr (std::is_same_v<T, ExecutablePlan::ExecuteProjection>) {
+                    validate_expression(typed.correction);
+                    assert(typed.width <= kMaxProjectionWidth &&
+                           typed.width <= output_.max_projection_width_ &&
+                           "projection width must fit the planned scratch");
+                    assert(typed.branch < output_.num_symbols_ &&
+                           "projection branch symbol is out of range");
+                    assert(output_.projection_real_.size() == output_.projection_imag_.size() &&
+                           static_cast<uint64_t>(typed.matrix_offset) +
+                                   (uint64_t{1} << (2 * typed.width)) <=
+                               output_.projection_real_.size() &&
+                           "projection matrix must stay in its prepared storage");
                 } else if constexpr (std::is_same_v<T, ExecutablePlan::ExecuteClassicalRecord>) {
                     validate_expression(typed.outcome);
                 } else if constexpr (std::is_same_v<T, ExecutablePlan::ExecuteSymbolDefinition>) {

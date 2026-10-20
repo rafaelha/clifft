@@ -104,7 +104,9 @@ BatchExecutionPolicy resolve_batch_execution_policy(
     if (requested_batch_size.has_value() && *requested_batch_size == 0) {
         throw std::invalid_argument("batch_size must be a positive integer or 'auto'");
     }
-    if (shots == 0 || plan.has_instruments()) {
+    // Packed execution cannot run these plans, so any requested batch size
+    // falls back to the scalar executor.
+    if (shots == 0 || plan.has_instruments() || plan.requires_scalar_execution()) {
         return {};
     }
 #if defined(__EMSCRIPTEN__)

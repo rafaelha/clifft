@@ -21,7 +21,8 @@ namespace clifft::sampling {
 
 // Single-threaded packed executor for fixed plans. Coefficients are
 // basis-major and shot-interleaved so prepared actions vectorize across lanes.
-// Instruments and continuation boundaries remain on Executor.
+// Instruments, continuation boundaries, and dense unitary projections remain
+// on Executor.
 class BatchExecutor {
   public:
     BatchExecutor(const ExecutablePlan& plan, uint32_t lane_capacity,
@@ -81,6 +82,7 @@ class BatchExecutor {
     void execute_action(const ExecutablePlan::ExecuteExpectation& action) noexcept;
     void execute_action(const ExecutablePlan::ExecuteInstrument& action) noexcept;
     void execute_action(const ExecutablePlan::ExecuteBoundary& action) noexcept;
+    void execute_action(const ExecutablePlan::ExecuteProjection& action) noexcept;
 
     [[nodiscard]] std::span<const uint64_t> evaluate(
         ExecutablePlan::PreparedExpression expression) const noexcept;

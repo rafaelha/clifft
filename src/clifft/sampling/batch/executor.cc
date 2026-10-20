@@ -44,6 +44,10 @@ enum class MeasurementBranchKind : uint8_t {
     if (plan.has_instruments()) {
         throw std::invalid_argument("packed sampling does not support instrument continuations");
     }
+    if (plan.requires_scalar_execution()) {
+        throw std::invalid_argument(
+            "packed sampling does not support unitary projections; use the scalar executor");
+    }
     return &plan;
 }
 
@@ -575,6 +579,10 @@ void BatchExecutor::execute_action(const ExecutablePlan::ExecuteInstrument&) noe
 
 void BatchExecutor::execute_action(const ExecutablePlan::ExecuteBoundary&) noexcept {
     assert(false && "continuation boundaries must remain on the scalar trajectory executor");
+}
+
+void BatchExecutor::execute_action(const ExecutablePlan::ExecuteProjection&) noexcept {
+    assert(false && "unitary projections must remain on the scalar executor");
 }
 
 std::span<const uint64_t> BatchExecutor::evaluate(

@@ -124,6 +124,7 @@ class Executor {
         OpenMP,
     };
 
+    [[nodiscard]] static size_t projection_scratch_entries(const ExecutablePlan& plan) noexcept;
     void reset_shot() noexcept;
     void assign_presampled_values(std::span<const uint8_t> presampled_values) noexcept;
     void sample_presampled_noise(uint32_t begin, uint32_t end) noexcept;
@@ -156,6 +157,9 @@ class Executor {
                         std::span<const uint8_t> forced_records, ReplayResult& result) noexcept;
     template <ExecutorBackend Backend, ShotMode Mode>
     void execute_action(const ExecutablePlan::ExecuteActiveMeasurement& action,
+                        std::span<const uint8_t> forced_records, ReplayResult& result) noexcept;
+    template <ShotMode Mode>
+    void execute_action(const ExecutablePlan::ExecuteProjection& action,
                         std::span<const uint8_t> forced_records, ReplayResult& result) noexcept;
     template <ShotMode Mode>
     void execute_action(const ExecutablePlan::ExecuteDormantMeasurement& action,
@@ -221,6 +225,12 @@ class Executor {
     std::vector<uint8_t> detectors_;
     std::vector<uint8_t> observables_;
     std::vector<double> exp_vals_;
+
+    // Holds the matrix image of the live coefficients during a projection.
+    // The state's own scratch arrays hold only half a dense state, which is
+    // too small when a projection spans the widest active state.
+    std::vector<double> projection_real_;
+    std::vector<double> projection_imag_;
 
     // resume() can force a hidden trace-out record in the continuation.
     std::vector<uint8_t> forced_record_mask_;

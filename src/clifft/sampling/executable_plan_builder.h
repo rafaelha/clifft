@@ -20,6 +20,7 @@ class ExecutablePlanBuilder {
 
     struct ProgramStorageEstimate {
         size_t expression_terms = 0;
+        size_t projection_entries = 0;
         bool has_postselection = false;
     };
 
@@ -55,6 +56,8 @@ class ExecutablePlanBuilder {
         const AffineBool& expression);
     [[nodiscard]] ExecutablePlan::PreparedExpression prepare_measurement_correction(
         const AffineBool& outcome, uint32_t branch);
+    // Copies a projection matrix into plan storage and returns its offset.
+    [[nodiscard]] uint32_t prepare_projection_matrix(const ProjectActiveUnitary& projection);
     [[nodiscard]] ExecutablePlan::PreparedRecordParity prepare_record_parity(
         const RecordParity& parity);
     [[nodiscard]] ExecutablePlan::PreparedObservableValue prepare_observable_value(

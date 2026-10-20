@@ -76,6 +76,8 @@ Executor::Executor(const ExecutablePlan& plan, uint64_t seed, uint32_t intra_sho
       detectors_(plan.num_detectors_, 0),
       observables_(plan.num_observables_, 0),
       exp_vals_(plan.num_exp_vals_, 0.0),
+      projection_real_(projection_scratch_entries(plan), 0.0),
+      projection_imag_(projection_scratch_entries(plan), 0.0),
       forced_record_mask_(records_.size(), 0),
       forced_record_values_(records_.size(), 0),
       rng_(seed),
@@ -84,6 +86,10 @@ Executor::Executor(const ExecutablePlan& plan, uint64_t seed, uint32_t intra_sho
           resolve_intra_shot_workers(plan, intra_shot_workers, intra_shot_min_active_width)),
       intra_shot_min_active_width_(intra_shot_min_active_width) {
     previous_presampled_ones_.reserve(plan.presampled_symbols_.size());
+}
+
+size_t Executor::projection_scratch_entries(const ExecutablePlan& plan) noexcept {
+    return plan.has_projections_ ? size_t{1} << plan.max_projection_width_ : size_t{0};
 }
 
 void Executor::run_shot() noexcept {
@@ -169,6 +175,11 @@ void Executor::resume(const ExecutablePlan& continuation,
     }
 
     state_.ensure_capacity(continuation.peak_active_width_);
+    const size_t projection_entries = projection_scratch_entries(continuation);
+    if (projection_entries > projection_real_.size()) {
+        projection_real_.resize(projection_entries, 0.0);
+        projection_imag_.resize(projection_entries, 0.0);
+    }
     symbols_.resize(std::max(symbols_.size(), static_cast<size_t>(continuation.num_symbols_)), 0);
     std::fill(symbols_.begin() + boundary->symbol_prefix_size, symbols_.end(), uint8_t{0});
     expression_registers_.resize(
@@ -505,6 +516,84 @@ void Executor::execute_action(const ExecutablePlan::ExecuteActiveMeasurement& ac
 }
 
 template <Executor::ShotMode Mode>
+void Executor::execute_action(const ExecutablePlan::ExecuteProjection& action,
+                              std::span<const uint8_t> forced_records,
+                              ReplayResult& result) noexcept {
+    const size_t dimension = size_t{1} << action.width;
+    assert(action.width == state_.active_width() &&
+           "projection must span exactly the live active coordinates");
+    assert(dimension <= projection_real_.size() && dimension <= projection_imag_.size() &&
+           "projection scratch must cover the widest prepared matrix");
+    assert(static_cast<size_t>(action.matrix_offset) + dimension * dimension <=
+               plan_->projection_real_.size() &&
+           "projection matrix must stay in plan storage");
+    const double* const matrix_real = plan_->projection_real_.data() + action.matrix_offset;
+    const double* const matrix_imag = plan_->projection_imag_.data() + action.matrix_offset;
+    double* const real = state_.real_data();
+    double* const imag = state_.imag_data();
+    double* const image_real = projection_real_.data();
+    double* const image_imag = projection_imag_.data();
+
+    // For a Hermitian unitary C the components of c in the two eigenspaces
+    // are (c +- C c) / 2, so both branch weights come from one pass.
+    MeasurementProbabilities probabilities;
+    for (size_t row = 0; row < dimension; ++row) {
+        const double* const row_real = matrix_real + row * dimension;
+        const double* const row_imag = matrix_imag + row * dimension;
+        double image_r = 0.0;
+        double image_i = 0.0;
+        for (size_t column = 0; column < dimension; ++column) {
+            image_r += row_real[column] * real[column] - row_imag[column] * imag[column];
+            image_i += row_real[column] * imag[column] + row_imag[column] * real[column];
+        }
+        image_real[row] = image_r;
+        image_imag[row] = image_i;
+        const double plus_r = real[row] + image_r;
+        const double plus_i = imag[row] + image_i;
+        const double minus_r = real[row] - image_r;
+        const double minus_i = imag[row] - image_i;
+        probabilities.zero += plus_r * plus_r + plus_i * plus_i;
+        probabilities.one += minus_r * minus_r + minus_i * minus_i;
+    }
+    probabilities.zero *= 0.25;
+    probabilities.one *= 0.25;
+
+    const bool correction = evaluate(action.correction);
+    bool branch = false;
+    if constexpr (Mode == ShotMode::ReplayRecords) {
+        branch = (forced_records[action.record] != 0) ^ correction;
+        const std::optional<double> log_increment = force_active_branch(probabilities, branch);
+        if (!log_increment.has_value()) {
+            result.reachable = false;
+            return;
+        }
+        result.log_probability += *log_increment;
+    } else {
+        if (forced_record_mask_[action.record] != 0) {
+            branch = (forced_record_values_[action.record] != 0) ^ correction;
+            [[maybe_unused]] const std::optional<double> forced =
+                force_active_branch(probabilities, branch);
+            assert(forced.has_value() && "forced continuation projection branch must be reachable");
+            forced_record_mask_[action.record] = 0;
+        } else {
+            branch = sample_active_branch(probabilities);
+        }
+    }
+    assign_symbol(action.branch, branch);
+
+    const double branch_probability = probabilities.for_branch(branch);
+    assert(is_finite_robust(branch_probability) && branch_probability > 0.0 &&
+           "projection requires a positive finite branch probability");
+    const double scale = 0.5 / std::sqrt(branch_probability);
+    const double image_sign = branch ? -1.0 : 1.0;
+    for (size_t row = 0; row < dimension; ++row) {
+        real[row] = (real[row] + image_sign * image_real[row]) * scale;
+        imag[row] = (imag[row] + image_sign * image_imag[row]) * scale;
+    }
+    records_[action.record] = static_cast<uint8_t>(branch ^ correction);
+}
+
+template <Executor::ShotMode Mode>
 void Executor::execute_action(const ExecutablePlan::ExecuteDormantMeasurement& action,
                               std::span<const uint8_t> forced_records,
                               ReplayResult& result) noexcept {
@@ -798,6 +887,7 @@ ReplayResult Executor::execute_actions(std::span<const uint8_t> forced_records,
                     using T = std::decay_t<decltype(typed)>;
                     if constexpr (std::is_same_v<T, ExecutablePlan::ExecuteBoundary> ||
                                   std::is_same_v<T, ExecutablePlan::ExecuteReadoutNoise> ||
+                                  std::is_same_v<T, ExecutablePlan::ExecuteProjection> ||
                                   std::is_same_v<T, ExecutablePlan::ExecuteDormantMeasurement> ||
                                   std::is_same_v<T, ExecutablePlan::ExecuteClassicalRecord>) {
                         execute_action<Mode>(typed, forced_records, result);

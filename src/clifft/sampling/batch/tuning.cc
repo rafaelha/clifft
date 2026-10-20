@@ -41,7 +41,8 @@ std::vector<BatchTuningCandidate> batch_tuning_candidates(
         candidates.push_back({policy, static_cast<uint32_t>(minimum), max_probe_shots});
     };
     append(baseline);
-    if (candidates.empty() || !kPackedBatchExecutionAvailable || intra_shot_workers > 1) {
+    if (candidates.empty() || !kPackedBatchExecutionAvailable || intra_shot_workers > 1 ||
+        plan.requires_scalar_execution()) {
         return candidates;
     }
     for (const uint32_t size : std::array<uint32_t, 5>{1, 64, 256, 1024, 2048}) {

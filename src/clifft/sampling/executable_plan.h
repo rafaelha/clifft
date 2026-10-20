@@ -79,6 +79,9 @@ class ExecutablePlan {
     [[nodiscard]] bool has_postselection() const { return has_postselection_; }
     [[nodiscard]] bool has_readout_noise() const { return has_readout_noise_; }
     [[nodiscard]] bool has_instruments() const { return has_instruments_; }
+    // Packed execution cannot run every action. Plans containing one of these
+    // must use the scalar Executor even when a larger batch is requested.
+    [[nodiscard]] bool requires_scalar_execution() const { return has_projections_; }
     [[nodiscard]] bool supports_final_state_queries() const { return final_tableau_.has_value(); }
     // Exact final-state queries need the coordinate-to-physical map, but
     // ordinary execution must not depend on or mutate it.
@@ -208,6 +211,19 @@ class ExecutablePlan {
 
     static_assert(sizeof(ExecuteActiveMeasurement) == 88,
                   "active measurement dispatch must not expand its action descriptor");
+
+    // Projection onto an eigenspace of a dense Hermitian unitary. The matrix
+    // lives in plan-owned storage so the descriptor stays small, and the
+    // correction has the same meaning as for an active measurement.
+    struct ExecuteProjection {
+        // First entry of the row-major 2^width by 2^width matrix in the
+        // plan's projection storage.
+        uint32_t matrix_offset = 0;
+        uint32_t width = 0;
+        PreparedExpression correction;
+        uint32_t branch = 0;
+        uint32_t record = 0;
+    };
 
     // Measurement records and derived symbols.
     struct ExecuteDormantMeasurement {
@@ -358,7 +374,7 @@ class ExecutablePlan {
                      ExecutePromotion, ExecuteActiveMeasurement, ExecuteDormantMeasurement,
                      ExecuteClassicalRecord, ExecuteSymbolDefinition, ExecuteReadoutNoise,
                      ExecuteDetector, ExecuteObservable, ExecuteExpectation, ExecuteInstrument,
-                     ExecuteBoundary>;
+                     ExecuteBoundary, ExecuteProjection>;
 
     // Immutable plan metadata and externally visible dimensions.
     uint32_t num_qubits_ = 0;
@@ -373,6 +389,7 @@ class ExecutablePlan {
     bool has_postselection_ = false;
     bool has_readout_noise_ = false;
     bool has_instruments_ = false;
+    bool has_projections_ = false;
     ExecutorBackend backend_ = ExecutorBackend::Scalar;
     uint32_t num_readout_noise_sites_ = 0;
     uint32_t initial_noise_end_ = 0;
@@ -399,6 +416,12 @@ class ExecutablePlan {
 
     // Packed-only output parities.
     std::vector<uint32_t> record_parity_terms_;
+
+    // Projection matrices, with real and imaginary parts stored separately to
+    // match the coefficient layout. The widest one sizes executor scratch.
+    std::vector<double> projection_real_;
+    std::vector<double> projection_imag_;
+    uint32_t max_projection_width_ = 0;
 
     // Instrument inputs and continuation offsets share the same site index.
     std::vector<InstrumentDistribution> instrument_distributions_;

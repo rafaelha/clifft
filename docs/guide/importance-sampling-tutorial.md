@@ -109,6 +109,13 @@ print(f"All uniform:    {len(np.unique(site_probs)) == 1}")  # True
 print(f"Site prob:      {site_probs[0]}")         # 0.001
 ```
 
+Automatic normalization works for both cultivation circuits in this tutorial:
+after stochastic noise is removed, their ideal detector and observable parities
+are fixed at zero. Explicit references are not required. The T gates implement
+the intended protocol and belong in the reference circuit. For circuits with
+additional coherent errors, see
+[reference selection](simulation.md#detectors-and-observables).
+
 The `noise_site_probabilities` property returns a 1D array covering all
 fault sites: quantum noise sites (multi-channel Pauli errors) followed
 by readout noise entries (bit-flip errors). For the cultivation circuit,

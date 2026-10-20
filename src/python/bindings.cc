@@ -969,6 +969,9 @@ NB_MODULE(_clifft_core, m) {
         },
         nb::arg("hir"),
         "Compute noiseless reference syndrome for an HirModule.\n\n"
+        "Removes stochastic and readout noise and samples one shot at seed 0.\n"
+        "Does not check determinism; coherent rotations remain. For coherent\n"
+        "errors, pass the intended ideal circuit's HIR instead.\n"
         "Returns a dict with 'detectors' and 'observables' lists.");
 
     nb::class_<clifft::HirPassManager>(m, "HirPassManager",
@@ -1185,6 +1188,8 @@ NB_MODULE(_clifft_core, m) {
         "executed internally to extract expected detector and observable\n"
         "parities. Detectors and observables are then XOR-normalized so\n"
         "that 0 means 'matches noiseless reference' and 1 means 'error'.\n"
+        "This does not check determinism; coherent error rotations remain.\n"
+        "For coherent errors, supply expected parities from the ideal circuit.\n"
         "\n"
         "Args:\n"
         "    stim_text: Circuit in .stim text format.\n"

@@ -7,6 +7,8 @@
 #include "clifft/sampling/plan.h"
 #include "clifft/sampling/sampler.h"
 
+#include "test_helpers.h"
+
 #include <algorithm>
 #include <array>
 #include <bit>
@@ -363,8 +365,10 @@ TEST_CASE("Projection action validation rejects malformed matrices", "[projectio
 
     SECTION("entries that are not finite") {
         Matrix matrix = pauli_z();
-        matrix[0] = std::nan("");
-        require_rejected(projection_plan({0.25}, matrix), "Hermitian");
+        matrix[0] = clifft::test::opaque_nan();
+        require_rejected(projection_plan({0.25}, matrix), "finite");
+        matrix[0] = Complex{0.0, clifft::test::opaque_infinity()};
+        require_rejected(projection_plan({0.25}, matrix), "finite");
     }
 
     SECTION("matrix of the wrong size") {

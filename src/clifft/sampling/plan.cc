@@ -130,7 +130,13 @@ void validate_projection(const ProjectActiveUnitary& projection, const PlannedAc
     const auto entry = [&](size_t row, size_t column) {
         return projection.matrix[row * dimension + column];
     };
-    // Negated comparisons also reject NaN entries.
+    // Fast-math builds may fold NaN-aware comparisons, so reject non-finite
+    // entries by their bits before the tolerance checks below.
+    for (const std::complex<double>& value : projection.matrix) {
+        if (!is_finite_robust(value.real()) || !is_finite_robust(value.imag())) {
+            invalid_plan(prefix + " projection matrix has a non-finite entry");
+        }
+    }
     for (size_t row = 0; row < dimension; ++row) {
         for (size_t column = row; column < dimension; ++column) {
             if (!(std::abs(entry(row, column) - std::conj(entry(column, row))) <=

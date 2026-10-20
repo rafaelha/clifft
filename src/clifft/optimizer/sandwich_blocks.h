@@ -23,15 +23,17 @@ struct SandwichBlock {
     // T_GATE op indices of the closing layer, in pairing order:
     // closing_ops[i] inverts opening_ops[i] (same unsigned axis, same mask
     // sign, opposite dagger). This is ascending only when the closing layer
-    // lists its gates in the order of the opening layer.
+    // lists its gates in the order of the opening layer. Empty for a terminal
+    // block, which has no closing layer.
     std::vector<size_t> closing_ops;
-    // The one visible MEASURE op between the layers.
+    // The one visible MEASURE op after the opening layer.
     size_t check_op = 0;
-    // Hidden MEASURE ops between the layers whose unsigned Pauli equals the
+    // Hidden MEASURE ops in the interior whose unsigned Pauli equals the
     // check's, such as the reset of the check qubit.
     std::vector<size_t> echo_ops;
-    // NOISE and CONDITIONAL_PAULI ops strictly between the last opening op and
-    // the first closing op.
+    // NOISE and CONDITIONAL_PAULI ops in the interior: strictly between the
+    // last opening op and the first closing op, or after the last opening op
+    // when there is no closing layer.
     std::vector<size_t> interior_noise_ops;
     std::vector<size_t> interior_conditional_ops;
     // One flag per opening op: 1 when its axis anticommutes with the check Pauli.
@@ -66,6 +68,16 @@ struct SandwichBlock {
 // 5. After a block, scanning resumes after L_close. A layer whose successor
 //    is not a valid closing layer is skipped; it may be a lone T layer such
 //    as a state injection.
+// 6. Terminal form: the last layer, when it did not start a block under rule 2,
+//    starts a terminal block if the ops after its last op satisfy rules 3 and
+//    4 with the interior extended to the end of the HIR: exactly one visible
+//    MEASURE, hidden MEASUREs with the check's unsigned Pauli, and otherwise
+//    only NOISE, READOUT_NOISE, DETECTOR, OBSERVABLE and CONDITIONAL_PAULI ops
+//    that commute with every opening axis. closing_ops is empty. No quantum op
+//    follows the check, so the inverse layer is not needed to reproduce the
+//    records and the block measures the same Clifford observable. An earlier
+//    layer never qualifies because the layers after it put a T_GATE behind the
+//    check.
 //
 // Closure check (sets `supported`): the HIR is walked from the start with a
 // DormantSubspace, paused before each block's first opening op. Let P be the

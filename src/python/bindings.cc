@@ -1103,9 +1103,11 @@ NB_MODULE(_clifft_core, m) {
         },
         nb::arg("hir"),
         "Find T-sandwich blocks in an HIR module: a layer of T gates about commuting "
-        "Pauli axes, one visible measurement, and the inverse layer.\n\n"
+        "Pauli axes, one visible measurement, and the inverse layer. A layer with "
+        "nothing quantum after its check forms a terminal block instead.\n\n"
         "Returns one dict per block, in op order. The op-index lists are HIR op "
-        "indices; 'closing_ops[i]' inverts 'opening_ops[i]'. "
+        "indices; 'closing_ops[i]' inverts 'opening_ops[i]', and 'closing_ops' is "
+        "empty for a terminal block. "
         "'axis_anticommutes_with_check' holds one bool per opening op. "
         "'supported' is True when the block's Clifford observable maps the "
         "dormant stabilizer subspace into itself, and "

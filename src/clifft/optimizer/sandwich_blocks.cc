@@ -185,22 +185,23 @@ std::optional<Interior> scan_interior(const HirModule& hir, size_t first, size_t
     return interior;
 }
 
-std::optional<SandwichBlock> try_form_block(const HirModule& hir,
-                                            const std::vector<size_t>& opening,
-                                            const std::vector<size_t>& closing) {
-    std::optional<std::vector<size_t>> partner = pair_layers(hir, opening, closing);
-    if (!partner.has_value() || !axes_pairwise_commute(hir, opening)) {
+// Builds a block from an opening layer, its closing ops (empty for a terminal
+// block) and the end of the interior, which is the first closing op or the end
+// of the HIR.
+std::optional<SandwichBlock> build_block(const HirModule& hir, const std::vector<size_t>& opening,
+                                         std::vector<size_t> closing, size_t interior_end) {
+    if (!axes_pairwise_commute(hir, opening)) {
         return std::nullopt;
     }
     std::optional<Interior> interior =
-        scan_interior(hir, opening.back() + 1, closing.front(), opening);
+        scan_interior(hir, opening.back() + 1, interior_end, opening);
     if (!interior.has_value()) {
         return std::nullopt;
     }
 
     SandwichBlock block;
     block.opening_ops = opening;
-    block.closing_ops = std::move(*partner);
+    block.closing_ops = std::move(closing);
     block.check_op = interior->check_op;
     block.echo_ops = std::move(interior->echo_ops);
     block.interior_noise_ops = std::move(interior->noise_ops);
@@ -213,6 +214,21 @@ std::optional<SandwichBlock> try_form_block(const HirModule& hir,
         return std::nullopt;
     }
     return block;
+}
+
+std::optional<SandwichBlock> try_form_block(const HirModule& hir,
+                                            const std::vector<size_t>& opening,
+                                            const std::vector<size_t>& closing) {
+    std::optional<std::vector<size_t>> partner = pair_layers(hir, opening, closing);
+    if (!partner.has_value()) {
+        return std::nullopt;
+    }
+    return build_block(hir, opening, std::move(*partner), closing.front());
+}
+
+std::optional<SandwichBlock> try_form_terminal_block(const HirModule& hir,
+                                                     const std::vector<size_t>& opening) {
+    return build_block(hir, opening, {}, hir.ops.size());
 }
 
 // True when every dormant generator maps back into the subspace under the
@@ -283,10 +299,20 @@ std::vector<SandwichBlock> find_sandwich_blocks(const HirModule& hir) {
     const std::vector<std::vector<size_t>> layers = collect_layers(hir);
     std::vector<SandwichBlock> blocks;
     size_t i = 0;
-    while (i + 1 < layers.size()) {
-        if (std::optional<SandwichBlock> block = try_form_block(hir, layers[i], layers[i + 1])) {
+    while (i < layers.size()) {
+        std::optional<SandwichBlock> block;
+        size_t consumed = 1;
+        if (i + 1 < layers.size()) {
+            block = try_form_block(hir, layers[i], layers[i + 1]);
+            consumed = 2;
+        } else {
+            // A terminal block can only start at the last layer: any later
+            // layer would leave a T_GATE behind the check.
+            block = try_form_terminal_block(hir, layers[i]);
+        }
+        if (block.has_value()) {
             blocks.push_back(std::move(*block));
-            i += 2;
+            i += consumed;
         } else {
             ++i;
         }

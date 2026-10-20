@@ -51,22 +51,37 @@ def test_unsupported_block_is_reported_with_supported_false() -> None:
     assert len(block["opening_ops"]) == 3
 
 
-def test_cultivation_d5_has_two_supported_blocks() -> None:
+def test_terminal_block_has_no_closing_layer() -> None:
+    text = "RX 3\nT 0 1 2\nCX 3 0 3 1 3 2\nMX 3\nRX 3\n"
+
+    (block,) = _blocks(text)
+
+    assert block["opening_ops"] == [2, 3, 4]
+    assert block["closing_ops"] == []
+    assert block["check_op"] == 5
+    assert block["echo_ops"] == [6]
+    assert block["supported"] is True
+
+
+def test_cultivation_d5_has_three_supported_blocks() -> None:
     text = (_FIXTURES / "cultivation_d5.stim").read_text()
     hir = clifft.trace(clifft.parse(text))
     lines = text.splitlines()
 
     blocks = clifft.find_sandwich_blocks(hir)
 
+    assert len(blocks) == 3
+    assert [len(block["opening_ops"]) for block in blocks] == [7, 19, 19]
     # The T layer before the final destructive MPP has no inverse layer.
-    assert len(blocks) == 2
-    assert [len(block["opening_ops"]) for block in blocks] == [7, 19]
-    for block, check_gate in zip(blocks, ("MX(0.005) 7", "MX(0.005) 25"), strict=True):
+    assert [len(block["closing_ops"]) for block in blocks] == [7, 19, 0]
+    for block in blocks:
         assert block["supported"] is True
         assert block["active_width_at_opening"] == 1
-        assert len(block["echo_ops"]) == 1
-        assert lines[hir.source_map[block["check_op"]][0] - 1] == check_gate
-        for opening, closing in zip(block["opening_ops"], block["closing_ops"], strict=True):
+    check_lines = [lines[hir.source_map[block["check_op"]][0] - 1] for block in blocks]
+    assert check_lines[:2] == ["MX(0.005) 7", "MX(0.005) 25"]
+    assert check_lines[2].startswith("MPP Y0*Y3*Y7*")
+    for block in blocks:
+        for opening, closing in zip(block["opening_ops"], block["closing_ops"], strict=False):
             assert hir[opening].op_type == clifft.OpType.T_GATE
             assert hir[closing].op_type == clifft.OpType.T_GATE
             assert hir[opening].is_dagger != hir[closing].is_dagger

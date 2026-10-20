@@ -203,6 +203,11 @@ trajectory, and resumes after the transition. Jumps whose source is already
 noncomputational are sampled as classical status changes while this
 continuation is constructed.
 
+Before execution, preparation expands transition hooks and partner interactions
+and validates annotations and model-dependent measurement contracts, even for
+zero shots. Active-width limits are checked when a continuation is compiled,
+so an unreachable all-computational start cannot reject a valid request.
+
 The prepared transition action holds only the source-dependent total
 jump rates, the separate weights for `g` and `e` destinations, and one
 combined weight for all noncomputational destinations. This is enough for the

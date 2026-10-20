@@ -208,7 +208,8 @@ ExecutablePlanBuilder::estimate_program_storage() const {
                               std::is_same_v<T, PromoteDormantRotation>) {
                     num_terms += typed.sign.terms().size();
                 } else if constexpr (std::is_same_v<T, MeasureActivePauli> ||
-                                     std::is_same_v<T, MeasureDormantRandom>) {
+                                     std::is_same_v<T, MeasureDormantRandom> ||
+                                     std::is_same_v<T, ProjectActiveUnitary>) {
                     // The current branch is stored separately so replay can
                     // solve for it from the requested record.
                     num_terms += typed.outcome.terms().size() - 1;
@@ -410,6 +411,9 @@ CLIFFT_BUILDER_FORCE_INLINE void ExecutablePlanBuilder::lower_action(const Plann
                     std::move(measurement),
                     prepare_measurement_correction(typed.outcome, index(typed.branch)),
                     index(typed.branch), index(typed.record), kernel});
+            } else if constexpr (std::is_same_v<T, ProjectActiveUnitary>) {
+                throw std::invalid_argument(
+                    "sampling executable lowering does not support unitary projections yet");
             } else if constexpr (std::is_same_v<T, MeasureDormantRandom>) {
                 output_.actions_.emplace_back(ExecutablePlan::ExecuteDormantMeasurement{
                     prepare_measurement_correction(typed.outcome, index(typed.branch)),

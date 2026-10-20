@@ -108,6 +108,12 @@
       "detail": "The measured observable anticommutes with a dormant stabilizer, so the outcome is an unbiased coin flip handled algebraically: the branch symbol is sampled, the dormant stabilizer at the pivot is replaced, and the coefficient state is untouched. The record bit combines the branch with the outcome expression's corrections.",
       "operands": "pivot, branch, outcome, record"
     },
+    "PROJECT_ACTIVE_UNITARY": {
+      "category": "Measurement",
+      "summary": "Projects the active state onto an eigenspace of a dense Hermitian unitary.",
+      "detail": "Samples the branch symbol with the weight each eigenspace of the plan-owned matrix holds in the coefficient state, then projects and renormalizes. Unlike a Pauli measurement the branches are not related by a Pauli, so no symbolic correction enters the frame and the active width is unchanged. The matrix itself is not shown. The record bit is the raw branch XORed with the outcome expression's corrections from earlier stochastic events.",
+      "operands": "width, branch, outcome, record"
+    },
     "RECORD_CLASSICAL": {
       "category": "Classical",
       "summary": "Writes a deterministic expression to the measurement record.",

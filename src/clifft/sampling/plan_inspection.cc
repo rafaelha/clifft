@@ -130,6 +130,13 @@ void write_action_body(std::ostream& out, const SamplingAction& action,
                     << " pivot=" << typed.active_pivot << " branch=s" << index(typed.branch)
                     << " outcome=" << format_expression(typed.outcome, max_expression_terms)
                     << " record=r" << index(typed.record);
+            } else if constexpr (std::is_same_v<T, ProjectActiveUnitary>) {
+                // The dense matrix is omitted: it is unreadable at this scale
+                // and would make the inspection text grow with 4^width.
+                out << "PROJECT_ACTIVE_UNITARY width=" << typed.width << " branch=s"
+                    << index(typed.branch)
+                    << " outcome=" << format_expression(typed.outcome, max_expression_terms)
+                    << " record=r" << index(typed.record);
             } else if constexpr (std::is_same_v<T, MeasureDormantRandom>) {
                 out << "MEASURE_DORMANT pivot=" << typed.dormant_pivot << " branch=s"
                     << index(typed.branch)

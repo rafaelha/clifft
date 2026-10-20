@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <complex>
 #include <limits>
 #include <stdexcept>
 #include <type_traits>
@@ -107,12 +108,71 @@ void validate_measurement_pivot(const MeasureActivePauli& measurement, uint32_t 
     }
 }
 
+// Tight enough that the two branch weights sum to the state norm to about this
+// precision, loose enough to accept matrices entered as decimal literals.
+constexpr double kProjectionMatrixTolerance = 1e-9;
+
+void validate_projection(const ProjectActiveUnitary& projection, const PlannedAction& planned,
+                         uint32_t action_index) {
+    const std::string prefix = "action " + std::to_string(action_index);
+    if (projection.width != planned.active_before || projection.width != planned.active_after) {
+        invalid_plan(prefix + " projection width disagrees with the active width");
+    }
+    if (projection.width > kMaxProjectionWidth) {
+        invalid_plan(prefix + " projection width " + std::to_string(projection.width) +
+                     " exceeds the maximum of " + std::to_string(kMaxProjectionWidth));
+    }
+    const size_t dimension = size_t{1} << projection.width;
+    if (projection.matrix.size() != dimension * dimension) {
+        invalid_plan(prefix + " projection matrix must have " +
+                     std::to_string(dimension * dimension) + " entries");
+    }
+    const auto entry = [&](size_t row, size_t column) {
+        return projection.matrix[row * dimension + column];
+    };
+    // Negated comparisons also reject NaN entries.
+    for (size_t row = 0; row < dimension; ++row) {
+        for (size_t column = row; column < dimension; ++column) {
+            if (!(std::abs(entry(row, column) - std::conj(entry(column, row))) <=
+                  kProjectionMatrixTolerance)) {
+                invalid_plan(prefix + " projection matrix is not Hermitian");
+            }
+        }
+    }
+    // Separate real and imaginary accumulators avoid the NaN-recovery path of
+    // complex multiplication, which dominates the cubic product at width eight.
+    std::vector<double> product_real(dimension);
+    std::vector<double> product_imag(dimension);
+    for (size_t row = 0; row < dimension; ++row) {
+        std::ranges::fill(product_real, 0.0);
+        std::ranges::fill(product_imag, 0.0);
+        for (size_t middle = 0; middle < dimension; ++middle) {
+            const double left_real = entry(row, middle).real();
+            const double left_imag = entry(row, middle).imag();
+            for (size_t column = 0; column < dimension; ++column) {
+                const std::complex<double> right = entry(middle, column);
+                product_real[column] += left_real * right.real() - left_imag * right.imag();
+                product_imag[column] += left_real * right.imag() + left_imag * right.real();
+            }
+        }
+        for (size_t column = 0; column < dimension; ++column) {
+            const double expected = row == column ? 1.0 : 0.0;
+            if (!(std::abs(std::complex<double>(product_real[column] - expected,
+                                                product_imag[column])) <=
+                  kProjectionMatrixTolerance)) {
+                invalid_plan(prefix + " projection matrix is not unitary");
+            }
+        }
+    }
+}
+
 std::optional<SymbolId> defined_symbol(const SamplingAction& action) {
     return std::visit(
         [](const auto& typed) -> std::optional<SymbolId> {
             using T = std::decay_t<decltype(typed)>;
             if constexpr (std::is_same_v<T, MeasureActivePauli> ||
-                          std::is_same_v<T, MeasureDormantRandom>) {
+                          std::is_same_v<T, MeasureDormantRandom> ||
+                          std::is_same_v<T, ProjectActiveUnitary>) {
                 return typed.branch;
             } else if constexpr (std::is_same_v<T, DefineSymbol>) {
                 return typed.symbol;
@@ -369,6 +429,10 @@ uint32_t predicted_dense_passes(const SamplingAction& action) {
                 // Sampling requires one reduction before the branch is known,
                 // then a second traversal to collapse and compact that branch.
                 return 2;
+            } else if constexpr (std::is_same_v<T, ProjectActiveUnitary>) {
+                // One traversal applies the matrix and accumulates both branch
+                // weights; a second writes the selected projection.
+                return 2;
             } else if constexpr (std::is_same_v<T, ApplyInstrument>) {
                 switch (typed.mode) {
                     case InstrumentMode::Classical:
@@ -525,7 +589,8 @@ void SamplingPlan::validate() const {
         }
         const SamplingAction& action = actions[*actual_definitions[symbol_index]].action;
         if (kind == SymbolKind::Branch && !std::holds_alternative<MeasureActivePauli>(action) &&
-            !std::holds_alternative<MeasureDormantRandom>(action)) {
+            !std::holds_alternative<MeasureDormantRandom>(action) &&
+            !std::holds_alternative<ProjectActiveUnitary>(action)) {
             invalid_plan("branch symbol s" + std::to_string(symbol_index) +
                          " must be defined by a measurement");
         }
@@ -615,6 +680,12 @@ void SamplingPlan::validate() const {
                         invalid_plan("active measurement Pauli is identity");
                     }
                     validate_measurement_pivot(typed, action_index);
+                    validate_measurement_outcome(*this, actual_definitions, typed.outcome,
+                                                 typed.branch, action_index);
+                    validate_record(*this, typed.record, action_index, written_records);
+                    record_values[index(typed.record)] = &typed.outcome;
+                } else if constexpr (std::is_same_v<T, ProjectActiveUnitary>) {
+                    validate_projection(typed, planned, action_index);
                     validate_measurement_outcome(*this, actual_definitions, typed.outcome,
                                                  typed.branch, action_index);
                     validate_record(*this, typed.record, action_index, written_records);

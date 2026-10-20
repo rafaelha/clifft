@@ -23,6 +23,7 @@
 #include "clifft/util/numeric.h"
 
 #include <array>
+#include <complex>
 #include <cstdint>
 #include <limits>
 #include <optional>
@@ -160,6 +161,24 @@ struct MeasureActivePauli {
     RecordSlot record{};
 };
 
+// Largest active width a ProjectActiveUnitary may span. The dense matrix has
+// 4^width entries, so this bound keeps plan and executable storage small.
+inline constexpr uint32_t kMaxProjectionWidth = 8;
+
+// Projects the active state onto the eigenspace of a Hermitian unitary C
+// acting on all current active coordinates: the branch bit b selects
+// (I + (-1)^b C)/2, sampled with probability ||(I +- C) c||^2 / 4 and the
+// state renormalized. Unlike a Pauli measurement the two branches are not
+// related by a Pauli, so the state itself is projected and no symbolic
+// correction enters the frame. The active width is unchanged.
+struct ProjectActiveUnitary {
+    uint32_t width = 0;                        // equals active_before and active_after
+    std::vector<std::complex<double>> matrix;  // row-major, 2^width by 2^width, C[row][col]
+    SymbolId branch{};
+    AffineBool outcome;  // record = branch XOR outcome
+    RecordSlot record{};
+};
+
 // A random Pauli measurement supported outside the active coefficient state
 // samples an unbiased branch and replaces the selected dormant stabilizer. It
 // leaves the active state unchanged. The outcome combines the branch with
@@ -294,10 +313,11 @@ struct InstrumentBoundary {
     uint32_t symbol_prefix_size = 0;
 };
 
-using SamplingAction = std::variant<RotateActivePauli, PromoteDormantRotation, MeasureActivePauli,
-                                    MeasureDormantRandom, RecordClassical, DefineSymbol,
-                                    ApplyReadoutNoise, WriteDetector, WriteObservable,
-                                    WriteExpectationValue, ApplyInstrument, InstrumentBoundary>;
+using SamplingAction =
+    std::variant<RotateActivePauli, PromoteDormantRotation, MeasureActivePauli,
+                 MeasureDormantRandom, RecordClassical, DefineSymbol, ApplyReadoutNoise,
+                 WriteDetector, WriteObservable, WriteExpectationValue, ApplyInstrument,
+                 InstrumentBoundary, ProjectActiveUnitary>;
 
 struct PlannedAction {
     // Dense active-coordinate widths immediately before and after this action.

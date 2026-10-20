@@ -979,9 +979,47 @@ PlannedProjection process_sandwich_projection(const HirModule& hir, const Heisen
     return PlannedProjection{action, std::move(outcome_correction)};
 }
 
-}  // namespace
+void validate_probes(const HirModule& hir, std::span<const FrameSignProbe> probes) {
+    for (size_t p = 0; p < probes.size(); ++p) {
+        const FrameSignProbe& probe = probes[p];
+        if (probe.before_op >= hir.ops.size() ||
+            (p > 0 && probe.before_op < probes[p - 1].before_op)) {
+            throw std::invalid_argument(
+                "sampling planner frame probes must name operations in ascending order");
+        }
+        for (const size_t op : probe.pauli_ops) {
+            if (op >= hir.ops.size() || !hir.ops[op].has_mask()) {
+                throw std::invalid_argument(
+                    "sampling planner frame probe names an operation without a Pauli mask");
+            }
+        }
+    }
+}
 
-SamplingPlan plan_sampling(const HirModule& hir, SamplingPlanOptions options) {
+// The coordinate change in resolve_pauli contributes only a constant sign,
+// and its lookups can materialize a cached inverse. Reading the symbolic
+// frame alone keeps probed planning identical to ordinary planning.
+std::vector<std::vector<SymbolId>> read_probe(const HirModule& hir, const FrameSignProbe& probe,
+                                              const SamplingPlan& plan,
+                                              SymbolicPauliFrame& symbolic_frame) {
+    std::vector<std::vector<SymbolId>> result;
+    result.reserve(probe.pauli_ops.size());
+    for (const size_t op : probe.pauli_ops) {
+        const AffineBool sign = symbolic_frame.sign_for(pauli_from_hir(hir, hir.ops[op]));
+        std::vector<SymbolId> presampled;
+        for (const SymbolId term : sign.terms()) {
+            if (plan.symbols.at(index(term)) == SymbolKind::Presampled) {
+                presampled.push_back(term);
+            }
+        }
+        result.push_back(std::move(presampled));
+    }
+    return result;
+}
+
+SamplingPlan plan_sampling_impl(const HirModule& hir, SamplingPlanOptions options,
+                                std::span<const FrameSignProbe> probes,
+                                std::vector<std::vector<std::vector<SymbolId>>>* probe_terms) {
     NoiseSigns noise_signs(hir);
 
     SamplingPlan plan;
@@ -1051,7 +1089,11 @@ SamplingPlan plan_sampling(const HirModule& hir, SamplingPlanOptions options) {
     uint32_t next_instrument_site = 0;
     bool supports_final_state_queries = true;
     bool final_coordinates_changed = false;
+    size_t next_probe = 0;
     for (size_t i = 0; i < hir.ops.size(); ++i) {
+        for (; next_probe < probes.size() && probes[next_probe].before_op == i; ++next_probe) {
+            probe_terms->push_back(read_probe(hir, probes[next_probe], plan, symbolic_frame));
+        }
         const HeisenbergOp& op = hir.ops[i];
         const std::span<const uint32_t> source_lines =
             plan.source_map.has_value() ? source_lines_for(hir, i) : std::span<const uint32_t>{};
@@ -1337,6 +1379,22 @@ SamplingPlan plan_sampling(const HirModule& hir, SamplingPlanOptions options) {
     // externally assembled plans before execution. Repeating that full scan
     // here makes the normal compile path validate the same plan twice.
     return plan;
+}
+
+}  // namespace
+
+SamplingPlan plan_sampling(const HirModule& hir, SamplingPlanOptions options) {
+    return plan_sampling_impl(hir, options, {}, nullptr);
+}
+
+ProbedSamplingPlan plan_sampling_with_probes(const HirModule& hir,
+                                             std::span<const FrameSignProbe> probes,
+                                             SamplingPlanOptions options) {
+    validate_probes(hir, probes);
+    ProbedSamplingPlan result;
+    result.presampled_terms.reserve(probes.size());
+    result.plan = plan_sampling_impl(hir, options, probes, &result.presampled_terms);
+    return result;
 }
 
 }  // namespace clifft::sampling

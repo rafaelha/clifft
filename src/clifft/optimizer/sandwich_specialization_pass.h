@@ -23,6 +23,8 @@ struct SandwichKey {
     std::vector<uint8_t> internal_support;
 
     [[nodiscard]] bool empty() const { return axis_flip.empty() && internal_support.empty(); }
+
+    friend bool operator==(const SandwichKey&, const SandwichKey&) = default;
 };
 
 // Replaces recognized T-sandwich blocks with projections onto the Clifford

@@ -179,8 +179,12 @@ def test_no_detectors_accepts_absent_mask() -> None:
 )
 def test_reject_unproven_noiseless_reference(annotation: str, offender: str) -> None:
     task = all_detector_task("H 0\nM 0\n" + annotation)
-    with pytest.raises(ValueError, match=f"Cannot prove noiseless {offender} deterministic"):
+    with pytest.raises(
+        ValueError, match=f"Cannot prove noiseless {offender} deterministic"
+    ) as caught:
         PerfectionistSampler().compiled_sampler_for_task(task)
+    assert "PerfectionistSampler does not accept reference overrides" in str(caught.value)
+    assert "native clifft.compile API" in str(caught.value)
 
 
 def test_random_measurements_with_fixed_parities(sampler: PerfectionistSampler) -> None:

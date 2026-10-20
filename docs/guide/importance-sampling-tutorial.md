@@ -71,6 +71,11 @@ Both circuits share the same structure: 15 qubits, 20 detectors,
 
 ## Step 1: Compile and Inspect
 
+Both cultivation circuits have known all-zero ideal detector and observable
+parities. Supply these explicitly: automatic normalization cannot symbolically
+prove every T-gate cultivation check and raises `ValueError`. These reference
+values come from the protocol, not from a sampled shot.
+
 ```python
 import numpy as np
 import clifft
@@ -83,7 +88,6 @@ with open("docs/guide/circuits/circuit_d3_t_gate_p0.001.stim") as f:
 # Magic state cultivation discards any shot where a detector fires.
 prog_probe = clifft.compile(
     circuit_text,
-    normalize_syndromes=True,
     hir_passes=clifft.default_hir_pass_manager(),
 )
 num_det = prog_probe.num_detectors
@@ -93,7 +97,8 @@ mask = [1] * num_det  # one flag per detector
 # Compile with postselection
 prog = clifft.compile(
     circuit_text,
-    normalize_syndromes=True,
+    expected_detectors=[0] * num_det,
+    expected_observables=[0] * prog_probe.num_observables,
     postselection_mask=mask,
     hir_passes=clifft.default_hir_pass_manager(),
 )

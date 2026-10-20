@@ -98,11 +98,19 @@ class PerfectionistSampler(sinter.Sampler):
             if not np.all(np.unpackbits(mask, bitorder="little", count=num_detectors)):
                 raise ValueError("PerfectionistSampler requires all-detector postselection")
 
-        program = clifft.compile(
-            str(task.circuit.without_tags()),
-            postselection_mask=[1] * num_detectors,
-            normalize_syndromes=True,
-        )
+        try:
+            program = clifft.compile(
+                str(task.circuit.without_tags()),
+                postselection_mask=[1] * num_detectors,
+                normalize_syndromes=True,
+            )
+        except ValueError as error:
+            if not str(error).startswith("Cannot prove noiseless "):
+                raise
+            raise ValueError(
+                f"{error} PerfectionistSampler does not accept reference overrides; "
+                "explicit references require the native clifft.compile API."
+            ) from error
         return _CompiledPerfectionistSampler(program, self.batch_size)
 
 

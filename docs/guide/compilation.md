@@ -41,12 +41,16 @@ Compilation options such as `postselection_mask`, `normalize_syndromes`,
 `expected_detectors`, and `expected_observables` define the result contract
 used during sampling.
 
-For detector-based post-selection, set `normalize_syndromes=True` unless raw
-measurement parities are intentional. Clifft computes the noiseless detector
-and observable reference once during compilation and stores the normalization
-in the program. `sample_survivors()` then applies the post-selection mask to
-those normalized detector values; it does not recompute the reference per
-call.
+For detector-based post-selection, `normalize_syndromes=True` proves and
+extracts constant noiseless detector and observable parities during compilation.
+It raises `ValueError` if the symbolic analysis cannot prove every parity;
+this can include deterministic non-Clifford circuits such as cultivation.
+When the ideal reference is known, supply `expected_detectors` and
+`expected_observables` with automatic normalization disabled instead. See
+[detectors and observables](simulation.md#detectors-and-observables) for the
+reference requirements. Clifft stores the normalization in the program, and
+`sample_survivors()` applies the post-selection mask to those normalized
+detector values without recomputing the reference per call.
 
 Circuits containing `LEAKAGE`, `LOSS`, or `LEVEL_TRANSITION` annotations, or the
 status probes `HERALD_LEAKAGE_EVENT` and `HERALD_LOSS_EVENT`, take a

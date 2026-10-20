@@ -111,7 +111,6 @@ def run_stratified_is(
 
     prog_probe = clifft.compile(
         circuit_text,
-        normalize_syndromes=True,
         hir_passes=clifft.default_hir_pass_manager(),
     )
     # Today we compile once to discover the detector count, then again with an
@@ -122,7 +121,10 @@ def run_stratified_is(
 
     prog = clifft.compile(
         circuit_text,
-        normalize_syndromes=True,
+        # The protocol fixes these parities even when symbolic proof cannot
+        # resolve the non-Clifford cultivation checks.
+        expected_detectors=[0] * num_det,
+        expected_observables=[0] * prog_probe.num_observables,
         postselection_mask=mask,
         hir_passes=clifft.default_hir_pass_manager(),
     )

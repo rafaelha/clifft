@@ -17,6 +17,7 @@
 #include "clifft/optimizer/phase_polynomial_pass.h"
 #include "clifft/optimizer/remove_noise_pass.h"
 #include "clifft/optimizer/rotation_simplification_pass.h"
+#include "clifft/optimizer/sandwich_blocks.h"
 #include "clifft/optimizer/statevector_squeeze_pass.h"
 #include "clifft/sampling/executor.h"
 #include "clifft/sampling/planner.h"
@@ -1071,6 +1072,45 @@ NB_MODULE(_clifft_core, m) {
         "Returns a dict with 'initial', 'peak', and 'final' width, plus "
         "per-op 'widths' (the width after each op) and 'effects' (a "
         "lower-case effect name per op).");
+
+    m.def(
+        "find_sandwich_blocks",
+        [](const clifft::HirModule& hir) {
+            std::vector<clifft::SandwichBlock> blocks;
+            {
+                nb::gil_scoped_release release;
+                blocks = clifft::find_sandwich_blocks(hir);
+            }
+            nb::list result;
+            for (const clifft::SandwichBlock& block : blocks) {
+                nb::list axis_flags;
+                for (const uint8_t flag : block.axis_anticommutes_with_check) {
+                    axis_flags.append(flag != 0);
+                }
+                nb::dict d;
+                d["opening_ops"] = nb::cast(block.opening_ops);
+                d["closing_ops"] = nb::cast(block.closing_ops);
+                d["check_op"] = block.check_op;
+                d["echo_ops"] = nb::cast(block.echo_ops);
+                d["interior_noise_ops"] = nb::cast(block.interior_noise_ops);
+                d["interior_conditional_ops"] = nb::cast(block.interior_conditional_ops);
+                d["axis_anticommutes_with_check"] = axis_flags;
+                d["supported"] = block.supported;
+                d["active_width_at_opening"] = block.active_width_at_opening;
+                result.append(d);
+            }
+            return result;
+        },
+        nb::arg("hir"),
+        "Find T-sandwich blocks in an HIR module: a layer of T gates about commuting "
+        "Pauli axes, one visible measurement, and the inverse layer.\n\n"
+        "Returns one dict per block, in op order. The op-index lists are HIR op "
+        "indices; 'closing_ops[i]' inverts 'opening_ops[i]'. "
+        "'axis_anticommutes_with_check' holds one bool per opening op. "
+        "'supported' is True when the block's Clifford observable maps the "
+        "dormant stabilizer subspace into itself, and "
+        "'active_width_at_opening' is the dormant-subspace active width just "
+        "before the opening layer.");
 
     nb::class_<clifft::sampling::ExecutablePlan>(m, "Program",
                                                  "A reusable compiled sampling program")

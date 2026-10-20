@@ -2,24 +2,68 @@
 // how other passes treat them, the pass that replaces recognized T-sandwich
 // blocks with them, and the sampling plans built from the result.
 
+#include "clifft/circuit/parser.h"
+#include "clifft/frontend/frontend.h"
 #include "clifft/frontend/hir.h"
 #include "clifft/optimizer/clifford_absorption.h"
 #include "clifft/optimizer/commutation.h"
 #include "clifft/optimizer/drop_non_unitary_pass.h"
 #include "clifft/optimizer/peephole.h"
+#include "clifft/optimizer/sandwich_blocks.h"
+#include "clifft/optimizer/sandwich_specialization_pass.h"
 #include "clifft/util/hir_introspection.h"
+#include "clifft/util/symplectic.h"
 
 #include "test_helpers.h"
 
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <cstddef>
 #include <cstdint>
+#include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 using namespace clifft;
+using Catch::Matchers::ContainsSubstring;
 
 namespace {
+
+// A three-axis T sandwich around an ancilla check over data qubits 0-2 in
+// |0>. The ancilla's X measurement picks up the data X parity through the
+// ladder, so the check anticommutes with every Z axis.
+constexpr const char* kToySandwich =
+    "RX 3\n"
+    "T 0 1 2\n"
+    "CX 3 0 3 1 3 2\n"
+    "MX 3\n"
+    "RX 3\n"
+    "CX 3 0 3 1 3 2\n"
+    "T_DAG 0 1 2\n"
+    "MX 0 1 2\n";
+
+HirModule hir_of(const std::string& text) {
+    return trace(parse(text));
+}
+
+SandwichKey uniform_key(size_t width, bool flip, bool support) {
+    return SandwichKey{std::vector<uint8_t>(width, flip ? 1 : 0),
+                       std::vector<uint8_t>(width, support ? 1 : 0)};
+}
+
+HirModule specialized(const HirModule& hir, std::vector<SandwichKey> keys) {
+    HirModule result = hir;
+    SandwichSpecializationPass pass(std::move(keys));
+    pass.run(result);
+    return result;
+}
+
+size_t count_ops(const HirModule& hir, OpType type) {
+    return static_cast<size_t>(std::ranges::count_if(
+        hir.ops, [type](const HeisenbergOp& op) { return op.op_type() == type; }));
+}
 
 PauliMaskHandle claim_axis(HirModule& hir, uint64_t destab, uint64_t stab, bool sign) {
     return hir.claim_side_mask([&](MutablePauliMaskView slot) {
@@ -169,4 +213,196 @@ TEST_CASE("DropNonUnitaryPass removes sandwich ops and their sites", "[sandwich]
     CHECK(hir.ops[0].op_type() == OpType::T_GATE);
     CHECK(hir.sandwich_sites.empty());
     CHECK(hir.num_measurements == 0);
+}
+
+TEST_CASE("SandwichSpecializationPass replaces a block with a projection and records",
+          "[sandwich]") {
+    const HirModule hir = hir_of(kToySandwich);
+    const std::vector<SandwichBlock> blocks = find_sandwich_blocks(hir);
+    REQUIRE(blocks.size() == 1);
+    const SandwichBlock& block = blocks[0];
+    REQUIRE(block.supported);
+
+    SandwichSpecializationPass pass({uniform_key(3, false, false)});
+    HirModule result = hir;
+    pass.run(result);
+    CHECK(pass.blocks_found() == 1);
+    CHECK(pass.blocks_specialized() == 1);
+
+    // Both layers go; the projection takes the first opening slot and the
+    // check and echo keep their positions as records.
+    REQUIRE(result.ops.size() == hir.ops.size() - 5);
+    CHECK(result.num_t_gates() == 0);
+    CHECK(count_ops(result, OpType::MEASURE) == count_ops(hir, OpType::MEASURE) - 2);
+    const size_t opening = block.opening_ops.front();
+    REQUIRE(result.ops[opening].op_type() == OpType::SANDWICH_PROJECTION);
+    const HeisenbergOp& check = result.ops[opening + 1];
+    const HeisenbergOp& echo = result.ops[opening + 2];
+    REQUIRE(check.op_type() == OpType::SANDWICH_RECORD);
+    REQUIRE(echo.op_type() == OpType::SANDWICH_RECORD);
+    CHECK(check.sandwich_record_idx() == hir.ops[block.check_op].meas_record_idx());
+    CHECK_FALSE(check.is_hidden());
+    CHECK(echo.sandwich_record_idx() == hir.ops[block.echo_ops[0]].meas_record_idx());
+    CHECK(echo.is_hidden());
+    CHECK(result.mask_view(result.ops[opening]) == hir.mask_view(hir.ops[block.check_op]));
+    CHECK(result.mask_view(check) == hir.mask_view(hir.ops[block.check_op]));
+
+    REQUIRE(result.sandwich_sites.size() == 1);
+    const SandwichSite& site = result.sandwich_sites[0];
+    CHECK(result.ops[opening].sandwich_site_idx() == SandwichSiteIdx{0});
+    CHECK(check.sandwich_site_idx() == SandwichSiteIdx{0});
+    CHECK(site.check_record == static_cast<uint32_t>(hir.ops[block.check_op].meas_record_idx()));
+    CHECK(site.axis_dagger == std::vector<uint8_t>{0, 0, 0});
+    CHECK(site.axis_flip == std::vector<uint8_t>{0, 0, 0});
+    REQUIRE(site.axes.size() == 3);
+    for (size_t j = 0; j < 3; ++j) {
+        CHECK(result.pauli_masks.at(site.axes[j]) == hir.mask_view(hir.ops[block.opening_ops[j]]));
+    }
+
+    // The projection names every gate of both layers as its source.
+    std::vector<uint32_t> layer_lines;
+    for (const auto* layer : {&block.opening_ops, &block.closing_ops}) {
+        for (const size_t op : *layer) {
+            layer_lines.insert(layer_lines.end(), hir.source_map[op].begin(),
+                               hir.source_map[op].end());
+        }
+    }
+    std::ranges::sort(layer_lines);
+    layer_lines.erase(std::unique(layer_lines.begin(), layer_lines.end()), layer_lines.end());
+    REQUIRE(result.source_map.size() == result.ops.size());
+    CHECK(result.source_map[opening] == layer_lines);
+    CHECK(result.source_map[opening + 1] == hir.source_map[block.check_op]);
+    CHECK(result.logical_noise_prefix.empty());
+}
+
+TEST_CASE("SandwichSpecializationPass copies the key flips and opening directions", "[sandwich]") {
+    // T_DAG opens this block, so every axis records a dagger.
+    std::string text = kToySandwich;
+    text.replace(text.find("T_DAG 0 1 2"), 11, "T 0 1 2");
+    text.replace(text.find("T 0 1 2"), 7, "T_DAG 0 1 2");
+    const HirModule hir = hir_of(text);
+    REQUIRE(find_sandwich_blocks(hir).size() == 1);
+
+    const HirModule result = specialized(hir, {SandwichKey{{1, 0, 1}, {0, 0, 0}}});
+    REQUIRE(result.sandwich_sites.size() == 1);
+    CHECK(result.sandwich_sites[0].axis_dagger == std::vector<uint8_t>{1, 1, 1});
+    CHECK(result.sandwich_sites[0].axis_flip == std::vector<uint8_t>{1, 0, 1});
+}
+
+TEST_CASE("SandwichSpecializationPass folds the internal correction into later ops", "[sandwich]") {
+    const HirModule hir = hir_of(kToySandwich);
+    const SandwichBlock block = find_sandwich_blocks(hir).at(0);
+    const HirModule result = specialized(hir, {SandwichKey{{0, 0, 0}, {1, 0, 0}}});
+    const size_t after_closing = *std::ranges::max_element(block.closing_ops) + 1;
+
+    // Ops after the closing layer shift left by the five dropped gates.
+    const PauliMaskView axis = hir.mask_view(hir.ops[block.opening_ops[0]]);
+    size_t anticommuting = 0;
+    for (size_t i = after_closing; i < hir.ops.size(); ++i) {
+        const PauliMaskView before = hir.mask_view(hir.ops[i]);
+        const PauliMaskView after = result.mask_view(result.ops[i - 5]);
+        if (anti_commute(before.x(), before.z(), axis.x(), axis.z())) {
+            // Conjugating by exp(i pi/4 P) multiplies an anticommuting Pauli by P.
+            ++anticommuting;
+            for (uint32_t w = 0; w < before.x().num_words(); ++w) {
+                CHECK(after.x().words[w] == (before.x().words[w] ^ axis.x().words[w]));
+                CHECK(after.z().words[w] == (before.z().words[w] ^ axis.z().words[w]));
+            }
+        } else {
+            CHECK(after == before);
+        }
+    }
+    CHECK(anticommuting > 0);
+
+    // Without internal support the later ops are untouched.
+    const HirModule plain = specialized(hir, {uniform_key(3, false, false)});
+    for (size_t i = after_closing; i < hir.ops.size(); ++i) {
+        CHECK(plain.mask_view(plain.ops[i - 5]) == hir.mask_view(hir.ops[i]));
+    }
+}
+
+TEST_CASE("SandwichSpecializationPass leaves blocks with empty keys unchanged", "[sandwich]") {
+    // Two copies of the toy block, with the data reset between them.
+    const HirModule hir = hir_of(std::string(kToySandwich) + "R 0 1 2\n" + kToySandwich);
+    const std::vector<SandwichBlock> blocks = find_sandwich_blocks(hir);
+    REQUIRE(blocks.size() == 2);
+    REQUIRE(blocks[1].supported);
+
+    SECTION("no keys") {
+        SandwichSpecializationPass pass({});
+        HirModule result = hir;
+        pass.run(result);
+        CHECK(pass.blocks_found() == 2);
+        CHECK(pass.blocks_specialized() == 0);
+        CHECK(result.ops.size() == hir.ops.size());
+        CHECK(result.num_t_gates() == hir.num_t_gates());
+    }
+
+    SECTION("only the second block") {
+        SandwichSpecializationPass pass({SandwichKey{}, uniform_key(3, false, false)});
+        HirModule result = hir;
+        pass.run(result);
+        CHECK(pass.blocks_specialized() == 1);
+        CHECK(result.num_t_gates() == 6);
+        CHECK(count_ops(result, OpType::SANDWICH_PROJECTION) == 1);
+        // The first block's layers keep their ops.
+        for (const size_t op : blocks[0].opening_ops) {
+            CHECK(result.ops[op].op_type() == OpType::T_GATE);
+        }
+        CHECK(result.ops[blocks[1].opening_ops.front()].op_type() == OpType::SANDWICH_PROJECTION);
+    }
+}
+
+TEST_CASE("SandwichSpecializationPass rejects invalid keys and blocks", "[sandwich]") {
+    const HirModule hir = hir_of(kToySandwich);
+
+    SECTION("key length mismatch") {
+        HirModule copy = hir;
+        SandwichSpecializationPass pass({SandwichKey{{0, 0}, {0, 0, 0}}});
+        CHECK_THROWS_WITH(pass.run(copy), ContainsSubstring("2 axis flips"));
+        SandwichSpecializationPass support({SandwichKey{{0, 0, 0}, {}}});
+        CHECK_THROWS_AS(support.run(copy), std::invalid_argument);
+    }
+
+    SECTION("more keys than blocks") {
+        HirModule copy = hir;
+        SandwichSpecializationPass pass(
+            {uniform_key(3, false, false), uniform_key(3, false, false)});
+        CHECK_THROWS_WITH(pass.run(copy), ContainsSubstring("2 keys for 1 recognized blocks"));
+    }
+
+    SECTION("unsupported block") {
+        // Data qubits in |+> are stabilized by X, which the Z axes rotate away.
+        std::string text = kToySandwich;
+        text.replace(0, 4, "RX 0 1 2 3");
+        HirModule copy = hir_of(text);
+        const std::vector<SandwichBlock> blocks = find_sandwich_blocks(copy);
+        REQUIRE(blocks.size() == 1);
+        REQUIRE_FALSE(blocks[0].supported);
+        SandwichSpecializationPass pass({uniform_key(3, false, false)});
+        CHECK_THROWS_WITH(pass.run(copy), ContainsSubstring("not supported"));
+    }
+
+    SECTION("noise between the gates of a layer") {
+        std::string text = kToySandwich;
+        text.replace(text.find("T 0 1 2"), 7, "T 0\nX_ERROR(0.1) 0\nT 1 2");
+        HirModule copy = hir_of(text);
+        REQUIRE(find_sandwich_blocks(copy).size() == 1);
+        SandwichSpecializationPass pass({uniform_key(3, false, false)});
+        CHECK_THROWS_WITH(pass.run(copy), ContainsSubstring("interleaves noise"));
+    }
+
+    SECTION("a measurement moved across noise") {
+        HirModule copy = hir_of(std::string(kToySandwich) + "X_ERROR(0.1) 0\nM 1\n");
+        copy.materialize_logical_noise_prefix();
+        const size_t last = copy.ops.size() - 1;
+        REQUIRE(copy.ops[last].op_type() == OpType::MEASURE);
+        REQUIRE(copy.ops[last - 1].op_type() == OpType::NOISE);
+        std::swap(copy.ops[last], copy.ops[last - 1]);
+        std::swap(copy.source_map[last], copy.source_map[last - 1]);
+        std::swap(copy.logical_noise_prefix[last], copy.logical_noise_prefix[last - 1]);
+        REQUIRE_FALSE(copy.logical_noise_prefix_matches_schedule());
+        SandwichSpecializationPass pass({uniform_key(3, false, false)});
+        CHECK_THROWS_WITH(pass.run(copy), ContainsSubstring("logical positions"));
+    }
 }

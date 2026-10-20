@@ -18,6 +18,7 @@
 #include "clifft/optimizer/remove_noise_pass.h"
 #include "clifft/optimizer/rotation_simplification_pass.h"
 #include "clifft/optimizer/sandwich_blocks.h"
+#include "clifft/optimizer/sandwich_specialization_pass.h"
 #include "clifft/optimizer/statevector_squeeze_pass.h"
 #include "clifft/sampling/executor.h"
 #include "clifft/sampling/planner.h"
@@ -946,6 +947,49 @@ NB_MODULE(_clifft_core, m) {
             return "ActiveWidthSchedulePass(incumbent_peak=" + std::to_string(p.incumbent_peak()) +
                    ", result_peak=" + std::to_string(p.result_peak()) +
                    ", applied=" + (p.applied() ? "True" : "False") + ")";
+        });
+
+    nb::class_<clifft::SandwichSpecializationPass, clifft::HirPass>(
+        m, "SandwichSpecializationPass",
+        "Replace recognized T-sandwich blocks with projections onto the Clifford observables "
+        "they measure, for one noise-realization class per block.\n\n"
+        "keys holds one (axis_flip, internal_support) pair per block, in find_sandwich_blocks "
+        "order. Each is a sequence of bools indexed like the block's opening gates: axis_flip "
+        "marks the axes that the error accumulated before the block, including corrections it "
+        "triggers through feedback, anticommutes with, and internal_support the axes that the "
+        "product of the errors inside the block anticommutes with. A pair of empty sequences, "
+        "and every block after the last key, stays unchanged.\n\n"
+        "The rewritten module samples correctly only shots whose noise realization lies in "
+        "the keyed classes. Not included in the default pass list.")
+        .def(
+            "__init__",
+            [](clifft::SandwichSpecializationPass* self, nb::sequence keys) {
+                const auto flags = [](nb::handle sequence) {
+                    std::vector<uint8_t> result;
+                    for (nb::handle flag : nb::cast<nb::sequence>(sequence)) {
+                        result.push_back(nb::cast<bool>(flag) ? 1 : 0);
+                    }
+                    return result;
+                };
+                std::vector<clifft::SandwichKey> converted;
+                for (nb::handle key : keys) {
+                    const auto pair = nb::cast<nb::sequence>(key);
+                    if (nb::len(pair) != 2) {
+                        throw nb::type_error(
+                            "each key must be an (axis_flip, internal_support) pair");
+                    }
+                    converted.push_back(clifft::SandwichKey{flags(pair[0]), flags(pair[1])});
+                }
+                new (self) clifft::SandwichSpecializationPass(std::move(converted));
+            },
+            nb::arg("keys"),
+            nb::sig("def __init__(self, keys: collections.abc.Sequence[tuple["
+                    "collections.abc.Sequence[bool], collections.abc.Sequence[bool]]]) -> None"))
+        .def_prop_ro("blocks_found", &clifft::SandwichSpecializationPass::blocks_found)
+        .def_prop_ro("blocks_specialized", &clifft::SandwichSpecializationPass::blocks_specialized)
+        .def("__repr__", [](const clifft::SandwichSpecializationPass& p) {
+            return "SandwichSpecializationPass(blocks_found=" + std::to_string(p.blocks_found()) +
+                   ", blocks_specialized=" + std::to_string(p.blocks_specialized()) + ")";
         });
 
     nb::class_<clifft::RemoveNoisePass, clifft::HirPass>(

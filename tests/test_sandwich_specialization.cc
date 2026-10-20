@@ -4,6 +4,7 @@
 // compared against the unspecialized plan of the same module by replaying
 // record rows under one fixed noise realization.
 
+#include "clifft/circuit/circuit.h"
 #include "clifft/circuit/parser.h"
 #include "clifft/frontend/frontend.h"
 #include "clifft/frontend/hir.h"
@@ -719,4 +720,231 @@ TEST_CASE("The sandwich planner rejects malformed projections", "[sandwich]") {
         REQUIRE(count_ops(hir, OpType::SANDWICH_PROJECTION) == 1);
         CHECK_THROWS_WITH(sampling::plan_sampling(hir), ContainsSubstring("exceeds the maximum"));
     }
+}
+
+namespace {
+
+#ifndef CLIFFT_FIXTURES_DIR
+#define CLIFFT_FIXTURES_DIR "tests/fixtures"
+#endif
+
+std::string fixture_path(const std::string& name) {
+    return std::string(CLIFFT_FIXTURES_DIR) + "/" + name;
+}
+
+enum class Pauli1 : uint8_t { X = 1, Y = 2, Z = 3 };
+
+// The channel applying `pauli` to `qubit` from a single-qubit noise
+// instruction traced into ops [begin, end). With `nearest_end` the search
+// runs backwards, so a window that closes at a block picks the error
+// closest to it.
+FiredChannel find_channel(const Circuit& circuit, const HirModule& hir, size_t begin, size_t end,
+                          uint32_t qubit, Pauli1 pauli, bool nearest_end) {
+    std::vector<size_t> candidates;
+    for (size_t i = begin; i < end; ++i) {
+        candidates.push_back(i);
+    }
+    if (nearest_end) {
+        std::ranges::reverse(candidates);
+    }
+    for (const size_t i : candidates) {
+        if (hir.ops[i].op_type() != OpType::NOISE) {
+            continue;
+        }
+        // An instruction traces into one NOISE op per target, consecutively.
+        size_t first = i;
+        while (first > 0 && hir.ops[first - 1].op_type() == OpType::NOISE &&
+               hir.source_map[first - 1] == hir.source_map[i]) {
+            --first;
+        }
+        REQUIRE(hir.source_map[i].size() == 1);
+        const uint32_t line = hir.source_map[i][0];
+        // The parser may split one line into several nodes of one gate.
+        std::vector<uint32_t> targets;
+        GateType gate = GateType::TICK;
+        for (const AstNode& node : circuit.nodes) {
+            if (node.source_line == line) {
+                gate = node.gate;
+                for (const Target& target : node.targets) {
+                    targets.push_back(target.value());
+                }
+            }
+        }
+        const bool depolarizing = gate == GateType::DEPOLARIZE1;
+        const bool matching_flip = (gate == GateType::X_ERROR && pauli == Pauli1::X) ||
+                                   (gate == GateType::Z_ERROR && pauli == Pauli1::Z);
+        if ((!depolarizing && !matching_flip) || targets.at(i - first) != qubit) {
+            continue;
+        }
+        const auto site = static_cast<uint32_t>(hir.ops[i].noise_site_idx());
+        return FiredChannel{site, depolarizing ? static_cast<uint32_t>(pauli) - 1 : 0};
+    }
+    FAIL("no matching noise channel in the window");
+    return {};
+}
+
+// Replay forces final record values and cannot attribute them to readout
+// flips, so the replayed fixtures keep only their Pauli noise.
+HirModule without_readout_noise(HirModule hir) {
+    std::vector<HeisenbergOp> ops;
+    std::vector<std::vector<uint32_t>> sources;
+    for (size_t i = 0; i < hir.ops.size(); ++i) {
+        if (hir.ops[i].op_type() == OpType::READOUT_NOISE) {
+            continue;
+        }
+        ops.push_back(hir.ops[i]);
+        sources.push_back(hir.source_map[i]);
+    }
+    hir.ops = std::move(ops);
+    hir.source_map = std::move(sources);
+    hir.readout_noise.clear();
+    return hir;
+}
+
+size_t interior_end(const SandwichBlock& block) {
+    return *std::ranges::min_element(block.closing_ops);
+}
+
+size_t block_end(const SandwichBlock& block) {
+    return block.closing_ops.empty() ? block.check_op + 1
+                                     : *std::ranges::max_element(block.closing_ops) + 1;
+}
+
+// Samples visible-then-hidden record rows from the generic plan under the
+// fixed realization and requires both plans to replay each row with the
+// same probability.
+void check_sampled_rows_agree(PlanPair& plans, uint64_t num_shots) {
+    const uint32_t visible = plans.generic.num_visible_records();
+    const uint32_t hidden = plans.generic.num_hidden_records();
+    REQUIRE(plans.specialized.num_visible_records() == visible);
+    REQUIRE(plans.specialized.num_hidden_records() == hidden);
+    Executor generic(plans.generic);
+    Executor specialized(plans.specialized);
+    std::vector<uint8_t> records(static_cast<size_t>(visible) + hidden);
+    for (uint64_t seed = 0; seed < num_shots; ++seed) {
+        Executor sampler(plans.generic, seed);
+        sampler.run_shot(plans.generic_presampled);
+        std::ranges::copy(sampler.visible_records(), records.begin());
+        std::ranges::copy(sampler.hidden_records(), records.begin() + visible);
+        INFO("seed " << seed);
+        const ReplayResult expected = generic.replay_shot(records, plans.generic_presampled);
+        const ReplayResult actual = specialized.replay_shot(records, plans.specialized_presampled);
+        // The rows come from the generic plan, so an unreachable reference
+        // would make the comparison vacuous.
+        REQUIRE(expected.reachable);
+        REQUIRE(actual.reachable);
+        CHECK(std::abs(actual.log_probability - expected.log_probability) < 1e-9);
+    }
+}
+
+}  // namespace
+
+TEST_CASE("The cultivation bench fixtures contain supported sandwich blocks", "[sandwich]") {
+    // The d3 workload holds the cat check and the final T MPP T_DAG check.
+    // The d5 workload adds the d5 cat check between them.
+    const auto [name, expected_blocks] = GENERATE(table<std::string, size_t>({
+        {"cultivation_d3_bench.stim", 2},
+        {"cultivation_d5_bench.stim", 3},
+    }));
+    CAPTURE(name);
+    const HirModule hir = trace(parse_file(fixture_path(name)));
+    const std::vector<SandwichBlock> blocks = find_sandwich_blocks(hir);
+    REQUIRE(blocks.size() == expected_blocks);
+    size_t block_gates = 0;
+    for (const SandwichBlock& block : blocks) {
+        CHECK(block.supported);
+        block_gates += block.opening_ops.size() + block.closing_ops.size();
+    }
+
+    std::vector<SandwichKey> keys;
+    for (const SandwichBlock& block : blocks) {
+        keys.push_back(uniform_key(block.opening_ops.size(), false, false));
+    }
+    const HirModule result = specialize(hir, keys);
+    CHECK(result.num_t_gates() == hir.num_t_gates() - block_gates);
+    CHECK(count_ops(result, OpType::SANDWICH_PROJECTION) == expected_blocks);
+    const SamplingPlan plan = sampling::plan_sampling(without_readout_noise(result));
+    CHECK_THAT(plan.inspect(), ContainsSubstring("PROJECT_ACTIVE_UNITARY"));
+}
+
+TEST_CASE("Specialized d3 cultivation plans replay sampled records", "[sandwich]") {
+    const Circuit circuit = parse_file(fixture_path("cultivation_d3_bench.stim"));
+    const HirModule hir = without_readout_noise(trace(circuit));
+    const std::vector<SandwichBlock> blocks = find_sandwich_blocks(hir);
+    REQUIRE(blocks.size() == 2);
+    const SandwichBlock& cat = blocks[0];
+    const SandwichBlock& final_check = blocks[1];
+    REQUIRE(cat.echo_ops.size() == 1);
+
+    // Qubit 0 carries a T axis, and qubit 11 is a cat ancilla. The final
+    // check has no noise between its layers.
+    const auto before_cat = [&](Pauli1 pauli) {
+        return find_channel(circuit, hir, 0, cat.opening_ops.front(), 0, pauli, true);
+    };
+    const FiredChannel inside_before_check =
+        find_channel(circuit, hir, cat.opening_ops.back(), cat.check_op, 0, Pauli1::X, false);
+    const FiredChannel inside_after_reset =
+        find_channel(circuit, hir, cat.echo_ops.back(), interior_end(cat), 0, Pauli1::X, false);
+    const FiredChannel cat_ancilla =
+        find_channel(circuit, hir, cat.opening_ops.back(), cat.check_op, 11, Pauli1::X, false);
+    const FiredChannel between = find_channel(circuit, hir, block_end(cat),
+                                              final_check.opening_ops.front(), 0, Pauli1::X, true);
+
+    // An error that reverses an axis before a check needs one promoted
+    // coordinate; the others leave the plan at the noiseless width.
+    const auto [name, fired, expected_peak] =
+        GENERATE_COPY(table<std::string, std::vector<FiredChannel>, uint32_t>({
+            {"no error", {}, 1},
+            {"X before the cat check", {before_cat(Pauli1::X)}, 2},
+            {"Y before the cat check", {before_cat(Pauli1::Y)}, 2},
+            {"Z before the cat check", {before_cat(Pauli1::Z)}, 1},
+            {"X inside before the check", {inside_before_check}, 1},
+            {"X inside after the reset", {inside_after_reset}, 1},
+            {"X on a cat ancilla inside", {cat_ancilla}, 1},
+            {"X before and X inside", {before_cat(Pauli1::X), inside_after_reset}, 2},
+            {"X between the blocks", {between}, 2},
+        }));
+    CAPTURE(name);
+    PlanPair plans(hir, fired);
+    CHECK(plans.specialized.peak_active_width() == expected_peak);
+    CHECK(plans.specialized.peak_active_width() < plans.generic.peak_active_width());
+    check_sampled_rows_agree(plans, 50);
+}
+
+TEST_CASE("Specialized d5 cultivation plans replay sampled records", "[sandwich]") {
+    const Circuit circuit = parse_file(fixture_path("cultivation_d5_bench.stim"));
+    const HirModule hir = without_readout_noise(trace(circuit));
+    const std::vector<SandwichBlock> blocks = find_sandwich_blocks(hir);
+    REQUIRE(blocks.size() == 3);
+    const SandwichBlock& d3_check = blocks[0];
+    const SandwichBlock& d5_check = blocks[1];
+    const SandwichBlock& final_check = blocks[2];
+
+    // The d5 check opens with T_DAG on qubit 3 and T on qubit 0. Earlier
+    // stabilizer outcomes reverse some of its axes in the frame.
+    const FiredChannel before_d3 =
+        find_channel(circuit, hir, 0, d3_check.opening_ops.front(), 0, Pauli1::X, true);
+    const FiredChannel before_d5 = find_channel(circuit, hir, block_end(d3_check),
+                                                d5_check.opening_ops.front(), 3, Pauli1::X, true);
+    const FiredChannel inside_d5_positive = find_channel(circuit, hir, d5_check.opening_ops.back(),
+                                                         d5_check.check_op, 0, Pauli1::X, false);
+    const FiredChannel inside_d5_dagger = find_channel(circuit, hir, d5_check.opening_ops.back(),
+                                                       d5_check.check_op, 3, Pauli1::X, false);
+    const FiredChannel before_final = find_channel(
+        circuit, hir, block_end(d5_check), final_check.opening_ops.front(), 0, Pauli1::X, true);
+
+    const auto [name, fired, expected_peak] =
+        GENERATE_COPY(table<std::string, std::vector<FiredChannel>, uint32_t>({
+            {"no error", {}, 1},
+            {"X before the d3 check", {before_d3}, 2},
+            {"X before the d5 check", {before_d5}, 2},
+            {"X inside the d5 check on a T axis", {inside_d5_positive}, 1},
+            {"X inside the d5 check on a T_DAG axis", {inside_d5_dagger}, 1},
+            {"X before the final check", {before_final}, 2},
+        }));
+    CAPTURE(name);
+    PlanPair plans(hir, fired);
+    CHECK(plans.specialized.peak_active_width() == expected_peak);
+    CHECK(plans.specialized.peak_active_width() < plans.generic.peak_active_width());
+    check_sampled_rows_agree(plans, 50);
 }

@@ -50,6 +50,12 @@ Tsim's Stim-compatible approach to universal noisy-circuit simulation informed
 Clifft's circuit-format and interface design. Its open code and data enabled
 direct comparisons in Clifft's original performance study.
 
+Clifft's ZX lowering (`src/clifft/zx/pbc.cc` and `schedule.cc`) ports Tsim's
+statevector reader, which turns a reduced ZX diagram into Pauli rotations and
+measurements on `|0...0>`, and its greedy measurement-first scheduler. Clifft
+adapts the reader to single-copy diagrams with Boolean outcome and noise
+parameters.
+
 - Rafael Haenel, Xiuzhe Luo, and Chen Zhao, ["Tsim: Fast Universal Simulator for Quantum Error Correction"](https://arxiv.org/abs/2604.01059)
   (2026).
 - [Tsim source](https://github.com/QuEraComputing/tsim).

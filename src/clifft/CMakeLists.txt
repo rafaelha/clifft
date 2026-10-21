@@ -57,7 +57,9 @@ add_library(clifft_core STATIC
     zx/canonical.cc
     zx/from_hir.cc
     zx/graph.cc
+    zx/pbc.cc
     zx/phase.cc
+    zx/schedule.cc
     zx/simplify.cc
     noncomp/interaction.cc
     noncomp/transition_instrument.cc

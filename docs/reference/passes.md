@@ -212,4 +212,29 @@ construction and final analysis. For per-operation widths, use
 [`clifft.active_width_trace`](python-api.md#clifft.active_width_trace).
 {% endif %}
 
+{% if p['name'] == 'ZxSpacetimePass' %}
+Add it before the default passes:
+
+```python
+import clifft
+
+pm = clifft.HirPassManager()
+pm.add(clifft.ZxSpacetimePass())
+pm.add(clifft.PeepholeFusionPass())
+pm.add(clifft.PhasePolynomialPass())
+pm.add(clifft.RotationSimplificationPass())
+pm.add(clifft.StatevectorSqueezePass())
+```
+
+The pass compares widths after the default passes on both versions, so its
+compile cost includes one extra run of those passes on each. After a run,
+`input_peak` and `result_peak` report the two peaks, `applied` reports whether
+the rewrite was kept, and `reason` says why it was not.
+
+The rewritten circuit has more qubits: one line per independent sign that
+depends on noise, all dormant. A readout flip that feedback reads becomes a
+noise site, since it changes later signs; every other readout entry stays a
+classical flip. Fixed-seed samples differ from the standard pipeline.
+{% endif %}
+
 {% endfor %}

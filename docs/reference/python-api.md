@@ -164,6 +164,8 @@ directional overrides, and circuit annotation ordering.
 
 ::: clifft.ActiveWidthSchedulePass
 
+::: clifft.ZxSpacetimePass
+
 ::: clifft.RemoveNoisePass
 
 ::: clifft.DropNonUnitaryPass

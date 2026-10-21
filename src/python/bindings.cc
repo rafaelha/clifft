@@ -20,6 +20,7 @@
 #include "clifft/optimizer/remove_noise_pass.h"
 #include "clifft/optimizer/rotation_simplification_pass.h"
 #include "clifft/optimizer/statevector_squeeze_pass.h"
+#include "clifft/optimizer/zx_spacetime_pass.h"
 #include "clifft/sampling/executor.h"
 #include "clifft/sampling/planner.h"
 #include "clifft/sampling/sampler.h"
@@ -1079,6 +1080,25 @@ NB_MODULE(_clifft_core, m) {
                      &clifft::ActiveWidthSchedulePass::classification_probes)
         .def("__repr__", [](const clifft::ActiveWidthSchedulePass& p) {
             return "ActiveWidthSchedulePass(incumbent_peak=" + std::to_string(p.incumbent_peak()) +
+                   ", result_peak=" + std::to_string(p.result_peak()) +
+                   ", applied=" + (p.applied() ? "True" : "False") + ")";
+        });
+
+    nb::class_<clifft::ZxSpacetimePass, clifft::HirPass>(
+        m, "ZxSpacetimePass",
+        "Rewrites the circuit through single-copy ZX calculus into Pauli\n"
+        "rotations and measurements on fresh lines, keeping the result only\n"
+        "if its peak active width after the default passes is lower. Preserves\n"
+        "the record distribution but not the state: final-state queries are\n"
+        "unavailable afterwards. Opt in by adding it first, before the\n"
+        "default passes.")
+        .def(nb::init<>())
+        .def_prop_ro("applied", &clifft::ZxSpacetimePass::applied)
+        .def_prop_ro("input_peak", &clifft::ZxSpacetimePass::input_peak)
+        .def_prop_ro("result_peak", &clifft::ZxSpacetimePass::result_peak)
+        .def_prop_ro("reason", &clifft::ZxSpacetimePass::reason)
+        .def("__repr__", [](const clifft::ZxSpacetimePass& p) {
+            return "ZxSpacetimePass(input_peak=" + std::to_string(p.input_peak()) +
                    ", result_peak=" + std::to_string(p.result_peak()) +
                    ", applied=" + (p.applied() ? "True" : "False") + ")";
         });

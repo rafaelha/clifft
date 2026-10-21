@@ -175,6 +175,32 @@ def define_env(env: Any) -> None:
             ),
         },
         {
+            "name": "ZxSpacetimePass",
+            "kind": "HIR",
+            "default_enabled": False,
+            "preserves_record_order": False,
+            "preserves_instrument_prefix": False,
+            "python_name": "ZxSpacetimePass",
+            "summary": "Rewrites the circuit through ZX calculus when that narrows the state.",
+            "detail": (
+                "Builds a single-copy parametric ZX diagram of the traced HIR over "
+                "measurement outcomes and noise bits, reduces it with zxparam's "
+                "rewrite rules, and reads it back as Pauli rotations and measurements "
+                "on fresh lines, following Tsim's reader and greedy scheduler. "
+                "Noise-dependent signs are carried by dormant sign lines, so the "
+                "qubit count grows while the active width falls. "
+                "The rewrite is kept only if its peak active width after the default "
+                "passes is strictly lower than the input's; otherwise, or for "
+                "expectation-value probes, leakage and loss instruments, and "
+                "asymmetric readout noise that feedback reads, the HIR is left "
+                "unchanged and `reason` says why. "
+                "It preserves the distribution of records, detectors and observables "
+                "and keeps every noise location, but not the quantum state, so "
+                "final-state queries are unavailable afterwards. "
+                "Run it first, before the default passes."
+            ),
+        },
+        {
             "name": "RemoveNoisePass",
             "kind": "HIR",
             "default_enabled": False,

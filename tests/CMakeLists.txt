@@ -29,6 +29,8 @@ add_executable(clifft_tests
     test_interleaved_batch_kernels.cc
     test_optimizer.cc
     test_known_stabilizers.cc
+    test_zx_from_hir.cc
+    zx_fresh_resets.cc
     test_zx_simplify.cc
     test_phase_polynomial.cc
     test_phase_polynomial_pass.cc

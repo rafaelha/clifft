@@ -30,6 +30,7 @@ add_executable(clifft_tests
     test_optimizer.cc
     test_known_stabilizers.cc
     test_zx_from_hir.cc
+    test_zx_pbc.cc
     zx_fresh_resets.cc
     test_zx_simplify.cc
     test_phase_polynomial.cc

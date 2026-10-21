@@ -55,6 +55,7 @@ add_library(clifft_core STATIC
     util/runtime_isa.cc
     util/xoshiro.cc
     zx/canonical.cc
+    zx/from_hir.cc
     zx/graph.cc
     zx/phase.cc
     zx/simplify.cc

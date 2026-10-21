@@ -54,6 +54,39 @@ direct comparisons in Clifft's original performance study.
   (2026).
 - [Tsim source](https://github.com/QuEraComputing/tsim).
 
+## zxparam
+
+Clifft's ZX simplifier (`src/clifft/zx/`) is a C++ port of zxparam's rewrite
+rules and `full_reduce` strategy for parametric ZX diagrams, restricted to
+zxparam's single-copy (classical-domain) vertices. There, the parameters are
+Boolean measurement outcomes and noise bits. zxparam's Rust core also
+generates the fixtures that pin the port pass by pass.
+
+- [zxparam source](https://github.com/QuEraComputing/zxparam) (Rust core on the
+  `rust-core-phase-a` branch).
+
+## QuiZX
+
+QuiZX's single-copy parametric ZX graphs, with a Boolean parity on each vertex
+and scalar factors conditioned on parities, shaped the layout of Clifft's ZX
+graph and its constraint log. A comparison against QuiZX's `full_simp` also
+motivated requiring equal body parities before fusing phase gadgets.
+
+- [QuiZX source](https://github.com/zxcalc/quizx).
+
+## Graph-theoretic ZX simplification
+
+The rules in Clifft's ZX simplifier come from the graph-theoretic ZX-calculus:
+local complementation and pivoting remove Clifford spiders, and phase gadgets
+fuse.
+
+- Ross Duncan, Aleks Kissinger, Simon Perdrix, and John van de Wetering,
+  ["Graph-theoretic Simplification of Quantum Circuits with the ZX-calculus"](https://doi.org/10.22331/q-2020-06-04-279),
+  *Quantum* 4, 279 (2020).
+- Aleks Kissinger and John van de Wetering,
+  ["Reducing the number of non-Clifford gates in quantum circuits"](https://doi.org/10.1103/PhysRevA.102.022406),
+  *Phys. Rev. A* 102, 022406 (2020).
+
 ## SqaleSim
 
 Infleqtion's SqaleSim motivated Clifft's leakage/loss instrument design and its

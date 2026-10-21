@@ -54,6 +54,10 @@ add_library(clifft_core STATIC
     util/page_allocation.cc
     util/runtime_isa.cc
     util/xoshiro.cc
+    zx/canonical.cc
+    zx/graph.cc
+    zx/phase.cc
+    zx/simplify.cc
     noncomp/interaction.cc
     noncomp/transition_instrument.cc
     noncomp/transition_hooks.cc

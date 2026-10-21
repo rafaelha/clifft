@@ -133,13 +133,21 @@ and reused validation circuits.
 
 ### Conservative Analysis and Bounded Search
 
-Constraints must hold for every trajectory and the noiseless reference used
-for syndrome normalization. For Pauli noise, the analysis retains only
-constraints commuting with each possible fault, including products unaffected
-by a shared fault.
-Instruments clear the analysis state, and postselection supplies no additional
-constraints. Region lookahead may discard entry constraints but cannot infer
-new ones from future measurements.
+Constraints tracked by `SymbolicStabilizers` must hold for every trajectory and
+the noiseless reference used for syndrome normalization. For Pauli noise, the
+forward analysis retains only constraints commuting with each possible fault,
+including products unaffected by a shared fault. Instruments clear the analysis
+state. When compiling with detector postselection, `SymbolicStabilizers` and
+`PhasePolynomialPass` also recover constraints from noiseless measurements
+whose outcomes are fixed on surviving shots (directly by a single-record
+detector or by unit propagation across two-record difference detectors).
+Although upstream faults mix stabilizer signs across unconditional shots,
+postselection discards trajectories with the rejected measurement outcome,
+projecting all survivors back into a definite Pauli eigenspace. When a later
+postselected measurement commutes with the intervening prefix (and no
+intervening expectation-value probe depends on a non-commuting prefix),
+conditioning on the accepted outcome allows the corresponding projector to be
+moved to region entry via bounded lookahead.
 
 The analysis bounds symbolic expressions, retained records, and elimination
 work. Reaching a limit can lose a constraint and miss an optimization;

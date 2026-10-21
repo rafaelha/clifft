@@ -20,6 +20,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <stdexcept>
 #include <vector>
@@ -419,6 +420,54 @@ struct HeisenbergOp {
 
 static_assert(sizeof(HeisenbergOp) == 16, "HeisenbergOp must be exactly 16 bytes");
 
+struct HirModule;
+
+/// Optional detector postselection, reference-parity metadata, and cumulative
+/// specialization assumptions carried across HIR optimization and lowering.
+struct PostselectionMetadata {
+    std::vector<uint8_t> mask;
+    std::vector<uint8_t> expected_detectors;
+    std::vector<uint8_t> expected_observables;
+
+    // Pre-specialization snapshot retained when an optimization pass rewrites
+    // ops under postselection so compute_reference_syndrome() can still
+    // evaluate the un-postselected noiseless trajectory.
+    std::shared_ptr<const HirModule> pre_postselection_hir;
+
+    // Cumulative detector postselection assumptions across all specialization
+    // passes that have rewritten this module.
+    std::vector<uint8_t> assumed_mask;
+    std::vector<uint8_t> assumed_expected_detectors;
+
+    void clear() {
+        mask.clear();
+        expected_detectors.clear();
+        expected_observables.clear();
+        pre_postselection_hir.reset();
+        assumed_mask.clear();
+        assumed_expected_detectors.clear();
+    }
+
+    void validate_assumptions(uint32_t num_detectors) const {
+        for (uint32_t d = 0; d < num_detectors; ++d) {
+            const bool assumed = d < assumed_mask.size() && assumed_mask[d] != 0;
+            const bool current = d < mask.size() && mask[d] != 0;
+            if (assumed && (current || d < expected_detectors.size())) {
+                const bool assumed_expected =
+                    d < assumed_expected_detectors.size() && assumed_expected_detectors[d] != 0;
+                const bool current_expected =
+                    d < expected_detectors.size() && expected_detectors[d] != 0;
+                if (assumed_expected != current_expected) {
+                    throw std::invalid_argument(
+                        "expected_detectors conflicts with postselected HIR");
+                }
+            }
+        }
+    }
+
+    void record_specialization(HirModule&& before);
+};
+
 /// HIR module: parsed, traced output of the Front-End. Owns Pauli mask
 /// arenas, op vector, side-tables, and circuit metadata. Construct with
 /// (num_qubits, num_pauli_masks[, num_noise_channels]) so the arenas are
@@ -465,6 +514,8 @@ struct HirModule {
     // stay aligned with ops through reordering and deletion. Removing all
     // noise clears this mapping; NOISE ops retain their relative order.
     std::vector<uint32_t> logical_noise_prefix;
+
+    PostselectionMetadata postselection;
 
     std::optional<Tableau> final_tableau;
 
@@ -706,5 +757,37 @@ struct HirModule {
     size_t next_pauli_mask_ = 0;
     size_t next_noise_channel_mask_ = 0;
 };
+
+inline void PostselectionMetadata::record_specialization(HirModule&& before) {
+    const uint32_t num_detectors = before.num_detectors;
+    if (assumed_mask.size() < num_detectors) {
+        assumed_mask.resize(num_detectors, 0);
+    }
+    if (assumed_expected_detectors.size() < num_detectors) {
+        assumed_expected_detectors.resize(num_detectors, 0);
+    }
+    const auto merge_assumptions = [&](const std::vector<uint8_t>& active_mask,
+                                       const std::vector<uint8_t>& expected) {
+        for (uint32_t d = 0; d < num_detectors; ++d) {
+            if (d >= active_mask.size() || active_mask[d] == 0) {
+                continue;
+            }
+            const uint8_t expected_bit = (d < expected.size() && expected[d] != 0) ? 1 : 0;
+            if (assumed_mask[d] != 0 && assumed_expected_detectors[d] != expected_bit) {
+                throw std::invalid_argument("expected_detectors conflicts with postselected HIR");
+            }
+            assumed_mask[d] = 1;
+            assumed_expected_detectors[d] = expected_bit;
+        }
+    };
+    merge_assumptions(before.postselection.assumed_mask,
+                      before.postselection.assumed_expected_detectors);
+    merge_assumptions(before.postselection.mask, before.postselection.expected_detectors);
+    if (!pre_postselection_hir) {
+        pre_postselection_hir = before.postselection.pre_postselection_hir
+                                    ? std::move(before.postselection.pre_postselection_hir)
+                                    : std::make_shared<const HirModule>(std::move(before));
+    }
+}
 
 }  // namespace clifft

@@ -20,6 +20,7 @@ add_executable(clifft_tests
     test_global_reconstruction.cc
     test_reconstruction_noise.cc
     test_reconstruction_lowering.cc
+    test_program.cc
     test_frontend.cc
     test_frontend_instruments.cc
     test_sampling_plan.cc

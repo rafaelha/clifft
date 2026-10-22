@@ -9,6 +9,7 @@ add_library(clifft_core STATIC
     frontend/frontend.cc
     optimizer/hir_pass_manager.cc
     optimizer/global_reconstruction.cc
+    optimizer/reconstruction_noise.cc
     optimizer/active_width_analysis.cc
     optimizer/drop_non_unitary_pass.cc
     optimizer/commutation.cc

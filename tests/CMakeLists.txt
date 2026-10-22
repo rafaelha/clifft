@@ -17,6 +17,7 @@ add_executable(clifft_tests
     test_reference_clifford.cc
     test_tableau.cc
     test_hir.cc
+    test_global_reconstruction.cc
     test_frontend.cc
     test_frontend_instruments.cc
     test_sampling_plan.cc

@@ -24,6 +24,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace clifft {
 
@@ -49,6 +50,15 @@ struct InstrumentTraceOptions {
     std::optional<size_t> forced_traceout_node;
 };
 
+// Optional source-node maps for the HIR noise and readout tables. Each vector
+// is indexed by its HIR table and contains indices into the traced circuit.
+// Node indices distinguish expanded repeats and separate channels targeting
+// the same record. These maps describe the trace result before HIR transformations.
+struct TraceSiteOrigins {
+    std::vector<size_t> noise_nodes;
+    std::vector<size_t> readout_nodes;
+};
+
 // Trace a circuit through the Front-End, producing a HirModule.
 //
 // This is the main entry point for the Front-End. It:
@@ -70,6 +80,7 @@ struct InstrumentTraceOptions {
 // 65536-qubit safety ceiling. Pauli mask storage is otherwise sized at
 // runtime.
 [[nodiscard]] HirModule trace(const Circuit& circuit,
-                              const InstrumentTraceOptions* instruments = nullptr);
+                              const InstrumentTraceOptions* instruments = nullptr,
+                              TraceSiteOrigins* site_origins = nullptr);
 
 }  // namespace clifft

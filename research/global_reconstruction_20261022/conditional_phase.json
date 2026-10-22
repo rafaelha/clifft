@@ -1,0 +1,1142 @@
+[
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "no_fault",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0010679317638278008,
+    "residual_T_count": 0,
+    "random_output_bits": 0,
+    "dense_fidelity": 0.9999999999999966
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_0",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0013792132958769798,
+    "residual_T_count": 0,
+    "random_output_bits": 2
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_1",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0010446561500430107,
+    "residual_T_count": 0,
+    "random_output_bits": 4
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_2",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.00106086116284132,
+    "residual_T_count": 0,
+    "random_output_bits": 4
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_3",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0009608687832951546,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_4",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0009531481191515923,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_5",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0009866375476121902,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_6",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0009685195982456207,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_7",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0009413594380021095,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_8",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.001227622851729393,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_9",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0009573325514793396,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_10",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0009582946076989174,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_11",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0011097248643636703,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_156",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0009947093203663826,
+    "residual_T_count": 0,
+    "random_output_bits": 4
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_160",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0010383957996964455,
+    "residual_T_count": 0,
+    "random_output_bits": 4
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_240",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0013160984963178635,
+    "residual_T_count": 0,
+    "random_output_bits": 4
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_493",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.001279141753911972,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_576",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0010645557194948196,
+    "residual_T_count": 0,
+    "random_output_bits": 4
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_577",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0009769434109330177,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_661",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.001039106398820877,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_745",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.001058216206729412,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_828",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0010607410222291946,
+    "residual_T_count": 0,
+    "random_output_bits": 4
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_912",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0011731814593076706,
+    "residual_T_count": 0,
+    "random_output_bits": 4
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_996",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0009764032438397408,
+    "residual_T_count": 0,
+    "random_output_bits": 4
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "error_bit_1251",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0009513543918728828,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "random_0",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.001027480699121952,
+    "residual_T_count": 0,
+    "random_output_bits": 15,
+    "dense_fidelity": 1.000000000000038
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "random_1",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0012894375249743462,
+    "residual_T_count": 0,
+    "random_output_bits": 13,
+    "dense_fidelity": 1.0000000000000377
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "random_2",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.00125972181558609,
+    "residual_T_count": 0,
+    "random_output_bits": 13,
+    "dense_fidelity": 1.0000000000000382
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "random_3",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0012582000344991684,
+    "residual_T_count": 0,
+    "random_output_bits": 14,
+    "dense_fidelity": 1.0000000000000377
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "random_4",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0012598522007465363,
+    "residual_T_count": 0,
+    "random_output_bits": 10,
+    "dense_fidelity": 1.000000000000038
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "random_5",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0013004736974835396,
+    "residual_T_count": 0,
+    "random_output_bits": 14,
+    "dense_fidelity": 1.0000000000000377
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "random_6",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0013090874999761581,
+    "residual_T_count": 0,
+    "random_output_bits": 10,
+    "dense_fidelity": 1.0000000000000377
+  },
+  {
+    "circuit": "d5",
+    "hidden": 0,
+    "case": "random_7",
+    "compile_once_seconds": 0.002366563305258751,
+    "fault_specialization_seconds": 0.0012504979968070984,
+    "residual_T_count": 0,
+    "random_output_bits": 13,
+    "dense_fidelity": 1.000000000000038
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "no_fault",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0010413099080324173,
+    "residual_T_count": 0,
+    "random_output_bits": 0,
+    "dense_fidelity": 0.9999999999999946
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_0",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.001230267807841301,
+    "residual_T_count": 0,
+    "random_output_bits": 2
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_1",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0010028425604104996,
+    "residual_T_count": 0,
+    "random_output_bits": 4
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_2",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.000988430343568325,
+    "residual_T_count": 0,
+    "random_output_bits": 4
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_3",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0009530168026685715,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_4",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0009552203118801117,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_5",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0009538875892758369,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_6",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0009591355919837952,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_7",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0009475098922848701,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_8",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0009486908093094826,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_9",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0009598573669791222,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_10",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0009475080296397209,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_11",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0009248238056898117,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_156",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.00097604189068079,
+    "residual_T_count": 0,
+    "random_output_bits": 4
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_160",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0009893020614981651,
+    "residual_T_count": 0,
+    "random_output_bits": 4
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_240",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0010233242064714432,
+    "residual_T_count": 0,
+    "random_output_bits": 4
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_493",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0009899232536554337,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_576",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.001001249998807907,
+    "residual_T_count": 0,
+    "random_output_bits": 4
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_577",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0009600063785910606,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_661",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0009552501142024994,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_745",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0009680595248937607,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_828",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0009929779917001724,
+    "residual_T_count": 0,
+    "random_output_bits": 4
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_912",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0009771930053830147,
+    "residual_T_count": 0,
+    "random_output_bits": 4
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_996",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0009678797796368599,
+    "residual_T_count": 0,
+    "random_output_bits": 4
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "error_bit_1251",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0009450949728488922,
+    "residual_T_count": 0,
+    "random_output_bits": 0
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "random_0",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0010147113353013992,
+    "residual_T_count": 0,
+    "random_output_bits": 13,
+    "dense_fidelity": 1.0000000000000377
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "random_1",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0012687575072050095,
+    "residual_T_count": 0,
+    "random_output_bits": 13,
+    "dense_fidelity": 1.0000000000000373
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "random_2",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.001335897482931614,
+    "residual_T_count": 0,
+    "random_output_bits": 13,
+    "dense_fidelity": 1.0000000000000382
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "random_3",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0012792116031050682,
+    "residual_T_count": 0,
+    "random_output_bits": 14,
+    "dense_fidelity": 1.0000000000000382
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "random_4",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.001415148377418518,
+    "residual_T_count": 0,
+    "random_output_bits": 14,
+    "dense_fidelity": 1.0000000000000377
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "random_5",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0013010455295443535,
+    "residual_T_count": 0,
+    "random_output_bits": 12,
+    "dense_fidelity": 1.0000000000000382
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "random_6",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0013091564178466797,
+    "residual_T_count": 0,
+    "random_output_bits": 14,
+    "dense_fidelity": 1.0000000000000377
+  },
+  {
+    "circuit": "d5",
+    "hidden": 1,
+    "case": "random_7",
+    "compile_once_seconds": 0.0021385569125413895,
+    "fault_specialization_seconds": 0.0012531224638223648,
+    "residual_T_count": 0,
+    "random_output_bits": 14,
+    "dense_fidelity": 1.0000000000000377
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "no_fault",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009932538494467735,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_0",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009729841724038124,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_1",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009491879492998123,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_2",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009725052863359451,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_3",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.00945067685097456,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_4",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009503277018666267,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_5",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009336864575743675,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_6",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009534874930977821,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_7",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.00979654211550951,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_8",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009541505016386509,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_9",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009552611969411373,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_10",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.010065491311252117,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_11",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009568605571985245,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_308",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009848221205174923,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_312",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009730622172355652,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_468",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.010024597868323326,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_949",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009561635553836823,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_1108",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009620924480259418,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_1109",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.01035365741699934,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_1269",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009529957547783852,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_1429",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.012503892183303833,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_1588",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.00962379015982151,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_1748",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009621857665479183,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_1908",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.012184186838567257,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "error_bit_2391",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.010458116419613361,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "random_0",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.00950382836163044,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "random_1",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009520373307168484,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "random_2",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009821350686252117,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "random_3",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.010458996519446373,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "random_4",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.01095095369964838,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "random_5",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009723871946334839,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "random_6",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009524999186396599,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 0,
+    "case": "random_7",
+    "compile_once_seconds": 0.0048370324075222015,
+    "fault_specialization_seconds": 0.009565701708197594,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "no_fault",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.010366146452724934,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_0",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.009513060562312603,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_1",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.009537998586893082,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_2",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.009714728221297264,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_3",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.01044467557221651,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_4",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.011007309891283512,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_5",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.01125803031027317,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_6",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.009900069795548916,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_7",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.009592182002961636,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_8",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.009521945379674435,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_9",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.00953381322324276,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_10",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.009352598339319229,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_11",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.00962950848042965,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_308",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.009649810381233692,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_312",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.010691561736166477,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_468",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.01098505686968565,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_949",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.009682288393378258,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_1108",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.00948686245828867,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_1109",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.009518259204924107,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_1269",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.009716722182929516,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_1429",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.009530378505587578,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_1588",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.009733226150274277,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_1748",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.009543688036501408,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_1908",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.009716601110994816,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "error_bit_2391",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.009922563098371029,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "random_0",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.010644949972629547,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "random_1",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.01252202969044447,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "random_2",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.009907690808176994,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "random_3",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.01078879926353693,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "random_4",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.00983707420527935,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "random_5",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.009739034809172153,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "random_6",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.00976231973618269,
+    "residual_T_count": 1
+  },
+  {
+    "circuit": "d7",
+    "hidden": 1,
+    "case": "random_7",
+    "compile_once_seconds": 0.004852196201682091,
+    "fault_specialization_seconds": 0.009755338542163372,
+    "residual_T_count": 1
+  }
+]

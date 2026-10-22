@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-22",
+  "issue": "https://github.com/unitaryfoundation/clifft/issues/598",
+  "backend_commit": "fb588b306af6babd838e044b41ced725fc5112dd",
+  "initial_fixed_fault_backend_commit": "fa29a5263a1b7ab29b67cb637f405cb6318dc3c0",
+  "reference_tsim_commit": "2068ecedee9ef03a8b34bf806c7059fdb42d1196",
+  "reference_zxparam": "0.1.0",
+  "frontend_uses_zx": false,
+  "frontend_consumes_reference_extraction": false,
+  "prototype_language": "Python",
+  "compile_time_clifford_arithmetic": "Stim",
+  "production_code_changed": false,
+  "new_runtime": false,
+  "python": "3.12.14 (main, Aug 14 2026, 15:34:45) [Clang 22.1.3 ]",
+  "numpy": "2.5.4",
+  "stim": "1.16.0",
+  "qiskit": "2.3.0",
+  "cpu": "AMD EPYC 9554P 64-Core Processor; 8-vCPU KVM VM",
+  "build": "GCC 13.3; CMake Release; native baseline; CLIFFT_FORCE_ASSERTS=ON; OpenMP AUTO",
+  "threads": 1,
+  "batch_size": "auto",
+  "timed_repeats": 5,
+  "precision": "complex128",
+  "backend_extension_sha256": "be246b103d1569cdb055508ecb326ea903e7748fe8d2c958f2f066355b75db78",
+  "inputs": {
+    "d5": {
+      "sha256": "c2b4566917bd9bf27a5705284dac02700ef0dcc7c03c91066670db376d633a6d",
+      "source": "/home/exedev/tsim-study/circuits/clifft-bench/msc_d5_inject_cultivate_p1e-3.stim",
+      "nominal_p": 0.001
+    },
+    "d7": {
+      "sha256": "83760fdb1e71be32c1e1eb83bbbf4176e9d32adb48384b14b818b294e7bf25f5",
+      "source": "/home/exedev/tsim-study/circuits/symft/MSC_circuit_d7_p0.0005.stim",
+      "nominal_p": 0.0005
+    }
+  },
+  "decisions": {
+    "reconstruction": "PROCEED with bounded production implementation",
+    "phase_core": "PROCEED with separate research/design; executor architecture undecided",
+    "raw_record_gap": "achieved width 8; no further rewrite work required for this gate"
+  }
+}

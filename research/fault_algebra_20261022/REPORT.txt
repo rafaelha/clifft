@@ -1,0 +1,173 @@
+Fault-parameterized algebraic sampling feasibility, 2026-10-22
+
+Decision
+
+GO for the bounded algebraic execution approach on the tested MSC d5/d7
+sampling contracts. A single reusable native plan samples both detector/
+observable outputs and the original raw records. It does not compile circuits
+per fault pattern, enumerate fault families, or cache frequent signatures.
+
+This changes the interpretation of the earlier no-go: that finding concerned
+putting fault-dependent 0/1 non-Clifford states into Clifft's existing fixed-frame
+executor. It remains correct for that executor. A separate runtime algebra
+kernel handles the varying Clifford frames efficiently in this experiment.
+
+The evidence favors a shared output-aware reconstruction front end with two
+possible execution paths. The reconstructed statevector path remains useful for
+broader angle sets and for incremental delivery. The algebraic path is now a
+measured candidate for the bounded zero/one residual-rotation case. This study
+does not justify replacing the general backend or promise universal improvement.
+
+No production execution code, public API, issue, or pull request was changed.
+Acknowledgments were updated locally to identify the research influences.
+Production integration of runtime stabilizer evolution still requires an
+explicit architectural decision under AGENTS.md's no-runtime-topology rule.
+
+What was tested
+
+prepare.py reads the same pinned Tsim/ZX reconstructed graphs as the previous
+study. It diagonalizes commuting rotations and restricts the phase polynomial
+to the affine support. The native evaluator does not import or call Tsim, ZX,
+Stim, Python algebra, or a compiler while sampling.
+
+For each component, preparation emits:
+- a base quadratic phase/stabilizer representation;
+- parity masks describing how physical noise changes rotation signs;
+- symbolic hidden-outcome effects on signs and output axes;
+- a fixed residual T parity, if one remains;
+- the requested output observables and direct classical output parities.
+
+A coefficient c times a binary parity contributes a modulo-eight phase. Flipping
+its sign changes the coefficient by -2c: an S parity, which changes only the
+quadratic Clifford part. The residual non-Clifford parity is unchanged. Hidden
+measurement outcomes are independent fair bits here; their affine effects are
+compiled from the zero assignment and single-bit perturbations, not 2^h plans.
+
+At runtime, packed binary arithmetic updates the quadratic form. A native
+stabilizer/destabilizer tableau samples the commuting output observables. For
+d7, one encoded logical qubit carries the remaining T rotation. Its Bloch vector
+is tracked until a measurement collapses it; other random measurements update
+the stabilizer code and its logical Pauli axes. This produces unweighted bits
+and ordinary integer counts, not a conditional-probability estimator.
+
+The sampler also convolves the same equivalent classical channel images used by
+the previous bridge. Cumulative Bernoulli hazards skip zero channel outcomes;
+Clifft already uses this hazard-skipping idea, so it is not a new algorithmic
+claim. Early direct-detector checks avoid quantum work on rejected shots.
+
+Measured performance
+
+Source baseline: fa29a5263a1b7ab29b67cb637f405cb6318dc3c0.
+AMD EPYC 9554P VM, one worker pinned to one CPU. Five interleaved repeats after
+warmup. The existing Clifft build and the new C++ kernel both use native CPU
+tuning; assertions remain enabled. No exclusive-host claim.
+
+Times below are median microseconds per attempted shot. They include noise,
+quantum sampling, result allocation, and requested count/array production.
+Preparation/compilation is excluded. Full arrays are emitted in retained modes;
+postselection returns survivor and observable counts. The existing bridge still
+materializes private helper records internally, as in the prior study.
+
+Workload                       Original    Reconstruction    Algebra    Gain vs
+                                                                        recon.
+d5 detectors, aggregate           16.23          4.90           1.79       2.74x
+d7 detectors, aggregate         2256.42         12.01           8.03       1.50x
+d5 detectors, retained            17.12          4.90           1.78       2.75x
+d7 detectors, retained          2226.96         12.11           8.07       1.50x
+d5 raw records, retained          16.61          5.42           2.35       2.30x
+d7 raw records, retained        2309.26         42.76          26.27       1.63x
+
+For postselection, the original reconstructed bridge delayed checks until the
+end. An additional control moves checks to the first available record boundary.
+It preserves the all-check acceptance event and observable indices, but permutes
+detector indices; validation restores that permutation when comparing arrays.
+The production adapter would need to preserve public detector order.
+
+All detectors postselected    Original    Recon. late    Recon. early   Algebra
+d5                              5.94         4.74           2.62         0.52
+d7                             78.96        11.13           5.90         0.88
+
+Relative to the better early-check reconstruction, algebra is 5.03x faster on d5
+and 6.67x on d7. Earlier checks alone improve the reconstruction about 1.8-1.9x.
+These combined system gains must not all be credited to phase reduction.
+
+The algebra noise-only control costs about 0.23 us for d5 and 0.46 us for d7
+(detector plans). The mean numbers of nonzero compressed channel draws are 1.93
+and 3.20. These are ordinary physical noise samples, not fault-count conditioning.
+
+An additional test supplies independently randomized algebraic parameter vectors,
+with no noise-generation cost and no repeated-pattern optimization. It costs
+2.37 us for d5 and 9.02 us for d7 while producing detector arrays. These parameter
+assignments are not asserted to be physically distributed or all physically
+reachable; the control checks that the implementation does not rely on a small
+frequent-signature cache.
+
+One observed reference preparation took 0.12 s for d5 and 0.77 s for d7 detector
+plans, and 0.13/1.05 s for raw-record plans. Loading the textual native plans takes
+roughly 4/22 ms. There is one plan per circuit/output contract. These are prototype
+preparation observations, not native compiler performance guarantees. Total
+resident memory and multi-thread scaling were not measured.
+
+Why the 0/1 resource count is not the whole performance story
+
+The evaluator still samples noise, updates a changing Clifford structure, and
+produces correlated outputs. In particular, d7 raw records require substantially
+more measurement algebra than its detector-only contract. A single residual T
+does not make every requested output free. The current kernel is intentionally
+simple and recomputes some measurement analysis; no optimality claim is made.
+
+Correctness evidence
+
+1. 72 complete small joint laws (3-7 qubits) were compared against independent
+   dense evolution of quadratic parity phases and the residual T, followed by a
+   Clifford measurement-basis transform. Maximum absolute probability error:
+   1.95e-16. Each case also used 32,768 actual native samples; maximum marginal
+   outcome discrepancy was 3.52 sigma. These cover deterministic, random and
+   biased measurements, nontrivial measurement bases, fixed-zero coordinates,
+   and different fault-controlled quadratic forms.
+2. For each of d5/d7 detector and raw-record contracts, 32 fixed fault/hidden
+   assignments were checked against the separate Stim plus modulo-eight phase
+   oracle from the first study. There were 19,392 output-parity checks, including
+   fractional expectations for d7. Maximum absolute error: 1.12e-16. This checks
+   multi-bit hidden assignments without enumerating them into sampling plans.
+3. Original Clifft, reconstructed Clifft, and the native algebra sampler were
+   compared on every output marginal, a joint zero event, and 128 random output
+   parities. Samples per sampler: 65,536 d5 and 8,192 d7, for detector and raw-record
+   contracts. Maximum standardized discrepancy across these comparisons: 3.84.
+4. Postselected counts were compared with the reconstructed sampler using
+   1,048,576 attempted shots each. The early-check control also received a full
+   output-permutation check with 65,536 samples, and an independent million-shot
+   postselected count comparison. All checks passed. The d5 logical count was
+   zero in these runs; this does not establish rare logical-error accuracy.
+
+The small complete laws are exhaustive for those instances. Large-circuit
+statistical checks and fixed-fault parity checks are not an exhaustive proof of
+all large-circuit joint probabilities. The extraction still shares the pinned
+reference graph machinery. A native front end needs independent verification.
+
+Scope and remaining decision
+
+Supported by this experiment: closed ordinary detector/observable sampling,
+all-detector aggregate postselection, and the joint distribution of all original
+raw records for these MSC d5/d7 circuits. Public metadata/adapters are not built.
+
+Not demonstrated: arbitrary retained EXP_VAL probes, physical conditional quantum
+states, quantum continuation, leakage/loss, arbitrary-angle coherent circuits,
+large residual non-Clifford cores, or production fault replay/introspection.
+Channel convolution preserves the ordinary output law but changes fault identity.
+The prototype's fixed-parameter interface refers to its private algebraic basis,
+not Clifft's public fixed-fault API.
+
+The native kernel currently supports at most 64 virtual qubits, 4096 classical
+parameters, and zero/one residual T per quantum component. Preparation recognizes
+only the studied isolated uniform record-bit components outside that form. Its
+input validation and C ABI are research conveniences, not a supported API.
+
+Recommended implementation sequence: build the dependency-free output-aware
+reconstruction and classical fault/output maps as shared infrastructure; expose
+early checks in its lowering; retain the existing sampler as a delivery path and
+fallback. In a separately agreed bounded backend, consume the same reconstructed
+representation with the demonstrated quadratic/one-T sampler when eligible.
+This preserves the immediate reductions while giving the faster method a concrete
+integration target. It does not require a general Magna implementation, a large
+fault-plan cache, or replacing Clifft's main execution strategy up front.

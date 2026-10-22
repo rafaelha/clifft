@@ -1,0 +1,22 @@
+{
+  "name": "d7",
+  "mode": "detectors",
+  "source": "/home/exedev/tsim-study/circuits/symft/MSC_circuit_d7_p0.0005.stim",
+  "sha256": "83760fdb1e71be32c1e1eb83bbbf4176e9d32adb48384b14b818b294e7bf25f5",
+  "outputs": 345,
+  "num_original_detectors": 344,
+  "error_channels": 12592,
+  "error_bits": 27957,
+  "f_bits": 526,
+  "bridge_records": 28523,
+  "components": [
+    {
+      "lines": 39,
+      "width": 8,
+      "rotations": 127,
+      "outputs": 34
+    }
+  ],
+  "prepare_seconds": 0.5453109312802553,
+  "total_seconds": 0.8539688559249043
+}

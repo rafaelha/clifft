@@ -1,0 +1,504 @@
+[
+  {
+    "circuit": "d5",
+    "mode": "detectors",
+    "postselection": false,
+    "retain": false,
+    "shots": {
+      "original": 16384,
+      "reconstructed": 16384,
+      "algebra": 16384,
+      "noise_only": 16384
+    },
+    "microseconds_per_shot": {
+      "original": [
+        16.396123214690306,
+        16.228388574290875,
+        16.548891892398387,
+        16.12311405096989,
+        16.007637157144927
+      ],
+      "reconstructed": [
+        4.896260804798658,
+        4.9175302478943195,
+        5.201760075124184,
+        4.902731745914934,
+        4.87652800984506
+      ],
+      "algebra": [
+        1.7679164443507034,
+        1.7939275380740582,
+        1.7981191149374354,
+        1.7497192743576306,
+        1.7868812847154913
+      ],
+      "noise_only": [
+        0.23128205839384464,
+        0.22783319764130283,
+        0.22936018240216072,
+        0.2267579475301318,
+        0.2343959408790397
+      ]
+    },
+    "median_microseconds": {
+      "original": 16.228388574290875,
+      "reconstructed": 4.902731745914934,
+      "algebra": 1.7868812847154913,
+      "noise_only": 0.22936018240216072
+    },
+    "algebra_speedup_over_reconstructed": 2.7437366924437576,
+    "algebra_speedup_over_original": 9.081962362639425,
+    "compile_seconds": {
+      "original": 0.025075254030525684,
+      "reconstructed": 0.05679157376289368
+    },
+    "algebra_load_seconds": 0.0045383526012301445,
+    "widths": {
+      "original": 10,
+      "reconstructed": 6
+    },
+    "version": "0.12.0.dev12+gfa29a526"
+  },
+  {
+    "circuit": "d5",
+    "mode": "detectors",
+    "postselection": true,
+    "retain": false,
+    "shots": {
+      "original": 16384,
+      "reconstructed": 16384,
+      "reconstructed_early": 16384,
+      "algebra": 16384,
+      "noise_only": 16384
+    },
+    "microseconds_per_shot": {
+      "original": [
+        6.081374237965065,
+        6.021709623382776,
+        5.868717948942503,
+        5.906365402097435,
+        5.939460152148968
+      ],
+      "reconstructed": [
+        4.689929312462482,
+        4.735862148663728,
+        4.859925070377358,
+        4.646837169275386,
+        4.837553433389985
+      ],
+      "reconstructed_early": [
+        2.578061639724183,
+        2.6208402346128423,
+        2.5736108000273816,
+        2.6204404548479943,
+        2.635683870266803
+      ],
+      "algebra": [
+        0.5100679345559911,
+        0.5208300990489079,
+        0.5364630624171696,
+        0.5213588565311511,
+        0.514891382863425
+      ],
+      "noise_only": [
+        0.22650124265055638,
+        0.22994032633505412,
+        0.23050017716741422,
+        0.22818159095550072,
+        0.22625056317338021
+      ]
+    },
+    "median_microseconds": {
+      "original": 5.939460152148968,
+      "reconstructed": 4.735862148663728,
+      "reconstructed_early": 2.6204404548479943,
+      "algebra": 0.5208300990489079,
+      "noise_only": 0.22818159095550072
+    },
+    "algebra_speedup_over_reconstructed": 9.092911790835293,
+    "algebra_speedup_over_original": 11.403834307953908,
+    "compile_seconds": {
+      "original": 0.020638303831219673,
+      "reconstructed": 0.056435042060911655,
+      "reconstructed_early": 0.056423054076731205
+    },
+    "algebra_load_seconds": 0.0039093270897865295,
+    "widths": {
+      "original": 10,
+      "reconstructed": 6,
+      "reconstructed_early": 6
+    },
+    "version": "0.12.0.dev12+gfa29a526"
+  },
+  {
+    "circuit": "d5",
+    "mode": "detectors",
+    "postselection": false,
+    "retain": true,
+    "shots": {
+      "original": 16384,
+      "reconstructed": 16384,
+      "algebra": 16384,
+      "noise_only": 16384
+    },
+    "microseconds_per_shot": {
+      "original": [
+        16.8895520573642,
+        17.1160380659785,
+        17.34948949660975,
+        18.097463282629178,
+        16.575733809531812
+      ],
+      "reconstructed": [
+        4.962007551512215,
+        4.892295976333116,
+        5.013042198243056,
+        4.832208958305273,
+        4.904652428194822
+      ],
+      "algebra": [
+        1.8209033783023187,
+        1.760378665949247,
+        1.7919397237164958,
+        1.7807856806939526,
+        1.7837937775766477
+      ],
+      "noise_only": [
+        0.23027899942462682,
+        0.22982658265391365,
+        0.235313450502872,
+        0.2287055167471408,
+        0.23159861939348048
+      ]
+    },
+    "median_microseconds": {
+      "original": 17.1160380659785,
+      "reconstructed": 4.904652428194822,
+      "algebra": 1.7837937775766477,
+      "noise_only": 0.23027899942462682
+    },
+    "algebra_speedup_over_reconstructed": 2.7495624717662044,
+    "algebra_speedup_over_original": 9.595300914902447,
+    "compile_seconds": {
+      "original": 0.020317547023296356,
+      "reconstructed": 0.05562448129057884
+    },
+    "algebra_load_seconds": 0.004097192548215389,
+    "widths": {
+      "original": 10,
+      "reconstructed": 6
+    },
+    "version": "0.12.0.dev12+gfa29a526"
+  },
+  {
+    "circuit": "d5",
+    "mode": "records",
+    "postselection": false,
+    "retain": true,
+    "shots": {
+      "original": 16384,
+      "reconstructed": 16384,
+      "algebra": 16384,
+      "noise_only": 16384
+    },
+    "microseconds_per_shot": {
+      "original": [
+        16.65676074935618,
+        16.19784478634756,
+        16.06597271575083,
+        16.609974011316808,
+        16.62754158360258
+      ],
+      "reconstructed": [
+        5.559064845783723,
+        5.313480642143986,
+        5.415242299022793,
+        5.361252874536149,
+        5.450936157558317
+      ],
+      "algebra": [
+        2.472824178312294,
+        2.415065637251246,
+        2.324123045127635,
+        2.3184136921372556,
+        2.350425233998976
+      ],
+      "noise_only": [
+        0.2637238480929227,
+        0.2652673742886691,
+        0.25793997338041663,
+        0.25215058485628106,
+        0.2604321025501122
+      ]
+    },
+    "median_microseconds": {
+      "original": 16.609974011316808,
+      "reconstructed": 5.415242299022793,
+      "algebra": 2.350425233998976,
+      "noise_only": 0.2604321025501122
+    },
+    "algebra_speedup_over_reconstructed": 2.303941525427459,
+    "algebra_speedup_over_original": 7.066795306250547,
+    "compile_seconds": {
+      "original": 0.020317898131906986,
+      "reconstructed": 0.055766175501048565
+    },
+    "algebra_load_seconds": 0.003934095613658428,
+    "widths": {
+      "original": 10,
+      "reconstructed": 6
+    },
+    "version": "0.12.0.dev12+gfa29a526"
+  },
+  {
+    "circuit": "d7",
+    "mode": "detectors",
+    "postselection": false,
+    "retain": false,
+    "shots": {
+      "original": 1024,
+      "reconstructed": 16384,
+      "algebra": 16384,
+      "noise_only": 16384
+    },
+    "microseconds_per_shot": {
+      "original": [
+        2322.6774128488614,
+        2256.418593788112,
+        2256.0059114766773,
+        2244.33541916369,
+        2274.6833910787245
+      ],
+      "reconstructed": [
+        12.005849953311554,
+        11.844130995086743,
+        12.176169718713936,
+        12.751823589951528,
+        12.010641739834682
+      ],
+      "algebra": [
+        8.081583644070633,
+        8.120480003981356,
+        8.028424304029613,
+        7.964406222527032,
+        7.972898686148255
+      ],
+      "noise_only": [
+        0.47185858420562,
+        0.4449182711141475,
+        0.47508621037195553,
+        0.4470057888283918,
+        0.4602088097271917
+      ]
+    },
+    "median_microseconds": {
+      "original": 2256.418593788112,
+      "reconstructed": 12.010641739834682,
+      "algebra": 8.028424304029613,
+      "noise_only": 0.4602088097271917
+    },
+    "algebra_speedup_over_reconstructed": 1.4960148199698813,
+    "algebra_speedup_over_original": 281.05372964101736,
+    "compile_seconds": {
+      "original": 0.16329476609826088,
+      "reconstructed": 0.7691012239083648
+    },
+    "algebra_load_seconds": 0.025473708286881447,
+    "widths": {
+      "original": 19,
+      "reconstructed": 8
+    },
+    "version": "0.12.0.dev12+gfa29a526"
+  },
+  {
+    "circuit": "d7",
+    "mode": "detectors",
+    "postselection": true,
+    "retain": false,
+    "shots": {
+      "original": 16384,
+      "reconstructed": 16384,
+      "reconstructed_early": 16384,
+      "algebra": 16384,
+      "noise_only": 16384
+    },
+    "microseconds_per_shot": {
+      "original": [
+        86.12265156671128,
+        90.87070850455348,
+        77.45043194518075,
+        77.25483692411217,
+        78.96230556525552
+      ],
+      "reconstructed": [
+        11.12694849325635,
+        11.305951488793653,
+        11.231215751195123,
+        10.327949325983354,
+        10.695431342355732
+      ],
+      "reconstructed_early": [
+        5.895479034734308,
+        5.7604045196058,
+        6.152665889658238,
+        5.695388836102211,
+        6.016368729433452
+      ],
+      "algebra": [
+        0.9131869092016132,
+        0.8292722100122774,
+        0.8833887363834947,
+        0.8580701091887022,
+        0.8990143669507233
+      ],
+      "noise_only": [
+        0.45240403778734617,
+        0.44885672423333745,
+        0.44143030208942946,
+        0.4376146875983977,
+        0.44485960870588315
+      ]
+    },
+    "median_microseconds": {
+      "original": 78.96230556525552,
+      "reconstructed": 11.12694849325635,
+      "reconstructed_early": 5.895479034734308,
+      "algebra": 0.8833887363834947,
+      "noise_only": 0.44485960870588315
+    },
+    "algebra_speedup_over_reconstructed": 12.595755452813409,
+    "algebra_speedup_over_original": 89.38568301031245,
+    "compile_seconds": {
+      "original": 0.13829883188009262,
+      "reconstructed": 0.8815134428441525,
+      "reconstructed_early": 0.8473942037671804
+    },
+    "algebra_load_seconds": 0.02190361637622118,
+    "widths": {
+      "original": 19,
+      "reconstructed": 8,
+      "reconstructed_early": 8
+    },
+    "version": "0.12.0.dev12+gfa29a526"
+  },
+  {
+    "circuit": "d7",
+    "mode": "detectors",
+    "postselection": false,
+    "retain": true,
+    "shots": {
+      "original": 1024,
+      "reconstructed": 16384,
+      "algebra": 16384,
+      "noise_only": 16384
+    },
+    "microseconds_per_shot": {
+      "original": [
+        2203.990008638357,
+        2219.290282482689,
+        2226.9568653427996,
+        2297.2114020376466,
+        2272.614842695475
+      ],
+      "reconstructed": [
+        12.106937901990023,
+        11.778056318689778,
+        12.360257073851244,
+        11.934165058846702,
+        12.243341188877821
+      ],
+      "algebra": [
+        8.067735677741439,
+        7.986094942680211,
+        8.162122639987501,
+        8.099748299628118,
+        8.074887603015668
+      ],
+      "noise_only": [
+        0.46869769221302704,
+        0.44029638956999406,
+        0.4535464768196107,
+        0.43669103888532845,
+        0.46686744781254674
+      ]
+    },
+    "median_microseconds": {
+      "original": 2226.9568653427996,
+      "reconstructed": 12.106937901990023,
+      "algebra": 8.074887603015668,
+      "noise_only": 0.4535464768196107
+    },
+    "algebra_speedup_over_reconstructed": 1.4993320646925827,
+    "algebra_speedup_over_original": 275.7879706599402,
+    "compile_seconds": {
+      "original": 0.14959680940955877,
+      "reconstructed": 0.7430301252752542
+    },
+    "algebra_load_seconds": 0.02138633094727993,
+    "widths": {
+      "original": 19,
+      "reconstructed": 8
+    },
+    "version": "0.12.0.dev12+gfa29a526"
+  },
+  {
+    "circuit": "d7",
+    "mode": "records",
+    "postselection": false,
+    "retain": true,
+    "shots": {
+      "original": 1024,
+      "reconstructed": 16384,
+      "algebra": 16384,
+      "noise_only": 16384
+    },
+    "microseconds_per_shot": {
+      "original": [
+        2242.196110273653,
+        2335.4883278443594,
+        2272.942981107917,
+        2356.751928346057,
+        2309.2599540177616
+      ],
+      "reconstructed": [
+        42.97941137565431,
+        44.05511373306581,
+        42.053915080941806,
+        42.504181294589216,
+        42.761694544424245
+      ],
+      "algebra": [
+        25.917320613189077,
+        26.839309214210516,
+        25.99201036446175,
+        26.265356325438916,
+        26.523890994667454
+      ],
+      "noise_only": [
+        0.5180920652492205,
+        0.4949025651512784,
+        0.5165248353478091,
+        0.4855304496231838,
+        0.5154202540325059
+      ]
+    },
+    "median_microseconds": {
+      "original": 2309.2599540177616,
+      "reconstructed": 42.761694544424245,
+      "algebra": 26.265356325438916,
+      "noise_only": 0.5154202540325059
+    },
+    "algebra_speedup_over_reconstructed": 1.6280645126069753,
+    "algebra_speedup_over_original": 87.9203741005852,
+    "compile_seconds": {
+      "original": 0.1289778845384717,
+      "reconstructed": 0.5860810251906514
+    },
+    "algebra_load_seconds": 0.02180774975568056,
+    "widths": {
+      "original": 19,
+      "reconstructed": 12
+    },
+    "version": "0.12.0.dev12+gfa29a526"
+  }
+]

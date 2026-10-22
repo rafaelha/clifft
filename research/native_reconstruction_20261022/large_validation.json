@@ -1,0 +1,46 @@
+[
+  {
+    "name": "d5",
+    "mode": "detectors",
+    "shots": 32768,
+    "width_original": 10,
+    "width_native": 6,
+    "max_z": 3.1119853238005972,
+    "features": 237,
+    "all_zero_original": 0.144775390625,
+    "all_zero_native": 0.14215087890625
+  },
+  {
+    "name": "d5",
+    "mode": "records",
+    "shots": 32768,
+    "width_original": 10,
+    "width_native": 6,
+    "max_z": 3.1494396857003286,
+    "features": 241,
+    "all_zero_original": 0.0091552734375,
+    "all_zero_native": 0.009429931640625
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "shots": 8192,
+    "width_original": 19,
+    "width_native": 8,
+    "max_z": 3.4546778754615683,
+    "features": 474,
+    "all_zero_original": 0.0052490234375,
+    "all_zero_native": 0.0054931640625
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "shots": 8192,
+    "width_original": 19,
+    "width_native": 8,
+    "max_z": 3.625499649812302,
+    "features": 484,
+    "all_zero_original": 0.0,
+    "all_zero_native": 0.0001220703125
+  }
+]

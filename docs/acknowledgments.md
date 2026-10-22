@@ -45,9 +45,32 @@ Tsim's Stim-compatible approach to universal noisy-circuit simulation informed
 Clifft's circuit-format and interface design. Its open code and data enabled
 direct comparisons in Clifft's original performance study.
 
+Local reconstruction feasibility studies directly use Tsim's closed sampling
+graphs, signed Pauli operations, hidden commutant measurements, and schedules,
+including its zxparam graph simplification dependency. These provide reference
+artifacts for studying output-preserving reductions and alternative samplers;
+they have not been added as production Clifft dependencies. A subsequent
+ZX-independent research frontend uses its own Clifford dilation and stabilizer
+dressing, with Tsim's commutant-measurement and scheduling methods as design
+influences. Stim supplies compile-time Clifford arithmetic for that prototype.
+
 - Rafael Haenel, Xiuzhe Luo, and Chen Zhao, ["Tsim: Fast Universal Simulator for Quantum Error Correction"](https://arxiv.org/abs/2604.01059)
   (2026).
 - [Tsim source](https://github.com/QuEraComputing/tsim).
+- [Reconstruction implementation](https://github.com/QuEraComputing/tsim/pull/203).
+
+## Magna
+
+Magna's separation of a fixed non-Clifford core from fault-dependent Clifford
+updates informed a local feasibility study of reusable algebraic sampling
+plans. The study applies modulo-eight phase reduction on reconstructed affine
+support, then samples with a native stabilizer and single-rotation prototype.
+This is a design influence, not reuse of Magna's implementation or adoption of
+its backend in production Clifft.
+
+- Yifei Wang and Yingfei Gu,
+  ["Magna: simulating magic state factories as cheaply as Clifford circuits"](https://arxiv.org/abs/2610.22315)
+  (2026).
 
 ## SqaleSim
 

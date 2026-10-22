@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-22",
+  "clifft_commit": "fa29a5263a1b7ab29b67cb637f405cb6318dc3c0",
+  "tsim_commit": "2068ecedee9ef03a8b34bf806c7059fdb42d1196",
+  "cpu": "AMD EPYC 9554P",
+  "threads": 1,
+  "timed_repeats": 5,
+  "python": "3.12.14",
+  "compiler": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+  "compile_flags": "-std=c++20 -O3 -march=native -Wall -Wextra -Werror -shared -fPIC",
+  "plan_count": 4,
+  "fault_signature_cache": false,
+  "per_fault_compilation": false,
+  "runtime_reference_dependency": false,
+  "reference_frontend_uses_zx": true
+}

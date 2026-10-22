@@ -1,0 +1,20 @@
+Global reconstruction research artifacts
+
+Start with native_reconstruction_20261022/REPORT.txt for the current feasibility
+decision and its evidence. It addresses issue 598 and runs reconstructed circuits
+through an unchanged Clifft backend. It does not add a production optimization.
+
+The two earlier directories preserve the evidence summarized on issue 495:
+- global_reconstruction_20261022: ZX/Tsim reference bridge, correctness oracles,
+  focused measurements and initial phase-core investigation.
+- fault_algebra_20261022: a separate experimental algebraic executor. This uses
+  runtime stabilizer work and is outside Clifft's production architectural
+  contract. It is historical research evidence, not a proposed enabled backend.
+
+Each directory contains a report, reproduction commands, attribution, pinned
+provenance, hashes and raw observations. The newer report refines the earlier
+conclusions; earlier 'GO' language was a recommendation for a feasibility gate,
+not evidence that a ZX-independent frontend had already been implemented.
+
+No API/default-policy decision, production executor rewrite, or claim about
+physical conditional-state preservation is made by adding these artifacts.

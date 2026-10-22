@@ -1,0 +1,16 @@
+{
+  "reference_imports_blocked": true,
+  "native_source_exports": [
+    "d5",
+    "d7"
+  ],
+  "original_expected_detectors": [
+    1,
+    0
+  ],
+  "original_expected_observables": [
+    0
+  ],
+  "normalization_max_z": 0.18713344620668784,
+  "two_magic_zero_one_core_rejected": true
+}

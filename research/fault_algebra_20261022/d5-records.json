@@ -1,0 +1,18 @@
+{
+  "name": "d5",
+  "mode": "records",
+  "nf": 194,
+  "params": 199,
+  "outputs": 112,
+  "detectors": 112,
+  "prepare_seconds": 0.12784800957888365,
+  "channels": 924,
+  "component_lines": [
+    16
+  ],
+  "hidden_bits": 5,
+  "residual_t": [
+    0
+  ],
+  "expected_nonzero_channels": 1.9347873450615216
+}

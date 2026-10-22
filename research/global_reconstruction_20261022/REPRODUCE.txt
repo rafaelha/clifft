@@ -1,0 +1,62 @@
+Research scripts and saved evidence
+
+The JSON/JSONL files contain the actual observations; REPORT.txt records the
+decision and limitations. Original benchmark input copies are in inputs/.
+Generated circuit text is gzip-compressed; study_io.py reads it transparently.
+The NPZ files contain the extracted Pauli operations and original-error maps.
+
+Use Clifft built from fa29a5263a1b7ab29b67cb637f405cb6318dc3c0 for timing comparisons.
+The benchmark driver appends results, so preserve the saved JSONL files before
+running it again. The scripts use their own directory for outputs. For clean
+reproduction, copy this study directory to a scratch location first.
+
+Measured environment:
+  Python 3.12, Clifft 0.12.0.dev12+gfa29a526
+  numpy 2.5.4, Stim 1.16.0, zxparam 0.1.0
+  tsim source at 2068ecedee9ef03a8b34bf806c7059fdb42d1196
+  jax 0.12.0.1, numba 0.68.0
+  Qiskit 2.3.0 in a separate Python 3.13 environment for the exact oracle
+
+The scripts importing tsim require its pinned source/src on PYTHONPATH and its
+dependencies installed. The native measurements require the tested Clifft build
+on PYTHONPATH ahead of other installations. Set NPROC=1, OPENBLAS_NUM_THREADS=1,
+NUMBA_NUM_THREADS=1 and OMP_NUM_THREADS=1. No network is used by the scripts once
+the dependencies are available.
+
+Reconstruct and export with the reference front end:
+  python export_reference.py
+  python export_reference.py --compressed --modes detectors
+  python export_reference.py d5 d7 --compressed --modes records
+
+Measure and validate native bridge behavior:
+  python bridge_benchmark.py
+  python bridge_benchmark.py --suffix compressed
+  python validate_sampling.py
+  python raw_records.py
+
+Check the phase algebra and changing fault-dependent frames:
+  python fault_topology.py
+  python conditional_phase.py
+  python common_frame.py
+
+Those three scripts use only numpy, Stim, and the local GF(2) helpers on the
+saved operation files. They do not use ZX or tsim at execution time.
+
+Recreate independent exact small-circuit probabilities:
+  python exact_toy_oracle.py
+Run that command in the Qiskit environment. Then use the Clifft/tsim environment:
+  python exact_reconstruction_check.py
+
+The exact checker compares every probability with a dense independent evolution
+of the extracted Pauli operations, then checks actual Clifft bridge samples.
+Large benchmark validation is statistical; see the report for its limits.
+
+The source build used CMake Release, CLIFFT_FORCE_ASSERTS=ON, SKBUILD=ON,
+CLIFFT_CPU_BASELINE=native, and CLIFFT_OPENMP=AUTO. FastFloat was obtained from an
+existing unmodified CMake FetchContent checkout at v8.2.3. The runtime package
+combined this checkout's Python sources and the freshly built extension.
+
+The two large, uncompressed-noise d7 bridge exports are omitted from the review
+artifact. Their source, exported operation maps, metadata and raw measurements
+are included; export_reference.py recreates those redundant circuit exports.
+The compressed-noise circuit variants used in the later comparison are included.

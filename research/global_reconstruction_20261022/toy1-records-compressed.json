@@ -1,0 +1,30 @@
+{
+  "name": "toy1",
+  "mode": "records",
+  "source": "/tmp/clifft-global-feasibility-20261022/toy1.stim",
+  "sha256": "e1f72a2401af9e6f41d98f37efaeafd846e394512d28ab50fb3e4ee7b0131607",
+  "outputs": 4,
+  "num_original_detectors": 0,
+  "error_channels": 1,
+  "error_bits": 2,
+  "f_bits": 1,
+  "bridge_records": 8,
+  "components": [
+    {
+      "lines": 1,
+      "width": 0,
+      "rotations": 0,
+      "outputs": 1
+    },
+    {
+      "lines": 2,
+      "width": 1,
+      "rotations": 1,
+      "outputs": 3
+    }
+  ],
+  "prepare_seconds": 0.0013695387169718742,
+  "total_seconds": 0.002301984466612339,
+  "compressed_channels": 1,
+  "contract": "ordinary sampling only; fault identities and counts are not preserved"
+}

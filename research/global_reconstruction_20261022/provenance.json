@@ -1,0 +1,181 @@
+{
+  "date": "2026-10-22",
+  "scope": "Local research artifacts only. No production implementation or external publication.",
+  "decision": {
+    "closed_reconstruction": "GO for a bounded native compiler implementation using the existing backend",
+    "generic_0_or_1_phase_fast_path": "NO-GO in the current fixed-frame execution model; additional family machinery remains unproved",
+    "production_rewrite": "Not justified by this study"
+  },
+  "clifft_commit": "fa29a5263a1b7ab29b67cb637f405cb6318dc3c0",
+  "tsim_commit": "2068ecedee9ef03a8b34bf806c7059fdb42d1196",
+  "zxparam": "0.1.0",
+  "numpy": "2.5.4",
+  "stim": "1.16.0",
+  "qiskit": "2.3.0",
+  "cpu": "AMD EPYC 9554P 64-Core Processor, 8-vCPU KVM VM",
+  "native_build": "GCC 13.3, Release, native CPU baseline, CLIFFT_FORCE_ASSERTS=ON, OpenMP AUTO",
+  "sampling": "one worker; affinity to first allowed CPU; default HIR passes plus active-width scheduler; three interleaved repeats",
+  "frontend_dependency_free": false,
+  "runtime_modified": false,
+  "correctness": {
+    "exhaustive_small_circuits": 13,
+    "large_joint_checks": "statistical marginals and 64 random parities, not exhaustive",
+    "d5_direct_dense_phase_cases": 18,
+    "retained_probes_validated": false,
+    "fixed_fault_contract_validated": false
+  },
+  "timing_summary": [
+    {
+      "circuit": "d5",
+      "all_detectors_postselected": false,
+      "widths": {
+        "original": 10,
+        "bridge": 6
+      },
+      "original_us_per_shot": 18.62918632104993,
+      "candidate_us_per_shot": 4.918024409562349,
+      "speedup": 3.7879410042838164,
+      "approximate_compile_amortization_shots": 17591.95491069027
+    },
+    {
+      "circuit": "d5",
+      "all_detectors_postselected": true,
+      "widths": {
+        "original": 10,
+        "bridge": 6
+      },
+      "original_us_per_shot": 5.566979292780161,
+      "candidate_us_per_shot": 4.434115253388882,
+      "speedup": 1.255488180765139,
+      "approximate_compile_amortization_shots": 235620.39980976717
+    },
+    {
+      "circuit": "d7",
+      "all_detectors_postselected": false,
+      "widths": {
+        "original": 19,
+        "bridge": 8
+      },
+      "original_us_per_shot": 2272.877971414459,
+      "candidate_us_per_shot": 13.894078424244976,
+      "speedup": 163.58609056418726,
+      "approximate_compile_amortization_shots": 988.08485781276
+    },
+    {
+      "circuit": "d7",
+      "all_detectors_postselected": true,
+      "widths": {
+        "original": 19,
+        "bridge": 8
+      },
+      "original_us_per_shot": 96.63527932508971,
+      "candidate_us_per_shot": 11.75854432105402,
+      "speedup": 8.218302936704623,
+      "approximate_compile_amortization_shots": 27723.23630406496
+    },
+    {
+      "circuit": "coherent_d5",
+      "all_detectors_postselected": false,
+      "widths": {
+        "original": 13,
+        "bridge": 11
+      },
+      "original_us_per_shot": 197.2410469315946,
+      "candidate_us_per_shot": 50.79319979995489,
+      "speedup": 3.8832175903155006,
+      "approximate_compile_amortization_shots": 2141.667998195592
+    },
+    {
+      "circuit": "coherent_d5",
+      "all_detectors_postselected": true,
+      "widths": {
+        "original": 13,
+        "bridge": 11
+      },
+      "original_us_per_shot": 61.40269851312041,
+      "candidate_us_per_shot": 50.96642812713981,
+      "speedup": 1.204767545411393,
+      "approximate_compile_amortization_shots": 30489.485947531022
+    },
+    {
+      "circuit": "d3",
+      "all_detectors_postselected": false,
+      "widths": {
+        "original": 4,
+        "bridge": 4
+      },
+      "original_us_per_shot": 0.20993314683437347,
+      "candidate_us_per_shot": 0.18277764320373535,
+      "speedup": 1.148571253872493,
+      "approximate_compile_amortization_shots": 920710.5425612186
+    },
+    {
+      "circuit": "d3",
+      "all_detectors_postselected": true,
+      "widths": {
+        "original": 4,
+        "bridge": 4
+      },
+      "original_us_per_shot": 0.25034043937921524,
+      "candidate_us_per_shot": 0.19242707639932632,
+      "speedup": 1.3009626507015395,
+      "approximate_compile_amortization_shots": 435373.24713752733
+    },
+    {
+      "circuit": "coherent_d3",
+      "all_detectors_postselected": false,
+      "widths": {
+        "original": 4,
+        "bridge": 4
+      },
+      "original_us_per_shot": 0.20623300224542618,
+      "candidate_us_per_shot": 0.2182861790060997,
+      "speedup": 0.9447826847510271,
+      "approximate_compile_amortization_shots": null
+    },
+    {
+      "circuit": "coherent_d3",
+      "all_detectors_postselected": true,
+      "widths": {
+        "original": 4,
+        "bridge": 4
+      },
+      "original_us_per_shot": 0.21011894568800926,
+      "candidate_us_per_shot": 0.22663921117782593,
+      "speedup": 0.9271076465367041,
+      "approximate_compile_amortization_shots": null
+    },
+    {
+      "circuit": "distillation",
+      "all_detectors_postselected": false,
+      "widths": {
+        "original": 3,
+        "bridge": 3
+      },
+      "original_us_per_shot": 0.38014212623238564,
+      "candidate_us_per_shot": 0.3367210738360882,
+      "speedup": 1.1289525835185306,
+      "approximate_compile_amortization_shots": 553318.5766681675
+    },
+    {
+      "circuit": "distillation",
+      "all_detectors_postselected": true,
+      "widths": {
+        "original": 3,
+        "bridge": 3
+      },
+      "original_us_per_shot": 0.391173642128706,
+      "candidate_us_per_shot": 0.37795864045619965,
+      "speedup": 1.0349641475494664,
+      "approximate_compile_amortization_shots": 1830088.093308431
+    }
+  ],
+  "inputs": {
+    "coherent_d3.stim": "87d1308c83894e87c60aeb2dc31b74be89b3460a951929951f2c3ac92606827d",
+    "coherent_d5.stim": "54088bbd5f06b441596e414f9fa99d8eeaff8a4a1a862b911e0ad40092c5e549",
+    "d3.stim": "90a7d841e003e5ee38137cd9a3eb6529bb552e49c424bc6b0932a27d97cdb41f",
+    "d5.stim": "c2b4566917bd9bf27a5705284dac02700ef0dcc7c03c91066670db376d633a6d",
+    "d7.stim": "83760fdb1e71be32c1e1eb83bbbf4176e9d32adb48384b14b818b294e7bf25f5",
+    "distillation.stim": "188bd53c48dbc21f840fb297df6f41c61f5bad6a856bba621f00ff42078921c1"
+  }
+}

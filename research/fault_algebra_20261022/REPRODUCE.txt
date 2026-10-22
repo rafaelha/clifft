@@ -1,0 +1,48 @@
+The study directory is self-contained apart from the previous saved research
+package and the pinned reference software/environment. No new dependencies were
+installed. See ../global_reconstruction_20261022/REPRODUCE.txt for versions.
+
+From the repository root, build the isolated native sampler:
+
+  g++ -std=c++20 -O3 -march=native -Wall -Wextra -Werror -shared -fPIC \
+    research/fault_algebra_20261022/evaluator.cc \
+    -o research/fault_algebra_20261022/evaluator.so
+
+The saved .plan files can be sampled using native.py without Tsim, ZX, or Stim.
+Preparing new plans requires the pinned reference front end:
+
+  python research/fault_algebra_20261022/prepare.py
+  python research/fault_algebra_20261022/prepare.py --mode records
+
+Validation and measurements:
+
+  python research/fault_algebra_20261022/validate.py
+  python research/fault_algebra_20261022/benchmark.py
+  python research/fault_algebra_20261022/controls.py
+
+Use the study Python environment and current Clifft native build:
+
+  PYTHONPATH=/tmp/clifft-global-feasibility-20261022/runtime:/home/exedev/tsim-study/tsim-src/src
+  NPROC=1 NUMBA_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1
+  /home/exedev/tsim-study/.venv/bin/python
+
+Set the listed environment variables for each command. Benchmarks and validations
+pin their process to one CPU. Run these serially to avoid self-contention.
+Validation --resume continues missing cases from validation.json; omit it for a
+fresh run. Scripts overwrite their result JSON, so copy the directory first to
+preserve the saved observations. The native .so is a local build artifact.
+
+Timing includes ordinary result allocation and all sampled noise. The native
+kernel has no per-fault compilation, signature cache, or dependency on the
+reference compiler. Ordinary shot storage is allocated before its hot loop.
+The native algorithm does perform runtime stabilizer algebra: it is an isolated
+research executor outside Clifft's present architectural execution contract.
+
+The early-check reconstruction files deliberately permute detector indices.
+They are a control for all-detector postselection; the saved maps restore original
+indices for comparisons of retained outputs. They are not public API replacements.
+
+Saved plans and early circuit exports are stored as gzip files to keep the
+review artifact compact. Before running the scripts, restore these generated
+files in a scratch copy with:
+  python -c "import gzip,pathlib; [(p.with_suffix('').write_bytes(gzip.decompress(p.read_bytes()))) for p in pathlib.Path('.').glob('*.gz')]"

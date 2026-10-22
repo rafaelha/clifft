@@ -1,0 +1,29 @@
+This study benefited from tsim through direct use of its closed sampling graph,
+signed Pauli-operation reader, commutant measurements, and scheduling as a
+research reference. This is direct research use, not a native reimplementation.
+
+  https://github.com/QuEraComputing/tsim/pull/203
+  https://github.com/QuEraComputing/tsim/tree/2068ecedee9ef03a8b34bf806c7059fdb42d1196
+
+The reference extraction directly uses zxparam 0.1.0's graph simplification.
+Its PyPI source distribution was inspected in the earlier investigation.
+
+  https://pypi.org/project/zxparam/0.1.0/#files
+  sdist SHA256: 8cdbfb7fda197b88cfa2b69c5559bb122201974f18d6b355cefd39e5cb824b98
+
+The phase investigation builds on Clifft's existing modulo-eight phase-polynomial
+optimizer. Applying the analysis globally on reconstructed affine support was
+also informed by the paper previously discussed in this research:
+
+  https://arxiv.org/html/2610.22315v1
+
+Stim supplies an independent stabilizer oracle and Clifford frame construction.
+Qiskit supplies independent state-vector evolution for exhaustive toy checks.
+
+  https://github.com/quantumlib/Stim
+  https://github.com/Qiskit/qiskit
+
+The preserved benchmark input files were taken from the local pinned benchmark
+corpus identified by source paths and SHA256 values in the bridge JSON files.
+They are not newly generated substitute protocols. The thirteen toy cases are
+study-generated correctness controls and are labeled separately.

@@ -1,0 +1,18 @@
+{
+  "name": "d7",
+  "mode": "records",
+  "nf": 531,
+  "params": 541,
+  "outputs": 355,
+  "detectors": 355,
+  "prepare_seconds": 1.0549112241715193,
+  "channels": 3162,
+  "component_lines": [
+    44
+  ],
+  "hidden_bits": 10,
+  "residual_t": [
+    1
+  ],
+  "expected_nonzero_channels": 3.2015648877875367
+}

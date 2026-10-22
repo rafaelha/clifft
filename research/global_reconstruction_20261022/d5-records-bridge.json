@@ -1,0 +1,46 @@
+{
+  "name": "d5",
+  "mode": "records",
+  "source": "/home/exedev/tsim-study/circuits/clifft-bench/msc_d5_inject_cultivate_p1e-3.stim",
+  "sha256": "c2b4566917bd9bf27a5705284dac02700ef0dcc7c03c91066670db376d633a6d",
+  "outputs": 112,
+  "num_original_detectors": 107,
+  "error_channels": 3564,
+  "error_bits": 7871,
+  "f_bits": 194,
+  "bridge_records": 8098,
+  "components": [
+    {
+      "lines": 1,
+      "width": 0,
+      "rotations": 0,
+      "outputs": 1
+    },
+    {
+      "lines": 1,
+      "width": 0,
+      "rotations": 0,
+      "outputs": 1
+    },
+    {
+      "lines": 1,
+      "width": 0,
+      "rotations": 0,
+      "outputs": 1
+    },
+    {
+      "lines": 1,
+      "width": 0,
+      "rotations": 0,
+      "outputs": 1
+    },
+    {
+      "lines": 16,
+      "width": 6,
+      "rotations": 91,
+      "outputs": 23
+    }
+  ],
+  "prepare_seconds": 0.10265877284109592,
+  "total_seconds": 0.15039712935686111
+}

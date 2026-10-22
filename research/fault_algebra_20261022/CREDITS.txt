@@ -1,0 +1,32 @@
+This study benefited from Tsim and zxparam through direct reference extraction
+of closed sampling graphs, Pauli operations, hidden commutant measurements,
+classical error maps, and scheduling. No ZX dependency is used by the native
+sampling kernel. See the previous study's CREDITS.txt for pinned revisions.
+
+  https://github.com/QuEraComputing/tsim/pull/203
+  https://github.com/QuEraComputing/tsim/tree/2068ecedee9ef03a8b34bf806c7059fdb42d1196
+  https://pypi.org/project/zxparam/0.1.0/
+
+Magna's separation of a fixed non-Clifford core from fault-dependent Clifford
+updates informed the reusable parameterized representation. This is design
+influence; no Magna implementation was copied or invoked by this prototype.
+The existing Clifft phase-polynomial work and the first study's oracle supply
+its modulo-eight reduction and validation context.
+
+  https://arxiv.org/abs/2610.22315
+
+Stim directly supplies compile-time Clifford frames and independent stabilizer
+oracles, plus Clifford matrices for the small dense joint-law checks. The native
+runtime implements its own stabilizer/destabilizer row operations and one encoded
+magic-qubit measurement handling; it does not call Stim per shot.
+
+  https://github.com/quantumlib/Stim
+
+The sparse-noise cumulative-hazard technique is already used in Clifft's
+src/clifft/util/noise_sampling.h. The prototype independently expresses the same
+idea on convolved classical channel images; it is not a new algorithm claim.
+
+Circuit inputs and prior reconstruction validation are preserved in
+../global_reconstruction_20261022, including Qiskit-based original toy checks.
+This follow-up's new dense checks use NumPy phase evolution and Stim Clifford
+matrices. They should not be described as new Qiskit validation.

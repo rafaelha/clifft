@@ -1,0 +1,22 @@
+{
+  "name": "coherent_d5",
+  "mode": "records",
+  "source": "/home/exedev/tsim-study/circuits/clifft-bench/coherent_d5_r5.stim",
+  "sha256": "54088bbd5f06b441596e414f9fa99d8eeaff8a4a1a862b911e0ad40092c5e549",
+  "outputs": 145,
+  "num_original_detectors": 120,
+  "error_channels": 314,
+  "error_bits": 314,
+  "f_bits": 226,
+  "bridge_records": 650,
+  "components": [
+    {
+      "lines": 72,
+      "width": 14,
+      "rotations": 355,
+      "outputs": 85
+    }
+  ],
+  "prepare_seconds": 0.3862127745524049,
+  "total_seconds": 0.39534254744648933
+}

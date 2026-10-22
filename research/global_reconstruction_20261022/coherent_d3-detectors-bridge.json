@@ -1,0 +1,22 @@
+{
+  "name": "coherent_d3",
+  "mode": "detectors",
+  "source": "/home/exedev/tsim-study/circuits/clifft-bench/coherent_d3_r3.stim",
+  "sha256": "87d1308c83894e87c60aeb2dc31b74be89b3460a951929951f2c3ac92606827d",
+  "outputs": 25,
+  "num_original_detectors": 24,
+  "error_channels": 74,
+  "error_bits": 74,
+  "f_bits": 48,
+  "bridge_records": 135,
+  "components": [
+    {
+      "lines": 12,
+      "width": 4,
+      "rotations": 57,
+      "outputs": 8
+    }
+  ],
+  "prepare_seconds": 0.01563451811671257,
+  "total_seconds": 0.01700708083808422
+}

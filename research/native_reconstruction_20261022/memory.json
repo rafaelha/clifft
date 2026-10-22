@@ -1,0 +1,98 @@
+[
+  {
+    "name": "d5",
+    "mode": "detectors",
+    "variant": "original",
+    "import_peak_kib": 39896,
+    "setup_peak_kib": 50388,
+    "sampling_peak_kib": 50516,
+    "frontend_seconds": 0,
+    "backend_compile_seconds": 0.024472903460264206,
+    "shots": 4096,
+    "width": 10
+  },
+  {
+    "name": "d5",
+    "mode": "detectors",
+    "variant": "native",
+    "import_peak_kib": 39624,
+    "setup_peak_kib": 63956,
+    "sampling_peak_kib": 64112,
+    "frontend_seconds": 0.4054427854716778,
+    "backend_compile_seconds": 0.04952002037316561,
+    "shots": 4096,
+    "width": 6
+  },
+  {
+    "name": "d5",
+    "mode": "records",
+    "variant": "original",
+    "import_peak_kib": 39632,
+    "setup_peak_kib": 50000,
+    "sampling_peak_kib": 50168,
+    "frontend_seconds": 0,
+    "backend_compile_seconds": 0.03336556535214186,
+    "shots": 4096,
+    "width": 10
+  },
+  {
+    "name": "d5",
+    "mode": "records",
+    "variant": "native",
+    "import_peak_kib": 39472,
+    "setup_peak_kib": 65256,
+    "sampling_peak_kib": 65896,
+    "frontend_seconds": 0.40666377916932106,
+    "backend_compile_seconds": 0.05502724088728428,
+    "shots": 4096,
+    "width": 6
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "variant": "original",
+    "import_peak_kib": 39520,
+    "setup_peak_kib": 90920,
+    "sampling_peak_kib": 99240,
+    "frontend_seconds": 0,
+    "backend_compile_seconds": 0.1534535400569439,
+    "shots": 4096,
+    "width": 19
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "variant": "native",
+    "import_peak_kib": 39520,
+    "setup_peak_kib": 218108,
+    "sampling_peak_kib": 218236,
+    "frontend_seconds": 4.482663889415562,
+    "backend_compile_seconds": 0.44262605533003807,
+    "shots": 4096,
+    "width": 8
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "variant": "original",
+    "import_peak_kib": 39592,
+    "setup_peak_kib": 91016,
+    "sampling_peak_kib": 99464,
+    "frontend_seconds": 0,
+    "backend_compile_seconds": 0.15655440744012594,
+    "shots": 4096,
+    "width": 19
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "variant": "native",
+    "import_peak_kib": 39400,
+    "setup_peak_kib": 226064,
+    "sampling_peak_kib": 226448,
+    "frontend_seconds": 4.608917022123933,
+    "backend_compile_seconds": 0.545657915994525,
+    "shots": 4096,
+    "width": 8
+  }
+]

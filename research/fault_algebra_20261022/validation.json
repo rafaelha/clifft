@@ -1,0 +1,153 @@
+[
+  {
+    "kind": "dense_complete_joint_laws",
+    "cases": 72,
+    "max_absolute_error": 1.942890293094024e-16,
+    "max_sampling_z": 3.5137525087736847,
+    "reference": "Stim float32 Clifford matrices followed by independent dense phase evolution"
+  },
+  {
+    "kind": "fixed_fault_oracle",
+    "circuit": "d5",
+    "mode": "detectors",
+    "cases": 32,
+    "parities": 3552,
+    "nonzero": 1186,
+    "fractional": 0,
+    "max_absolute_error": 0.0
+  },
+  {
+    "kind": "noisy_joint_features",
+    "circuit": "d5",
+    "mode": "detectors",
+    "shots": 65536,
+    "features": 237,
+    "acceptance_native": 0.1417083740234375,
+    "comparisons": [
+      {
+        "reference": "original",
+        "max_z": 3.3665329370946986,
+        "acceptance": 0.145355224609375
+      },
+      {
+        "reference": "reconstructed",
+        "max_z": 2.7399614855163015,
+        "acceptance": 0.1448516845703125
+      },
+      {
+        "reference": "reconstructed_postselected",
+        "shots": 1048576,
+        "native_passed": 150758,
+        "reference_passed": 150433,
+        "native_observable_ones": [
+          0
+        ],
+        "reference_observable_ones": [
+          0
+        ]
+      }
+    ]
+  },
+  {
+    "kind": "fixed_fault_oracle",
+    "circuit": "d7",
+    "mode": "detectors",
+    "cases": 32,
+    "parities": 4160,
+    "nonzero": 730,
+    "fractional": 23,
+    "max_absolute_error": 1.1102230246251565e-16
+  },
+  {
+    "kind": "noisy_joint_features",
+    "circuit": "d7",
+    "mode": "detectors",
+    "shots": 8192,
+    "features": 474,
+    "acceptance_native": 0.0042724609375,
+    "comparisons": [
+      {
+        "reference": "original",
+        "max_z": 3.276196043855595,
+        "acceptance": 0.0054931640625
+      },
+      {
+        "reference": "reconstructed",
+        "max_z": 2.6483675573330183,
+        "acceptance": 0.0050048828125
+      },
+      {
+        "reference": "reconstructed_postselected",
+        "shots": 1048576,
+        "native_passed": 5866,
+        "reference_passed": 5871,
+        "native_observable_ones": [
+          4261
+        ],
+        "reference_observable_ones": [
+          4330
+        ]
+      }
+    ]
+  },
+  {
+    "kind": "fixed_fault_oracle",
+    "circuit": "d5",
+    "mode": "records",
+    "cases": 32,
+    "parities": 3808,
+    "nonzero": 1394,
+    "fractional": 0,
+    "max_absolute_error": 0.0
+  },
+  {
+    "kind": "noisy_joint_features",
+    "circuit": "d5",
+    "mode": "records",
+    "shots": 65536,
+    "features": 241,
+    "acceptance_native": 0.0086822509765625,
+    "comparisons": [
+      {
+        "reference": "original",
+        "max_z": 2.8160376646610485,
+        "acceptance": 0.0092620849609375
+      },
+      {
+        "reference": "reconstructed",
+        "max_z": 3.8313629171072474,
+        "acceptance": 0.0090484619140625
+      }
+    ]
+  },
+  {
+    "kind": "fixed_fault_oracle",
+    "circuit": "d7",
+    "mode": "records",
+    "cases": 32,
+    "parities": 7872,
+    "nonzero": 3211,
+    "fractional": 5,
+    "max_absolute_error": 1.1102230246251565e-16
+  },
+  {
+    "kind": "noisy_joint_features",
+    "circuit": "d7",
+    "mode": "records",
+    "shots": 8192,
+    "features": 484,
+    "acceptance_native": 0.0,
+    "comparisons": [
+      {
+        "reference": "original",
+        "max_z": 3.057474678831062,
+        "acceptance": 0.0
+      },
+      {
+        "reference": "reconstructed",
+        "max_z": 2.7812529839623314,
+        "acceptance": 0.0
+      }
+    ]
+  }
+]

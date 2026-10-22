@@ -1,0 +1,29 @@
+This study benefited from Tsim through its closed-problem reconstruction idea,
+forgotten commutant measurements, and measurement-first active-width scheduling.
+Those techniques informed the independently written packed-Pauli frontend and
+scheduler here. The older sibling study directly uses Tsim and zxparam as a
+separate reference. No graph or extracted artifact feeds the new frontend.
+
+  https://github.com/QuEraComputing/tsim/pull/203
+  https://github.com/QuEraComputing/tsim/tree/2068ecedee9ef03a8b34bf806c7059fdb42d1196
+  https://pypi.org/project/zxparam/0.1.0/
+
+Stim supplies the source Clifford grammar and compile-time Clifford/tableau
+arithmetic, and serves as an independent stochastic Clifford reference. This
+research use does not add a production dependency or modify Stim.
+Qiskit supplies independent exact source-state evolution for full joint laws.
+
+  https://github.com/quantumlib/Stim
+  https://github.com/Qiskit/qiskit
+
+The phase-core investigation reuses the previous study's independent modulo-eight
+oracle and Clifft's phase-polynomial perspective. Magna informed separating a
+fixed small non-Clifford core from fault-dependent Clifford work; no Magna code
+is used. This second investigation is not an implemented execution strategy.
+
+  https://arxiv.org/abs/2610.22315
+
+The complete noisy MSC inputs are the same preserved benchmark corpus files as
+in the sibling reference study. They are copied inputs, not newly generated or
+noise-stripped substitutes. See provenance.json, the source hashes, and the
+reference study's CREDITS.txt for their origin and the surrounding references.

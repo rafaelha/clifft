@@ -1,0 +1,61 @@
+Run from a scratch copy of the repository: scripts overwrite saved results.
+The original circuits are ../global_reconstruction_20261022/inputs/d5.stim and
+d7.stim. That sibling directory also contains the earlier reference artifacts
+and exact toy distributions. The frontend reads only the original inputs.
+
+Environment
+  Python 3.12.14, numpy 2.5.4, Stim 1.16.0
+  Clifft backend at fb588b306af6babd838e044b41ced725fc5112dd
+  GCC 13.3, CMake Release, CLIFFT_FORCE_ASSERTS=ON,
+  CLIFFT_CPU_BASELINE=native, CLIFFT_OPENMP=AUTO
+  AMD EPYC 9554P, 8-vCPU VM; sampling pinned to one available CPU
+  Qiskit 2.3.0 in a separate Python 3.13 environment for extra_oracle.py
+
+Install/build the pinned Clifft backend using normal repository build directions.
+Set its package location ahead of other Clifft installs on PYTHONPATH.
+Set OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 NUMBA_NUM_THREADS=1 NPROC=1.
+Do not add Tsim to PYTHONPATH for the native work. Native reconstruction and
+validation require only Clifft, Stim, numpy and the supplied local helpers.
+Only extra_oracle.py requires Qiskit, and the prior exact toy source oracle uses
+Qiskit as documented in the sibling study. No network is used after setup.
+
+From the repository root:
+  python research/native_reconstruction_20261022/export.py
+  python research/native_reconstruction_20261022/validate.py
+  python research/native_reconstruction_20261022/extra_oracle.py
+  python research/native_reconstruction_20261022/extra_validation.py
+  python research/native_reconstruction_20261022/large_validation.py
+  python research/native_reconstruction_20261022/fixed_fault.py
+  python research/native_reconstruction_20261022/phase_check.py
+  python research/native_reconstruction_20261022/controls.py
+  python research/native_reconstruction_20261022/ablation.py
+  python research/native_reconstruction_20261022/benchmark.py
+
+Run extra_oracle.py in the Qiskit environment, then switch back. Run timing and
+memory commands serially, with no other CPU-heavy study running on the pinned
+core. benchmark.py saves every repeat and compile timing to benchmark.json.
+
+Fresh-process memory cases (each invocation prints one JSON row):
+  python research/native_reconstruction_20261022/memory.py d5 detectors original
+  python research/native_reconstruction_20261022/memory.py d5 detectors native
+Repeat for d7 and for 'records' instead of 'detectors', giving eight cases in
+memory.json. RSS includes interpreter/import memory and setup high-water marks;
+it is not the coefficient-buffer size or a standalone runtime-only measurement.
+
+The initial fixed-fault checks used the prior backend fa29a526; this is recorded
+separately from the final current-main timings and exact/noisy validation.
+Between those commits main changed parser validation, unused aggregate EXP_VAL
+handling, and CI; the target circuits have no EXP_VAL. No claim of identical
+seeded records across source and reconstruction is made or required.
+
+phase_check.py imports only the earlier study's independent polynomial/Stim
+oracle; it consumes the new native NPZ operations, not ZX-extracted operations.
+ablation.py deliberately reads the old reference NPZs in a separate comparison
+arm. The native generation path has no reference-data input.
+
+Saved generated circuits are gzip-compressed; NPZ contains packed-source
+operations expanded to numpy arrays for review and phase checks. JSON files
+contain measured results, source output permutations and source hashes.
+SHA256.json covers the review artifacts, excluding itself and transient caches.
+Generated files and their timestamps are not asserted to be byte-identical on
+rerun; source hashes and the decoded circuit/operation content are the contracts.

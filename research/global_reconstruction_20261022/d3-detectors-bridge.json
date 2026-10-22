@@ -1,0 +1,22 @@
+{
+  "name": "d3",
+  "mode": "detectors",
+  "source": "/home/exedev/tsim-study/circuits/clifft-bench/msc_d3_inject_cultivate_p1e-3.stim",
+  "sha256": "90a7d841e003e5ee38137cd9a3eb6529bb552e49c424bc6b0932a27d97cdb41f",
+  "outputs": 21,
+  "num_original_detectors": 20,
+  "error_channels": 518,
+  "error_bits": 1157,
+  "f_bits": 45,
+  "bridge_records": 1209,
+  "components": [
+    {
+      "lines": 6,
+      "width": 4,
+      "rotations": 29,
+      "outputs": 5
+    }
+  ],
+  "prepare_seconds": 0.015800688415765762,
+  "total_seconds": 0.022176966071128845
+}

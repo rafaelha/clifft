@@ -1,0 +1,92 @@
+[
+  {
+    "label": "native-d5-detectors",
+    "lines": 16,
+    "operations": 199,
+    "hidden": 1,
+    "source_order_peak": 16,
+    "scheduled_without_hidden": 7,
+    "scheduled_with_hidden": 6
+  },
+  {
+    "label": "zx-reference-d5-detectors",
+    "lines": 16,
+    "operations": 106,
+    "hidden": 1,
+    "source_order_peak": 16,
+    "scheduled_without_hidden": 7,
+    "scheduled_with_hidden": 6
+  },
+  {
+    "label": "native-d5-records",
+    "lines": 20,
+    "operations": 203,
+    "hidden": 3,
+    "source_order_peak": 16,
+    "scheduled_without_hidden": 7,
+    "scheduled_with_hidden": 6
+  },
+  {
+    "label": "zx-reference-d5-records",
+    "lines": 16,
+    "operations": 114,
+    "hidden": 1,
+    "source_order_peak": 16,
+    "scheduled_without_hidden": 7,
+    "scheduled_with_hidden": 6
+  },
+  {
+    "label": "zx-source-ordered-d5-records",
+    "lines": 16,
+    "operations": 114,
+    "hidden": 1,
+    "source_order_peak": 16,
+    "scheduled_without_hidden": 7,
+    "scheduled_with_hidden": 6
+  },
+  {
+    "label": "native-d7-detectors",
+    "lines": 39,
+    "operations": 472,
+    "hidden": 5,
+    "source_order_peak": 39,
+    "scheduled_without_hidden": 11,
+    "scheduled_with_hidden": 8
+  },
+  {
+    "label": "zx-reference-d7-detectors",
+    "lines": 39,
+    "operations": 161,
+    "hidden": 5,
+    "source_order_peak": 39,
+    "scheduled_without_hidden": 11,
+    "scheduled_with_hidden": 8
+  },
+  {
+    "label": "native-d7-records",
+    "lines": 44,
+    "operations": 482,
+    "hidden": 5,
+    "source_order_peak": 39,
+    "scheduled_without_hidden": 8,
+    "scheduled_with_hidden": 8
+  },
+  {
+    "label": "zx-reference-d7-records",
+    "lines": 44,
+    "operations": 277,
+    "hidden": 10,
+    "source_order_peak": 39,
+    "scheduled_without_hidden": 12,
+    "scheduled_with_hidden": 12
+  },
+  {
+    "label": "zx-source-ordered-d7-records",
+    "lines": 44,
+    "operations": 277,
+    "hidden": 10,
+    "source_order_peak": 39,
+    "scheduled_without_hidden": 12,
+    "scheduled_with_hidden": 12
+  }
+]

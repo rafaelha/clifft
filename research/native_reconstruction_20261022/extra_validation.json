@@ -1,0 +1,362 @@
+{
+  "cases": [
+    {
+      "name": "noncommuting_rotations",
+      "exact_max_error": 5.551115123125783e-16,
+      "postselection": [
+        {
+          "mask": [],
+          "acceptance_exact": 0.9999999999999992,
+          "acceptance_sample": 1.0,
+          "max_z": 0.5412658773653891
+        },
+        {
+          "mask": [
+            0
+          ],
+          "acceptance_exact": 0.2499999999999998,
+          "acceptance_sample": 0.2500762939453125,
+          "max_z": 0.045105489780554384
+        },
+        {
+          "mask": [
+            0
+          ],
+          "acceptance_exact": 0.2499999999999998,
+          "acceptance_sample": 0.2500762939453125,
+          "max_z": 0.045105489780554384
+        }
+      ]
+    },
+    {
+      "name": "scalar_rotation",
+      "exact_max_error": 0.0,
+      "postselection": [
+        {
+          "mask": [],
+          "acceptance_exact": 1.0,
+          "acceptance_sample": 1.0,
+          "max_z": 0.0
+        },
+        {
+          "mask": [
+            0
+          ],
+          "acceptance_exact": 0.0,
+          "acceptance_sample": 0.0,
+          "max_z": 0.0
+        },
+        {
+          "mask": [
+            0
+          ],
+          "acceptance_exact": 0.0,
+          "acceptance_sample": 0.0,
+          "max_z": 0.0
+        }
+      ]
+    },
+    {
+      "name": "reset_entangled",
+      "exact_max_error": 8.326672684688674e-17,
+      "postselection": [
+        {
+          "mask": [],
+          "acceptance_exact": 0.9999999999999997,
+          "acceptance_sample": 1.0,
+          "max_z": 1.335122497501059
+        },
+        {
+          "mask": [
+            0
+          ],
+          "acceptance_exact": 0.49999999999999983,
+          "acceptance_sample": 0.5003204345703125,
+          "max_z": 0.32475952641921374
+        },
+        {
+          "mask": [
+            0,
+            1
+          ],
+          "acceptance_exact": 0.24999999999999992,
+          "acceptance_sample": 0.25054931640625,
+          "max_z": 0.32475952641921374
+        }
+      ]
+    },
+    {
+      "name": "mr_feedback",
+      "exact_max_error": 8.326672684688674e-17,
+      "postselection": [
+        {
+          "mask": [],
+          "acceptance_exact": 0.9999999999999996,
+          "acceptance_sample": 1.0,
+          "max_z": 1.2756300964062066
+        },
+        {
+          "mask": [
+            0,
+            2
+          ],
+          "acceptance_exact": 0.24999999999999992,
+          "acceptance_sample": 0.2478790283203125,
+          "max_z": 1.3346870453138016
+        },
+        {
+          "mask": [
+            0,
+            1,
+            2
+          ],
+          "acceptance_exact": 0.12499999999999996,
+          "acceptance_sample": 0.124603271484375,
+          "max_z": 0.3070961343199649
+        }
+      ]
+    },
+    {
+      "name": "reset_xy",
+      "exact_max_error": 1.1102230246251565e-16,
+      "postselection": [
+        {
+          "mask": [],
+          "acceptance_exact": 0.9999999999999998,
+          "acceptance_sample": 1.0,
+          "max_z": 2.327443272670745
+        },
+        {
+          "mask": [
+            0
+          ],
+          "acceptance_exact": 0.7499999999999998,
+          "acceptance_sample": 0.7485198974609375,
+          "max_z": 1.8854094728223063
+        },
+        {
+          "mask": [
+            0,
+            1
+          ],
+          "acceptance_exact": 0.49999999999999994,
+          "acceptance_sample": 0.501708984375,
+          "max_z": 0.8750000000000285
+        }
+      ]
+    },
+    {
+      "name": "mpp_readout",
+      "exact_max_error": 1.6653345369377348e-16,
+      "postselection": [
+        {
+          "mask": [],
+          "acceptance_exact": 0.9999999999999996,
+          "acceptance_sample": 1.0,
+          "max_z": 1.314615740850694
+        },
+        {
+          "mask": [
+            0,
+            2
+          ],
+          "acceptance_exact": 0.1474999999999999,
+          "acceptance_sample": 0.150787353515625,
+          "max_z": 2.237559027622225
+        },
+        {
+          "mask": [
+            0,
+            1,
+            2
+          ],
+          "acceptance_exact": 0.018305826175840766,
+          "acceptance_sample": 0.0186614990234375,
+          "max_z": 0.679215993126931
+        }
+      ]
+    },
+    {
+      "name": "pauli_channel",
+      "exact_max_error": 3.3306690738754696e-16,
+      "postselection": [
+        {
+          "mask": [],
+          "acceptance_exact": 0.9999999999999996,
+          "acceptance_sample": 1.0,
+          "max_z": 3.18907524101542
+        },
+        {
+          "mask": [
+            0
+          ],
+          "acceptance_exact": 0.3249999999999998,
+          "acceptance_sample": 0.327362060546875,
+          "max_z": 0.8867187500000819
+        },
+        {
+          "mask": [
+            0,
+            1
+          ],
+          "acceptance_exact": 0.19999999999999987,
+          "acceptance_sample": 0.201385498046875,
+          "max_z": 0.8867187500000819
+        }
+      ]
+    },
+    {
+      "name": "two_qubit_category",
+      "exact_max_error": 2.7755575615628914e-17,
+      "postselection": [
+        {
+          "mask": [],
+          "acceptance_exact": 1.0,
+          "acceptance_sample": 1.0,
+          "max_z": 1.035983730886565
+        },
+        {
+          "mask": [
+            0
+          ],
+          "acceptance_exact": 0.5,
+          "acceptance_sample": 0.5010833740234375,
+          "max_z": 1.7314476974190947
+        },
+        {
+          "mask": [
+            0,
+            1
+          ],
+          "acceptance_exact": 0.10249999999999995,
+          "acceptance_sample": 0.1004486083984375,
+          "max_z": 1.7314476974190947
+        }
+      ]
+    },
+    {
+      "name": "constant_feedback",
+      "exact_max_error": 2.220446049250313e-16,
+      "postselection": [
+        {
+          "mask": [],
+          "acceptance_exact": 0.9999999999999997,
+          "acceptance_sample": 1.0,
+          "max_z": 0.6492648544148829
+        },
+        {
+          "mask": [
+            0
+          ],
+          "acceptance_exact": 0.8299999999999998,
+          "acceptance_sample": 0.8299560546875,
+          "max_z": 0.23843677447500486
+        },
+        {
+          "mask": [
+            0,
+            1
+          ],
+          "acceptance_exact": 0.7084493141924171,
+          "acceptance_sample": 0.708709716796875,
+          "max_z": 0.14668100034061257
+        }
+      ]
+    },
+    {
+      "name": "clifford_stim",
+      "exact_max_error": 0.0,
+      "postselection": [
+        {
+          "mask": [],
+          "acceptance_exact": 1.000000000000001,
+          "acceptance_sample": 1.0,
+          "max_z": 1.4884811627546675
+        },
+        {
+          "mask": [
+            0,
+            2
+          ],
+          "acceptance_exact": 0.5000000000000006,
+          "acceptance_sample": 0.498748779296875,
+          "max_z": 1.26295371385247
+        },
+        {
+          "mask": [
+            0,
+            1,
+            2
+          ],
+          "acceptance_exact": 0.2500000000000003,
+          "acceptance_sample": 0.250885009765625,
+          "max_z": 0.5232236814529341
+        }
+      ]
+    },
+    {
+      "name": "two_independent_magic",
+      "exact_max_error": 3.3306690738754696e-16,
+      "postselection": [
+        {
+          "mask": [],
+          "acceptance_exact": 0.9999999999999996,
+          "acceptance_sample": 1.0,
+          "max_z": 0.40823156881351447
+        },
+        {
+          "mask": [
+            0
+          ],
+          "acceptance_exact": 0.14644660940672616,
+          "acceptance_sample": 0.14544677734375,
+          "max_z": 0.6850606073291707
+        },
+        {
+          "mask": [
+            0,
+            1
+          ],
+          "acceptance_exact": 0.12499999999999993,
+          "acceptance_sample": 0.124114990234375,
+          "max_z": 0.6850606073291707
+        }
+      ]
+    },
+    {
+      "name": "nonzero_reference",
+      "exact_max_error": 5.551115123125783e-17,
+      "postselection": [
+        {
+          "mask": [],
+          "acceptance_exact": 0.9999999999999999,
+          "acceptance_sample": 1.0,
+          "max_z": 0.4361413183433066
+        },
+        {
+          "mask": [
+            0
+          ],
+          "acceptance_exact": 0.9999999999999999,
+          "acceptance_sample": 1.0,
+          "max_z": 0.7239557445409333
+        },
+        {
+          "mask": [
+            0,
+            1
+          ],
+          "acceptance_exact": 0.8535533905932737,
+          "acceptance_sample": 0.85455322265625,
+          "max_z": 0.7239557445409333
+        }
+      ]
+    }
+  ],
+  "rejections": {
+    "H 0\nT 0\nEXP_VAL X0": "unsupported source operation or physical-state observation",
+    "HERALDED_PAULI_CHANNEL_1(0.25,0,0,0) 0": "unsupported heralded instrument",
+    "R_PAULI(0.2) X0": "unsupported source operation or physical-state observation",
+    "CX sweep[0] 1": "unsupported control"
+  }
+}

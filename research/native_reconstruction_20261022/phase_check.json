@@ -1,0 +1,742 @@
+[
+  {
+    "name": "d5",
+    "mode": "detectors",
+    "hidden": 0,
+    "affine_width": 15,
+    "residual_T_counts": [
+      0
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d5",
+    "mode": "detectors",
+    "hidden": 1,
+    "affine_width": 15,
+    "residual_T_counts": [
+      0
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d5",
+    "mode": "records",
+    "hidden": 0,
+    "affine_width": 17,
+    "residual_T_counts": [
+      0
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d5",
+    "mode": "records",
+    "hidden": 1,
+    "affine_width": 17,
+    "residual_T_counts": [
+      0
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d5",
+    "mode": "records",
+    "hidden": 2,
+    "affine_width": 17,
+    "residual_T_counts": [
+      0
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d5",
+    "mode": "records",
+    "hidden": 3,
+    "affine_width": 17,
+    "residual_T_counts": [
+      0
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d5",
+    "mode": "records",
+    "hidden": 4,
+    "affine_width": 17,
+    "residual_T_counts": [
+      0
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d5",
+    "mode": "records",
+    "hidden": 5,
+    "affine_width": 17,
+    "residual_T_counts": [
+      0
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d5",
+    "mode": "records",
+    "hidden": 6,
+    "affine_width": 17,
+    "residual_T_counts": [
+      0
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d5",
+    "mode": "records",
+    "hidden": 7,
+    "affine_width": 17,
+    "residual_T_counts": [
+      0
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 0,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 1,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 2,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 3,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 4,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 5,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 6,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 7,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 8,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 9,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 10,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 11,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 12,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 13,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 14,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 15,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 16,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 17,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 18,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 19,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 20,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 21,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 22,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 23,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 24,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 25,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 26,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 27,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 28,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 29,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 30,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "detectors",
+    "hidden": 31,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 0,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 1,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 2,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 3,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 4,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 5,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 6,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 7,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 8,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 9,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 10,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 11,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 12,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 13,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 14,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 15,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 16,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 17,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 18,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 19,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 20,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 21,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 22,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 23,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 24,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 25,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 26,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 27,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 28,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 29,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 30,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  },
+  {
+    "name": "d7",
+    "mode": "records",
+    "hidden": 31,
+    "affine_width": 34,
+    "residual_T_counts": [
+      1
+    ],
+    "fault_sign_assignments": 5
+  }
+]

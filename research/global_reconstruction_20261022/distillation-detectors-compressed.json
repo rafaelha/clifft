@@ -1,0 +1,24 @@
+{
+  "name": "distillation",
+  "mode": "detectors",
+  "source": "/home/exedev/tsim-study/circuits/clifft-bench/distillation.stim",
+  "sha256": "188bd53c48dbc21f840fb297df6f41c61f5bad6a856bba621f00ff42078921c1",
+  "outputs": 45,
+  "num_original_detectors": 40,
+  "error_channels": 294,
+  "error_bits": 792,
+  "f_bits": 46,
+  "bridge_records": 52,
+  "components": [
+    {
+      "lines": 5,
+      "width": 3,
+      "rotations": 10,
+      "outputs": 5
+    }
+  ],
+  "prepare_seconds": 0.016515116207301617,
+  "total_seconds": 0.024873021990060806,
+  "compressed_channels": 277,
+  "contract": "ordinary sampling only; fault identities and counts are not preserved"
+}

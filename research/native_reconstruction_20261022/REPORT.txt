@@ -1,0 +1,260 @@
+Native global reconstruction feasibility -- 2026-10-22
+
+Decision
+
+PROCEED with a bounded production compiler implementation using the existing
+backend. This study meets the primary feasibility gate in issue 598. The code
+here is a Python research frontend, using Stim for compile-time Clifford algebra;
+it is not a production C++ pass. Production can use Clifft's own Clifford
+infrastructure. No ZX graph, extracted skeleton, circuit-specific map, or Tsim
+parser is an input to this frontend. No new execution model was introduced.
+
+Separate conclusions:
+- Existing-backend reconstruction: GO for implementation, with conservative
+  eligibility and fallback. Default/opt-in/automatic selection remains undecided.
+- Further algebraic sampling: GO for separately scoped design work. The native
+  representation exposes zero residual T rotations for d5 and one for d7.
+  An executor doing runtime tableau work still needs a separate architectural
+  decision. It is not implemented or authorized by this study.
+- Raw-record stretch goal: achieved width 8 for d7, exceeding the reference
+  target of 12. Further ZX rewrite archaeology is not a prerequisite.
+
+Measured result
+
+Same complete noisy source circuits (d5 nominal p=0.001, d7 nominal p=0.0005),
+one CPU worker, double precision,
+default HIR passes plus ActiveWidthSchedulePass, unchanged backend. Five
+interleaved repeats. Timings include noise generation and requested output
+production. Retained native output timing includes restoring source record order.
+All numbers are microseconds per attempted shot, not per accepted shot.
+
+contract                 original     native late checks   native early checks
+ d5 detectors aggregate     16.51             4.74                  4.67
+ d7 detectors aggregate   2253.24            10.82                 11.13
+ d5 all-detector post        5.60             4.39                  2.35
+ d7 all-detector post       80.45             9.63                  5.33
+ d5 retained raw records    17.84             5.59                  5.51
+ d7 retained raw records  2251.37            14.36                 14.13
+
+Detector and raw-record peak active widths are 10 -> 6 for d5 and 19 -> 8 for d7.
+The existing ZX-derived raw bridge gives width 6 / 12 and 5.26 / 41.86 us for
+these same d5 / d7 retained-output runs. This compares reconstructed problems
+through Clifft, not complete Tsim runtime performance.
+
+Early check placement contributes about a further 1.9x / 1.8x on all-detector
+postselection. It is shown separately to account for overlap with issue 557;
+do not multiply this by a separate filtering/sharing speedup. The all-detector
+acceptance is roughly 14.5% / 0.55%; raw survivor counts for every repeat and
+independent validation counts are saved. None of these samples establish a rare
+logical-error rate. Batch size is the current 'auto' policy, held the same for
+both variants; there is no timing-based tuning. Detector aggregate runs use
+keep_records=False; raw runs retain records. Extra internal measurement arrays
+created by the bridge are included in its cost, then discarded by the adapter.
+
+Setup and memory are costs, not free benefits:
+- Native Python frontend: about 0.41 s d5 and 4.5-4.6 s d7.
+- Existing backend compilation after reconstruction: about 0.05 s and
+  0.44-0.55 s, versus original compilation about 0.025-0.033 s and 0.15-0.16 s.
+- Fresh-process peak RSS, including imports, setup, and 4096 shots: original
+  about 49 MiB / 97 MiB; native about 63-64 MiB / 213-221 MiB.
+- The large temporary Clifford dilation raises setup memory despite the much
+  smaller execution state. A production port should impose budgets and release
+  temporary representations before sampling. No production memory reduction is
+  claimed here.
+- Approximate setup amortization is tens of thousands of unpostselected d5
+  shots, a few thousand d7 shots, and higher for early-rejecting workloads.
+  These Python setup costs should not be extrapolated to a future C++ pass.
+
+benchmark.json contains uncontended timing repeats. memory.json uses separate
+fresh processes, run serially, and reports absolute process high-water marks,
+not allocator-attributed circuit memory. Those two measurements answer different
+questions. No universal speedup or cross-circuit profitability claim is made.
+
+Representation and transformation
+
+1. Parse original Clifford+T source, including resets, Pauli measurements,
+   record-controlled Paulis, and categorical Pauli noise. Move Pauli errors into
+   symbolic X/Z parity frames. An anticommuting error flips a rotation's angle;
+   record offsets include physical measurement flips and readout errors, and
+   those offsets propagate through feedback. Keep each original noise channel
+   as a distribution over its joint categorical outcomes.
+2. Make a unitary Clifford dilation. Replace each T rotation by a fresh magic
+   ancilla and a Clifford controlled-P gadget, with a final Z postselection.
+   Defer each source measurement onto a fresh record ancilla. A reset allocates
+   a fresh prepared wire and leaves the old wire in the environment. It does
+   not erase the hidden reset measurement/channel. Deferred feedback is a
+   Clifford gate controlled by a record ancilla.
+3. Pull requested record parities and gadget projections backwards through the
+   complete Clifford body. Represent each as a signed packed binary Pauli.
+   Process rotations backwards and solve a GF(2) system to multiply their axes
+   by stabilizers of as-yet-unrotated inputs. The dressed axes commute with every
+   gadget projection. This is a reusable causal stabilizer construction, not a
+   collection of graph rewrite rules or a recognizer for these two circuits.
+4. Fold gadget projections into the initial stabilizer state. The prototype
+   checks full independent projection rank. Complete the projected stabilizers
+   using the kernel of initial-stabilizer commutations, then choose a Clifford
+   frame sending this state to |0>.
+5. Pack the joint X-support span of rotations and requested outputs by a linear
+   Clifford coordinate change. Remaining wires have only Z action and stay at
+   zero; remove them. This produces 16/39 virtual lines for detectors and 20/44
+   for records. These are virtual dimensions, not peak active widths.
+6. Optionally measure forgotten commuting Paulis, then reorder only commuting
+   operations using a measurement-first, low-peak dependency schedule. Compile
+   all coordinates, commutations and dependencies before sampling.
+7. Reduce noise signs to an independent parity basis. Push each categorical
+   channel through that linear map and convolve independent channels with the
+   same image. This is an exact distribution transformation for ordinary
+   sampling. It deliberately does not preserve public fault-site identity.
+8. Emit ordinary feedback, R_PAULI, MPP, detector and observable instructions
+   for the unchanged backend. A separate early-output transformation stores
+   the detector permutation needed to restore outputs and selection masks.
+
+Why the closed joint law is preserved
+
+Deferred measurement and the explicit reset environment preserve the original
+instrument after the environment is traced. No record needed for later feedback
+is discarded. For each fixed physical Pauli-fault assignment, frame propagation
+is an exact circuit identity up to an irrelevant global phase.
+
+A rotation gadget's selected branch is the intended Pauli rotation times a
+state-independent 1/sqrt(2). Dressing by an available +1 input stabilizer does
+not change the state at that point. Since the dressed rotations commute with
+the gadget projectors, the projectors can move to the initial state. Their
+constant normalization is removed there; they are not additional user
+postselection events. The checked projection rank establishes that folding is
+well defined for accepted inputs.
+
+Clifford coordinate changes preserve probabilities. Removing Z-only fixed-zero
+wires preserves all remaining actions. A forgotten measurement commuting with
+every subsequent rotation and requested measurement cannot change their joint
+law. Reordering commuting operations and moving a classical output declaration
+to its first availability also preserve that law. Finally, marginalizing or
+linearly mapping categorical noise preserves its correlations; independent
+channel convolution is not replacement by independent Bernoulli marginals.
+
+These arguments apply to the requested joint record/detector/observable law,
+including acceptance probability and its correlation with retained outputs.
+They do not identify the actual physical conditional quantum state with the
+reconstructed virtual state, and do not assert that cultivated magic states
+are stabilizer states.
+
+Eligibility and API boundary
+
+Supported by this prototype: closed, ordinary sampling of Clifford+T/T_DAG
+circuits with Pauli/reset measurements, Pauli record feedback, Pauli noise,
+DEPOLARIZE1/2, PAULI_CHANNEL_1/2, and E/ELSE_CORRELATED_ERROR chains. Metadata,
+repeat blocks, inverted measurement results and MPAD are handled. There are two
+explicit compile-time output contracts: detector/observable parities, or all
+source measurement records. Detector/observable parities are derivable from
+full records if a future adapter needs both; this study does not install that
+adapter in the public API.
+
+Fallback is required for retained EXP_VAL, physical-state queries, continuation,
+unsupported instruments or controls, other rotation syntax, exceeded budgets,
+and original fault-site counting/replay APIs. Even dropped EXP_VAL is rejected
+by this research parser; a later eligibility layer could prove it irrelevant.
+No rejection means the underlying user circuit is invalid: the general compiler
+remains available. Negative controls exercise explicit refusal of EXP_VAL,
+heralded instruments (including the sentinel-like probability), R_PAULI source
+syntax, and sweep controls. Source R_PAULI is unsupported here even though the
+bridge emits R_PAULI; the parsers serve different purposes.
+
+The original program/circuit and its normalizer must remain available.
+keep_records is chosen at sampling time in today's API; therefore a detector
+specialization must not silently replace a general Program. A feasible boundary
+is a separately cached plan per supported sampling contract, selected after the
+request is known, with the existing plan used for unsupported requests. This is
+a representation proposal, not an implemented API or a default-policy decision.
+
+Reference parities must be copied from the original pipeline's chosen contract,
+including its existing before/after-pass normalization rule. Do not independently
+sample a reference from the reconstruction: nondeterministic noiseless outcomes
+can otherwise choose a different convention. The adapter permutes expected
+detector parities and postselection masks with the output declarations and
+restores the original public output indices. Explicit nonzero detector and
+observable references are validated, including their accepted probability mass.
+
+The fixed-fault validation materializes original physical source faults before
+comparing outputs, using the uncompressed source error map. This supports the
+fixed-fault correctness argument for the transformation. It does not make
+sample_k or fault-identity replay valid on the final convolved-noise program.
+
+Correctness evidence
+
+- 13 prior exact Qiskit toy record laws plus 12 new adversarial exact laws;
+  maximum absolute probability error 5.56e-16. The new cases additionally check
+  exact joint detector/observable laws. Dense reconstruction evolution uses
+  no Tsim or ZX. Every branch is included, not only successful postselection.
+- 36 small postselection/reference configurations (none, partial, all), checking
+  accepted joint probability per attempted shot; rejection mass is retained.
+- New cases cover entangled reset, MR/MRX/MRY, X/Y reset, signed MPP, noisy
+  feedback, categorical one-/two-qubit channels, constants, nonzero references,
+  scalar and noncommuting rotations, and two independent magic inputs. A Clifford
+  case is independently sampled
+  with Stim. Existing toys include correlated E/ELSE chains and hidden resets.
+- Existing-backend samples of the 13 toys: 65,536 shots each, largest z about
+  2.56. The new selected joint-law cases use 65,536 attempts each.
+- Full noisy d5/d7: 32,768/8,192 shots per sampler, checking every requested
+  marginal, all-zero probability, and 128 overlapping random joint parities;
+  largest z about 3.63. Both detector and raw-record contracts are checked.
+- Targeted original-source fixed faults: no fault, six physically valid
+  single-channel outcomes across the circuit, and their combination, for each
+  distance; 4096 shots per sampler/case and every raw marginal plus 128 parities.
+  Largest z about 2.86. These are statistical large-circuit checks, not complete
+  conditional-distribution enumeration or rare-logical-error verification.
+
+Raw-record gap and phase core
+
+The reference restricted ZX pipeline had 60 raw virtual lines / width 14 for d7;
+full simplification gave 44 / 12. The independent dilation gives 44 / 8.
+With the same scheduling code, the saved full-ZX raw representation stays at 12,
+even after sorting its outputs into source order. The native raw representation
+reaches 8 even without inserted hidden commutant measurements. This locates the
+additional gain in the reconstructed representation and its available schedule,
+not merely in the hidden-measurement heuristic or early detector declarations.
+It does not isolate a unique ZX rule responsible for the old 14-to-12 change;
+that rule-level attribution is unnecessary for this feasibility decision.
+
+ablation.json records source-order, scheduled, and hidden-measurement controls.
+Detector scheduling without hidden measurements gives 7/11; adding them gives
+6/8. There is no claim that these achieved widths are optimal.
+
+A separate control rejects a zero/one-T explanation for two independent magic
+inputs. Native d5/d7 exports also run with Tsim/ZX imports actively blocked.
+Original-pipeline automatic normalization is handed to the reconstruction and
+checked on a nonzero-reference circuit. See controls.json.
+
+The independent modulo-eight phase oracle consumes only native exported Paulis.
+It checks every hidden-measurement sector (2/8 for d5 detector/raw, 32/32 for d7)
+and five fault-sign assignments per sector: 370 reductions total. Each has the
+same zero/one residual T classification. This extends beyond sampled faults:
+flipping any rotation sign adds twice a parity phase, hence only a Clifford
+linear/quadratic phase modulo eight. Once the residual class is established,
+all Pauli-fault sign assignments share it. The Clifford frame still depends on
+the fault assignment; this result alone does not enable a zero/one-T execution
+path in Clifft's current fixed plan.
+
+Resource bounds and implementation follow-up
+
+The dilation uses O(Q + resets + measurements + T gates) wires. Clifford and
+Pauli algebra use polynomial dense/packed storage and elimination, with a large
+constant in this Python prototype. Noise masks use O(E) bits each, where E is
+the original categorical-error encoding size. Dependency scheduling is a
+polynomial heuristic over the operation DAG, not an optimal-width search.
+Independent channel convolution has explicit support/work budgets because it
+can otherwise grow combinatorially.
+
+Research guards cap source characters at 5,000,000, expanded instructions at
+50,000, dilation wires at 2048, noise bits at 65536, each output category at 4096,
+a convolved channel support at 4096, and a convolution product at 1,000,000.
+They are feasibility guardrails, not proposed public defaults. Unsupported or
+unsolved cases fail at preparation time. Production should add an aggregate
+scratch-memory/time budget and a profitability check before this becomes an
+automatically selected optimization.
+
+Next implementation should first port the bounded source-to-Pauli construction,
+output maps and eligibility into compiler-only infrastructure; retain the
+existing backend and generic Program contract; then add independent regression
+oracles and focused cost limits. Broader output-aware compilation and an
+algebraic executor remain separate follow-ups. No runtime topology planning,
+Stim patch, new executor, or public API change is part of this artifact.

@@ -1,0 +1,24 @@
+[
+  {
+    "circuit": "d5",
+    "cases": 17,
+    "fixed_fault_widths": [
+      0
+    ],
+    "common_stabilizer_dimension": 1,
+    "virtual_qubits": 16,
+    "shared_fixed_frame_width_lower_bound": 15,
+    "scope": "after all commuting rotations before output measurements; hidden outcomes fixed to zero; arbitrary error-basis assignments"
+  },
+  {
+    "circuit": "d7",
+    "cases": 17,
+    "fixed_fault_widths": [
+      1
+    ],
+    "common_stabilizer_dimension": 5,
+    "virtual_qubits": 39,
+    "shared_fixed_frame_width_lower_bound": 34,
+    "scope": "after all commuting rotations before output measurements; hidden outcomes fixed to zero; arbitrary error-basis assignments"
+  }
+]

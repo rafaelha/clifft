@@ -1,0 +1,93 @@
+[
+  {
+    "case": 0,
+    "exact_max_error": 1.1102230246251565e-16,
+    "backend_shots": 65536,
+    "backend_max_z": 2.558860825656237,
+    "width": 1
+  },
+  {
+    "case": 1,
+    "exact_max_error": 1.1102230246251565e-16,
+    "backend_shots": 65536,
+    "backend_max_z": 1.71757178020779,
+    "width": 1
+  },
+  {
+    "case": 2,
+    "exact_max_error": 8.326672684688674e-17,
+    "backend_shots": 65536,
+    "backend_max_z": 1.5139358961240106,
+    "width": 1
+  },
+  {
+    "case": 3,
+    "exact_max_error": 1.3877787807814457e-16,
+    "backend_shots": 65536,
+    "backend_max_z": 1.9718699490011562,
+    "width": 1
+  },
+  {
+    "case": 4,
+    "exact_max_error": 1.6653345369377348e-16,
+    "backend_shots": 65536,
+    "backend_max_z": 2.3681723301097715,
+    "width": 1
+  },
+  {
+    "case": 5,
+    "exact_max_error": 1.6653345369377348e-16,
+    "backend_shots": 65536,
+    "backend_max_z": 1.5063188071864735,
+    "width": 1
+  },
+  {
+    "case": 6,
+    "exact_max_error": 1.6653345369377348e-16,
+    "backend_shots": 65536,
+    "backend_max_z": 1.643876302690407,
+    "width": 1
+  },
+  {
+    "case": 7,
+    "exact_max_error": 1.942890293094024e-16,
+    "backend_shots": 65536,
+    "backend_max_z": 2.186759599827559,
+    "width": 1
+  },
+  {
+    "case": 8,
+    "exact_max_error": 8.326672684688674e-17,
+    "backend_shots": 65536,
+    "backend_max_z": 1.8223550735454004,
+    "width": 1
+  },
+  {
+    "case": 9,
+    "exact_max_error": 6.938893903907228e-17,
+    "backend_shots": 65536,
+    "backend_max_z": 1.4797490976033993,
+    "width": 1
+  },
+  {
+    "case": 10,
+    "exact_max_error": 6.938893903907228e-17,
+    "backend_shots": 65536,
+    "backend_max_z": 1.450553788469657,
+    "width": 1
+  },
+  {
+    "case": 11,
+    "exact_max_error": 9.71445146547012e-17,
+    "backend_shots": 65536,
+    "backend_max_z": 2.2620627657603674,
+    "width": 1
+  },
+  {
+    "case": 12,
+    "exact_max_error": 3.3306690738754696e-16,
+    "backend_shots": 65536,
+    "backend_max_z": 1.9240824566218633,
+    "width": 1
+  }
+]

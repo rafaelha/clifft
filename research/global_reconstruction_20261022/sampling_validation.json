@@ -1,0 +1,47 @@
+[
+  {
+    "circuit": "d3",
+    "shots_per_sampler": 65536,
+    "features": 86,
+    "max_z": 2.63784996556876,
+    "acceptance_original": 0.6884002685546875,
+    "acceptance_compressed": 0.686004638671875,
+    "passed": true
+  },
+  {
+    "circuit": "d5",
+    "shots_per_sampler": 65536,
+    "features": 173,
+    "max_z": 2.68609512870372,
+    "acceptance_original": 0.1446380615234375,
+    "acceptance_compressed": 0.1436004638671875,
+    "passed": true
+  },
+  {
+    "circuit": "d7",
+    "shots_per_sampler": 8192,
+    "features": 410,
+    "max_z": 2.984412378286008,
+    "acceptance_original": 0.00634765625,
+    "acceptance_compressed": 0.005615234375,
+    "passed": true
+  },
+  {
+    "circuit": "coherent_d5",
+    "shots_per_sampler": 16384,
+    "features": 186,
+    "max_z": 2.8499220603605737,
+    "acceptance_original": 0.007568359375,
+    "acceptance_compressed": 0.008056640625,
+    "passed": true
+  },
+  {
+    "circuit": "distillation",
+    "shots_per_sampler": 65536,
+    "features": 110,
+    "max_z": 2.416493436487029,
+    "acceptance_original": 0.0811309814453125,
+    "acceptance_compressed": 0.0794219970703125,
+    "passed": true
+  }
+]

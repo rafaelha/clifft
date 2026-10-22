@@ -1,0 +1,179 @@
+Global reconstruction feasibility study, 2026-10-22
+
+Decision
+
+GO for a bounded, output-aware reconstruction compiler path targeting ordinary
+sampling, using the existing native executor. The runtime feasibility and useful
+end-to-end speedups are demonstrated. Implementing and verifying a native,
+dependency-free reconstruction front end is the next implementation gate.
+
+NO-GO for treating the phase-reduced 0/1 non-Clifford resource counts as the
+widths of a general compile-once sampling plan in the current execution model.
+The phase identities are valid, but faults change the Clifford frame and the
+output correlations. A single precompiled Clifford frame with sign updates does
+not implement this family. This finding does not rule out a future symbolic or
+multi-plan algorithm; it rules out the proposed shortcut as presently justified.
+
+The evidence supports a bounded compiler addition. It does not justify a broad
+runtime rewrite or replacing the reusable Program's public contract.
+
+What was implemented for the study
+
+1. A research bridge reads tsim's reconstructed Pauli operations, including
+   hidden commutant measurements, correlated fault parameters, and output maps.
+2. The bridge emits ordinary Clifft circuit instructions. The unchanged Clifft
+   compiler and executor run these instructions. All reconstructions and
+   schedules are prepared before sampling.
+3. A second bridge moves channels directly into their classical error basis and
+   convolves independent channels with identical image subgroups. This reduces
+   classical bookkeeping while preserving their full ordinary joint law.
+4. An independent phase oracle uses Stim plus exact modulo-eight polynomial
+   algebra to construct the Clifford remainder for a specified fault pattern.
+   This is a research oracle; its per-pattern tableau work is not a proposed
+   ordinary execution kernel.
+
+The front end used for extraction is pinned tsim plus zxparam 0.1.0. There is
+no production ZX dependency or production change in this study. The native
+ZX-free extractor has not been implemented. Earlier ablations in the associated
+investigation obtained detector widths 6/8 with Clifford simplification alone;
+that supports implementing stabilizer-network elimination and GF(2) reconstruction
+without requiring a full ZX optimization library. It is not a completed port.
+
+Measured results
+
+Current Clifft: fa29a5263a1b7ab29b67cb637f405cb6318dc3c0.
+Release, native CPU tuning, assertions enabled. AMD EPYC 9554P VM; one worker,
+CPU affinity pinned. Default HIR passes plus ActiveWidthSchedulePass on both
+variants. Three interleaved timed repeats after warmup. No exclusive-host claim.
+Timings include executor construction and aggregate result collection. They
+exclude compilation and reference extraction. "All checks" means every detector
+is postselected. Both variants use the same mask and original noise probabilities.
+
+Detector/observable sampling, automatic batching:
+
+Circuit        Width original -> bridge   No postselection   All checks
+MSC d5                    10 -> 6              3.79x            1.26x
+MSC d7                    19 -> 8            163.59x            8.22x
+Coherent d5 r5            13 -> 11              3.88x            1.20x
+MSC d3                     4 -> 4              1.15x            1.30x
+Coherent d3 r3              4 -> 4              0.94x            0.93x
+Distillation               3 -> 3              1.13x            1.03x
+
+These are combined reconstruction AND classical channel-compression gains.
+They are not gains attributable to width alone, nor a timing comparison with
+tsim's sampler. The uncompressed bridge was slower on d5: its explicit error-bit
+records overwhelmed the width benefit. It still improved unpostselected d7 by
+about 9.3x. This control is saved in bridge_benchmark.jsonl.
+
+Retained raw records also benefit, with a different reconstruction contract:
+
+Circuit        Width original -> bridge       Sample time speedup
+MSC d5                    10 -> 6                   3.33x
+MSC d7                    19 -> 12                 49.93x
+
+The raw bridge returns the requested original records through a recorded output
+map. Its own helper records are private research artifacts. The timing includes
+producing those extra arrays, so this is not yet a drop-in public API adapter.
+
+Single observed preparation costs, including Python extraction and text export,
+were about 0.29 s for d5 and 2.4 s for d7 versus roughly 0.02-0.05 s and 0.14-0.15 s
+for original compilation. Approximate amortization thresholds from this prototype
+are 18,000 shots for unpostselected d5 and 1,000 for unpostselected d7; with all
+detectors postselected they rise to about 236,000 and 28,000 shots. These are
+illustrative estimates, not production thresholds. Compiler implementation and
+reusing cached plans will change them. Total process memory was not benchmarked.
+
+Correctness evidence
+
+- Thirteen three-qubit examples were exhaustively enumerated using independent
+  Qiskit state-vector trajectories. They include T gates, measurements in three
+  bases, resets, feedback, depolarization, readout errors, correlated/else errors,
+  repeated records, and convolution of correlated channels. Every reconstructed
+  joint record probability agreed within 3.4e-16.
+- For each example, 131,072 native bridge samples were checked against the exact
+  joint law. The largest standardized discrepancy was below 3.7 sigma.
+- Original and compressed noisy benchmark circuits were compared on all output
+  marginals, acceptance, and 64 reproducible random output parities. Per sampler:
+  65,536 shots for d3/d5/distillation, 8,192 for d7, 16,384 for coherent d5. Maximum
+  standardized discrepancy was below 3.0 sigma across these checks.
+- Raw-record checks used 32,768 d5 shots and 4,096 d7 shots per sampler, including
+  random joint parities. Maximum standardized discrepancy was below 2.9 sigma.
+- The fixed-fault d5 phase oracle agreed with direct dense evolution of all
+  reconstructed rotations for 18 cases covering both hidden outcomes and random
+  fault assignments. Fidelity differed from one by less than 1e-12.
+
+Statistical checks of large circuits are evidence, not a proof of every joint
+probability or of rare conditional logical-error rates. A native extractor must
+receive independent correctness tests before production use. No claim is made
+that arbitrary inserted EXP_VAL probes have been reconstructed correctly.
+
+Why the stronger phase reduction is a separate no-go
+
+For each fixed fault assignment, the d5 reconstructed component reduces to a
+stabilizer state; d7 reduces to a Clifford state plus one T rotation. Exact
+polynomial divisibility checks confirm the Clifford remainder. Changing a T
+rotation's sign adds an S parity, whose symplectic action depends on that sign.
+These are virtual sampling states. This does not identify the physical
+cultivated magic state as a stabilizer state or preserve arbitrary probes of it.
+
+The restricted fault-dependent symmetric forms have 48 independent directions
+for d5 and 93 for d7 detector sampling. These describe variation in an algebraic
+error-basis parameter space; they are not counts of physically reachable noisy
+trajectories or a lower bound on every possible simulator.
+
+There is a direct output consequence: in d5 with hidden outcomes fixed, the
+no-fault component outputs are deterministic; an original error-bit column can
+make two or four independent output bits random. Output sign flips alone cannot
+produce that change.
+
+Across 17 arbitrary error-basis assignments, the common stabilizer subspace
+after all rotations has dimension 1 of 16 virtual qubits for d5, and 5 of 39 for
+d7. Therefore a shared fixed frame at that particular cut would need width at
+least 15 or 34, despite individual assignments having width 0 or 1. This is a
+statement about that representation and cut, not a lower bound on the scheduled
+sampler: its interleaved measurements already achieve widths 6 and 8.
+
+The reference oracle takes roughly milliseconds per assignment in Python and
+performs tableau evolution. Its timing is not a lower bound on a native
+implementation. The structural dependency on faults is the important finding:
+obtaining the 0/1 widths requires additional precomputed family machinery or a
+different execution contract. Neither has been justified in this study.
+
+Contract limits and eligibility
+
+- Ordinary detector/observable aggregate sampling: the closed output law is
+  sufficient, including joint correlations and acceptance normalization.
+- Retained raw records: reconstruct their joint law as well. The d7 width rises
+  from 8 to 12. A native adapter must preserve original ordering and public
+  metadata and hide its internal records.
+- Retained EXP_VAL: preserve the physical per-trajectory expectation at its
+  original location. The present bridge has no representation or proof for this;
+  use the existing path. An omitted expectation in an aggregate API is not an
+  externally requested result, provided it has no state-changing effect.
+- State queries or future quantum continuation: preserve the corresponding
+  quantum boundary, which this closed reconstruction does not do; use fallback.
+- Fixed-fault sampling, replay, and fault identity/count introspection: channel
+  convolution changes the fault-site model even when ordinary output laws match.
+  The compressed plan is ineligible. Preserve original metadata and fall back
+  until a fault-preserving implementation is separately validated.
+- Leakage/loss and other unsupported instruments: no study evidence; fallback.
+
+These requirements should be inferred from the source circuit and requested
+API. Users should not need to choose a separate state-preservation flag.
+
+Implementation recommendation
+
+Proceed with an isolated compiler implementation for closed ordinary sampling
+using signed stabilizer-network elimination, GF(2) output reconstruction,
+commutant measurements, and width scheduling. Lower its static operations into
+the existing backend. Include classical fault-basis handling in the design from
+the beginning. Keep the original program available for unsupported queries and
+short jobs. Start with d5/d7 and retained-record variants as acceptance fixtures.
+
+The first implementation milestone should reproduce the bridge's output maps and
+6/8 detector widths, plus d7's 12 raw-record width, without importing ZX. That is
+a finite compiler task with a measured reason to proceed. Do not make the 0/1
+phase result, universal workload improvement, or a broad API/runtime rewrite a
+prerequisite for delivering that benefit.
+
+All findings and scripts are local. No issue or pull request was posted.

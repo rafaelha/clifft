@@ -1,0 +1,128 @@
+[
+  {
+    "circuit": "d3-detectors-component0",
+    "support_width": 5,
+    "fault_bits": 38,
+    "fault_dependent_symplectic_rank": 14,
+    "faults_changing_symplectic_form": 17,
+    "arbitrary_affine_offset_symplectic_rank": 0,
+    "symmetric_form_entries": 15
+  },
+  {
+    "circuit": "d3-records-component0",
+    "support_width": 5,
+    "fault_bits": 33,
+    "fault_dependent_symplectic_rank": 14,
+    "faults_changing_symplectic_form": 17,
+    "arbitrary_affine_offset_symplectic_rank": 0,
+    "symmetric_form_entries": 15
+  },
+  {
+    "circuit": "d5-detectors-component0",
+    "support_width": 15,
+    "fault_bits": 173,
+    "fault_dependent_symplectic_rank": 48,
+    "faults_changing_symplectic_form": 75,
+    "arbitrary_affine_offset_symplectic_rank": 0,
+    "symmetric_form_entries": 120
+  },
+  {
+    "circuit": "d5-records-component4",
+    "support_width": 15,
+    "fault_bits": 118,
+    "fault_dependent_symplectic_rank": 48,
+    "faults_changing_symplectic_form": 57,
+    "arbitrary_affine_offset_symplectic_rank": 0,
+    "symmetric_form_entries": 120
+  },
+  {
+    "circuit": "d7-detectors-component0",
+    "support_width": 34,
+    "fault_bits": 215,
+    "fault_dependent_symplectic_rank": 93,
+    "faults_changing_symplectic_form": 167,
+    "arbitrary_affine_offset_symplectic_rank": 6,
+    "symmetric_form_entries": 595
+  },
+  {
+    "circuit": "d7-records-component0",
+    "support_width": 34,
+    "fault_bits": 326,
+    "fault_dependent_symplectic_rank": 88,
+    "faults_changing_symplectic_form": 93,
+    "arbitrary_affine_offset_symplectic_rank": 6,
+    "symmetric_form_entries": 595
+  },
+  {
+    "circuit": "toy0-records-component1",
+    "support_width": 1,
+    "fault_bits": 0,
+    "fault_dependent_symplectic_rank": 0,
+    "faults_changing_symplectic_form": 0,
+    "arbitrary_affine_offset_symplectic_rank": 1,
+    "symmetric_form_entries": 1
+  },
+  {
+    "circuit": "toy1-records-component1",
+    "support_width": 1,
+    "fault_bits": 1,
+    "fault_dependent_symplectic_rank": 0,
+    "faults_changing_symplectic_form": 0,
+    "arbitrary_affine_offset_symplectic_rank": 1,
+    "symmetric_form_entries": 1
+  },
+  {
+    "circuit": "toy2-records-component1",
+    "support_width": 1,
+    "fault_bits": 1,
+    "fault_dependent_symplectic_rank": 0,
+    "faults_changing_symplectic_form": 0,
+    "arbitrary_affine_offset_symplectic_rank": 1,
+    "symmetric_form_entries": 1
+  },
+  {
+    "circuit": "toy3-records-component1",
+    "support_width": 1,
+    "fault_bits": 1,
+    "fault_dependent_symplectic_rank": 0,
+    "faults_changing_symplectic_form": 0,
+    "arbitrary_affine_offset_symplectic_rank": 1,
+    "symmetric_form_entries": 1
+  },
+  {
+    "circuit": "toy4-records-component1",
+    "support_width": 1,
+    "fault_bits": 0,
+    "fault_dependent_symplectic_rank": 0,
+    "faults_changing_symplectic_form": 0,
+    "arbitrary_affine_offset_symplectic_rank": 1,
+    "symmetric_form_entries": 1
+  },
+  {
+    "circuit": "toy5-records-component1",
+    "support_width": 1,
+    "fault_bits": 1,
+    "fault_dependent_symplectic_rank": 0,
+    "faults_changing_symplectic_form": 0,
+    "arbitrary_affine_offset_symplectic_rank": 1,
+    "symmetric_form_entries": 1
+  },
+  {
+    "circuit": "toy6-records-component1",
+    "support_width": 1,
+    "fault_bits": 1,
+    "fault_dependent_symplectic_rank": 0,
+    "faults_changing_symplectic_form": 0,
+    "arbitrary_affine_offset_symplectic_rank": 1,
+    "symmetric_form_entries": 1
+  },
+  {
+    "circuit": "toy7-records-component1",
+    "support_width": 1,
+    "fault_bits": 1,
+    "fault_dependent_symplectic_rank": 0,
+    "faults_changing_symplectic_form": 0,
+    "arbitrary_affine_offset_symplectic_rank": 1,
+    "symmetric_form_entries": 1
+  }
+]

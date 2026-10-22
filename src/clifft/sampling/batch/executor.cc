@@ -40,9 +40,16 @@ enum class MeasurementBranchKind : uint8_t {
     return MeasurementBranchKind::Random;
 }
 
-[[nodiscard]] const ExecutablePlan* validate_batch_plan(const ExecutablePlan& plan) {
+[[nodiscard]] const ExecutablePlan* validate_batch_plan(const ExecutablePlan& plan,
+                                                        BatchSamplingMode sampling_mode) {
     if (plan.has_instruments()) {
         throw std::invalid_argument("packed sampling does not support instrument continuations");
+    }
+    if (sampling_mode != BatchSamplingMode::ExternalInputs &&
+        plan.num_unbound_presampled_symbols() != 0) {
+        throw std::invalid_argument(
+            "packed sampling requires distributions or external inputs "
+            "for every presampled symbol");
     }
     return &plan;
 }
@@ -66,7 +73,7 @@ BatchExecutor::BatchExecutor(const ExecutablePlan& plan, uint32_t lane_capacity,
 BatchExecutor::BatchExecutor(const ExecutablePlan& plan, BatchOutputMode output_mode,
                              BatchSamplingMode sampling_mode,
                              const batch_detail::BatchWorkerStorageLayout& storage)
-    : plan_(validate_batch_plan(plan)),
+    : plan_(validate_batch_plan(plan, sampling_mode)),
       output_mode_(output_mode),
       sampling_mode_(sampling_mode),
       lane_capacity_(storage.lane_capacity),
@@ -113,6 +120,46 @@ void BatchExecutor::run_batch(const SeedRoot& root, uint32_t first_shot, uint32_
     }
 }
 
+void BatchExecutor::run_batch(const SeedRoot& root, uint32_t first_shot, uint32_t shots,
+                              const BatchExternalInputs& inputs) noexcept {
+    assert(sampling_mode_ == BatchSamplingMode::ExternalInputs &&
+           "external execution requires an external-input packed worker");
+    assert(inputs.plan_ == plan_ && inputs.lane_capacity_ == lane_capacity_ &&
+           "external inputs must match the worker's plan and retained capacity");
+    reset_batch(root, first_shot, shots);
+    assign_external_inputs(inputs);
+    execute_actions();
+    if (output_mode_ == BatchOutputMode::Rows) {
+        finalize_live_lanes();
+    }
+}
+
+void BatchExecutor::assign_external_inputs(const BatchExternalInputs& inputs) noexcept {
+    for (uint32_t input = 0; input < plan_->presampled_symbols_.size(); ++input) {
+        const auto values = inputs.bits_.column(input);
+        if (!plan_->batch_presampled_program_.has_value()) {
+            symbols_.assign(plan_->presampled_symbols_[input], values, live_words_);
+            continue;
+        }
+        const auto& program = *plan_->batch_presampled_program_;
+        const auto assignment = program.input_assignments_[input];
+        for (size_t word = 0; word < word_capacity_; ++word) {
+            scratch_words_[word] = values[word] & live_words_[word];
+        }
+        for (uint32_t i = 0; i < assignment.count; ++i) {
+            // Factorization is linear. Multiple supplied outcomes can share
+            // a carrier, so their effects combine by XOR rather than OR.
+            batch_noise_carriers_.xor_into(program.assigned_carriers_[assignment.begin + i],
+                                           scratch_words_);
+        }
+    }
+    finalize_presampled_symbols();
+    for (size_t column = 0; column < forced_readout_.num_columns(); ++column) {
+        forced_readout_.assign(column, inputs.bits_.column(inputs.noise_columns_ + column),
+                               live_words_);
+    }
+}
+
 void BatchExecutor::reset_batch(const SeedRoot& root, uint32_t first_shot,
                                 uint32_t shots) noexcept {
     assert(shots <= lane_capacity_ && "packed batch must fit retained capacity");
@@ -128,7 +175,7 @@ void BatchExecutor::reset_batch(const SeedRoot& root, uint32_t first_shot,
     records_.clear();
     detectors_.clear();
     observables_.clear();
-    if (sampling_mode_ == BatchSamplingMode::FixedFaults) {
+    if (sampling_mode_ != BatchSamplingMode::Ordinary) {
         forced_readout_.clear();
     }
     std::ranges::fill(exp_vals_, 0.0);
@@ -471,7 +518,15 @@ void BatchExecutor::execute_action(const ExecutablePlan::ExecuteReadoutNoise& ac
     const std::span<const uint64_t> sources = evaluate(action.source);
     std::ranges::fill(scratch_words_, uint64_t{0});
     bool sampled_packed = false;
-    if (sampling_mode_ == BatchSamplingMode::FixedFaults) {
+    if (sampling_mode_ == BatchSamplingMode::ExternalInputs) {
+        const auto zero = forced_readout_.column(size_t{2} * action.site);
+        const auto one = forced_readout_.column(size_t{2} * action.site + 1);
+        for (size_t word = 0; word < word_capacity_; ++word) {
+            scratch_words_[word] =
+                ((~sources[word] & zero[word]) | (sources[word] & one[word])) & live_words_[word];
+        }
+        sampled_packed = true;
+    } else if (sampling_mode_ == BatchSamplingMode::FixedFaults) {
         const std::span<const uint64_t> forced = forced_readout_.column(action.site);
         for (size_t word = 0; word < word_capacity_; ++word) {
             scratch_words_[word] = forced[word] & live_words_[word];

@@ -14,6 +14,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <optional>
 #include <span>
 #include <utility>
@@ -104,6 +105,13 @@ class Graph {
     // pivoting.
     void add_hadamard_edges(std::span<const std::pair<Vertex, Vertex>> pairs);
 
+    // Edge toggles so far, the dominant cost of reduction: local
+    // complementation on a degree-d vertex toggles d(d-1)/2 edges, so dense
+    // diagrams grow cubically. Rewrites stop once it passes the limit.
+    [[nodiscard]] uint64_t work() const { return work_; }
+    [[nodiscard]] bool over_work_limit() const { return work_ > work_limit_; }
+    void set_work_limit(uint64_t limit) { work_limit_ = limit; }
+
     // Replace v's neighbor list, keeping the given order on both endpoints'
     // sides as listed. For loading fixtures whose neighbor order is fixed;
     // callers list every edge on both endpoints with the same type.
@@ -132,6 +140,8 @@ class Graph {
 
     std::vector<Slot> slots_;
     size_t live_ = 0;
+    uint64_t work_ = 0;
+    uint64_t work_limit_ = std::numeric_limits<uint64_t>::max();
     std::vector<ScalarTerm> scalar_terms_;
 };
 

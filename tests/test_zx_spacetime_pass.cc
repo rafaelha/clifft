@@ -19,6 +19,7 @@
 #include <fstream>
 #include <numbers>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -124,7 +125,8 @@ class HirSimulator {
                     break;
                 }
                 case OpType::NOISE: {
-                    const NoiseSite& site = hir_.noise_sites[static_cast<uint32_t>(op.noise_site_idx())];
+                    const NoiseSite& site =
+                        hir_.noise_sites[static_cast<uint32_t>(op.noise_site_idx())];
                     double fired = 0.0;
                     for (const NoiseChannel& c : site.channels) {
                         Masks m = masks_of(hir_.noise_channel_masks.at(c.mask), hir_.num_qubits);
@@ -309,8 +311,37 @@ TEST_CASE("ZxSpacetimePass rejects operations outside the lowering") {
         CHECK(hir.ops.size() == num_ops);
         return pass.reason();
     };
+    CHECK(reason_for("H 0\nT 0\n") == "the circuit has no measurement records");
     CHECK(reason_for("H 0\nT 0\nEXP_VAL X0\nM 0\n") ==
           "expectation-value probes name physical qubits");
-    CHECK(reason_for("H 0\nT 0\nM 0\nREADOUT_NOISE(0.1, 0.2) rec[-1]\nCX rec[-1] 1\nH 1\nT 1\nM 1\n") ==
+    CHECK(reason_for(
+              "H 0\nT 0\nM 0\nREADOUT_NOISE(0.1, 0.2) rec[-1]\nCX rec[-1] 1\nH 1\nT 1\nM 1\n") ==
           "feedback reads a record with asymmetric readout noise");
+}
+
+TEST_CASE("ZxSpacetimePass leaves circuits above its qubit limit unchanged") {
+    // Each reset continues on a fresh qubit: one qubit becomes three.
+    const std::string text = "H 0\nT 0\nMR 0\nH 0\nT 0\nMR 0\nH 0\nT 0\nM 0\n";
+    HirModule hir = trace(parse(text));
+    ZxSpacetimePass capped({.max_qubits = 2});
+    capped.run(hir);
+    CHECK_FALSE(capped.applied());
+    CHECK(capped.reason() == "fresh qubits for resets would exceed the qubit limit");
+    CHECK(hir.num_qubits == 1);
+
+    ZxSpacetimePass roomy({.max_qubits = 64});
+    roomy.run(hir);
+    CHECK(roomy.reason() != "fresh qubits for resets would exceed the qubit limit");
+    CHECK_THROWS_AS(ZxSpacetimePass({.max_qubits = 0}), std::invalid_argument);
+}
+
+TEST_CASE("ZxSpacetimePass leaves circuits it cannot reduce within budget unchanged") {
+    HirModule hir = fixture("cultivation_d5.stim");
+    const size_t num_ops = hir.ops.size();
+    ZxSpacetimePass starved({.max_reduce_work = 1000});
+    starved.run(hir);
+    CHECK_FALSE(starved.applied());
+    CHECK(starved.reason() == "the diagram is too dense to reduce within the work limit");
+    CHECK(hir.ops.size() == num_ops);
+    CHECK_THROWS_AS(ZxSpacetimePass({.max_reduce_work = 0}), std::invalid_argument);
 }

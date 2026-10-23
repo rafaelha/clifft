@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <limits>
 #include <map>
 #include <optional>
 #include <utility>
@@ -18,6 +19,9 @@ bool run_pass(Graph& g, Collect collect, Check check, Apply apply) {
     const std::vector<Match> matches = collect(g);
     bool changed = false;
     for (const Match& m : matches) {
+        if (g.over_work_limit()) {
+            break;
+        }
         if (check(g, m)) {
             apply(g, m);
             changed = true;
@@ -636,6 +640,10 @@ struct Runner {
 
     template <typename Step>
     bool leaf(std::string_view name, Step step) {
+        // Reporting no change unwinds every saturating loop.
+        if (g.over_work_limit()) {
+            return false;
+        }
         const bool changed = step(g);
         if (trace) {
             trace(name, changed, g);
@@ -679,9 +687,16 @@ struct Runner {
 
 }  // namespace
 
-void full_reduce(Graph& g, const ReduceOptions& options, const ReduceTrace& trace) {
+bool full_reduce(Graph& g, const ReduceOptions& options, const ReduceTrace& trace) {
+    const uint64_t start = g.work();
+    g.set_work_limit(options.max_work > std::numeric_limits<uint64_t>::max() - start
+                         ? std::numeric_limits<uint64_t>::max()
+                         : start + options.max_work);
     Runner runner{g, options, trace};
     while (runner.run()) {}
+    const bool finished = !g.over_work_limit();
+    g.set_work_limit(std::numeric_limits<uint64_t>::max());
+    return finished;
 }
 
 }  // namespace clifft::zx

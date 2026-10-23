@@ -15,7 +15,9 @@
 
 #include "clifft/zx/graph.h"
 
+#include <cstdint>
 #include <functional>
+#include <limits>
 #include <string_view>
 
 namespace clifft::zx {
@@ -26,13 +28,17 @@ struct ReduceOptions {
     // so it must stay a quantum operation rather than become a dropped scalar.
     // Off reproduces zxparam exactly, which folds every isolated piece.
     bool keep_weighted_isolated = true;
+    // Edge toggles allowed (see Graph::work). Once spent, reduction stops
+    // between rewrites, leaving a sound but partly reduced graph.
+    uint64_t max_work = std::numeric_limits<uint64_t>::max();
 };
 
 // Called after every leaf step of the strategy with the step's rule name and
 // whether it changed the graph.
 using ReduceTrace = std::function<void(std::string_view rule, bool changed, const Graph& g)>;
 
-void full_reduce(Graph& g, const ReduceOptions& options = {}, const ReduceTrace& trace = {});
+// Returns false if the work budget ran out before the graph was reduced.
+bool full_reduce(Graph& g, const ReduceOptions& options = {}, const ReduceTrace& trace = {});
 
 // Individual rule passes, each returning whether it changed the graph.
 namespace rules {

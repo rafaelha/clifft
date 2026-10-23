@@ -28,6 +28,7 @@
 #include "clifft/zx/graph.h"
 
 #include <cstdint>
+#include <limits>
 #include <optional>
 #include <string>
 #include <vector>
@@ -80,8 +81,11 @@ struct SingleCopyDiagram {
 // operations the single-copy form does not cover: expectation-value probes,
 // leakage and loss instruments, asymmetric readout noise that feedback reads,
 // and noise rescheduled across other operations. Malformed indices also
-// reject.
-[[nodiscard]] std::optional<SingleCopyDiagram> build_single_copy_diagram(const HirModule& hir,
-                                                                         std::string* reason);
+// reject. So does a circuit that needs more than `max_qubits` qubits once every
+// reset continues on a fresh qubit: the diagram's per-op cost grows with that
+// count, and a long memory experiment would otherwise grow it without bound.
+[[nodiscard]] std::optional<SingleCopyDiagram> build_single_copy_diagram(
+    const HirModule& hir, std::string* reason,
+    uint32_t max_qubits = std::numeric_limits<uint32_t>::max());
 
 }  // namespace clifft::zx

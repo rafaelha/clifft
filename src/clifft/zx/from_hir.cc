@@ -284,7 +284,8 @@ size_t reset_end(const HirModule& hir, size_t i) {
 }  // namespace
 
 std::optional<SingleCopyDiagram> build_single_copy_diagram(const HirModule& hir,
-                                                           std::string* reason) {
+                                                           std::string* reason,
+                                                           uint32_t max_qubits) {
     auto reject = [&](std::string why) -> std::optional<SingleCopyDiagram> {
         if (reason) {
             *reason = std::move(why);
@@ -336,6 +337,9 @@ std::optional<SingleCopyDiagram> build_single_copy_diagram(const HirModule& hir,
             reset_ends[i] = reset_end(hir, i);
             num_resets += reset_ends[i] > i + 1;
         }
+    }
+    if (uint64_t{hir.num_qubits} + num_resets > max_qubits) {
+        return reject("fresh qubits for resets would exceed the qubit limit");
     }
     const uint32_t width = hir.num_qubits + num_resets;
     ResetFrame frame(hir.num_qubits, width);

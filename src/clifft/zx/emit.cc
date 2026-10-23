@@ -143,7 +143,8 @@ std::optional<HirModule> emit_hir(const HirModule& input, const SingleCopyDiagra
     out.noise_sites.reserve(input.noise_sites.size() + readout_groups.size());
     for (uint32_t s = 0; s < input.noise_sites.size(); ++s) {
         const NoiseSite& site = input.noise_sites[s];
-        const NoiseGroup* group = group_of_site[s] != kNone ? &diagram.noise[group_of_site[s]] : nullptr;
+        const NoiseGroup* group =
+            group_of_site[s] != kNone ? &diagram.noise[group_of_site[s]] : nullptr;
         NoiseSite rebuilt{.total_probability = site.total_probability, .channels = {}};
         for (size_t c = 0; c < site.channels.size(); ++c) {
             rebuilt.channels.push_back(

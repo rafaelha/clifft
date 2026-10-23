@@ -177,6 +177,9 @@ struct BatchWorkerStorageLayout {
     size_t lane_value_entries = 0;
 };
 
+// Wasm omits packed storage implementations; reject accidental callers at
+// compile time instead of depending on linker dead-code removal.
+#if !defined(__EMSCRIPTEN__)
 [[nodiscard]] BatchWorkerStorageLayout batch_worker_storage_layout(const ExecutablePlan& plan,
                                                                    uint32_t lane_capacity,
                                                                    BatchOutputMode output_mode,
@@ -187,6 +190,7 @@ struct BatchWorkerStorageLayout {
                                                   uint32_t lane_capacity,
                                                   BatchOutputMode output_mode,
                                                   BatchSamplingMode sampling_mode);
+#endif
 
 }  // namespace batch_detail
 

@@ -136,13 +136,17 @@ void BatchExecutor::run_batch(const SeedRoot& root, uint32_t first_shot, uint32_
 
 void BatchExecutor::assign_external_inputs(const BatchExternalInputs& inputs) noexcept {
     for (uint32_t input = 0; input < plan_->presampled_symbols_.size(); ++input) {
-        const auto values = inputs.bits_.column(input);
         if (!plan_->batch_presampled_program_.has_value()) {
-            symbols_.assign(plan_->presampled_symbols_[input], values, live_words_);
+            symbols_.assign(plan_->presampled_symbols_[input], inputs.bits_.column(input),
+                            live_words_);
             continue;
         }
         const auto& program = *plan_->batch_presampled_program_;
         const auto assignment = program.input_assignments_[input];
+        if (assignment.count == 0) {
+            continue;
+        }
+        const auto values = inputs.bits_.column(input);
         for (size_t word = 0; word < word_capacity_; ++word) {
             scratch_words_[word] = values[word] & live_words_[word];
         }
@@ -175,7 +179,7 @@ void BatchExecutor::reset_batch(const SeedRoot& root, uint32_t first_shot,
     records_.clear();
     detectors_.clear();
     observables_.clear();
-    if (sampling_mode_ != BatchSamplingMode::Ordinary) {
+    if (sampling_mode_ == BatchSamplingMode::FixedFaults) {
         forced_readout_.clear();
     }
     std::ranges::fill(exp_vals_, 0.0);

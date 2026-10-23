@@ -1,10 +1,13 @@
 #include "clifft/sampling/batch/policy.h"
 
+#include "clifft/sampling/executable_plan.h"
+#include "clifft/util/numeric.h"
+
+#if !defined(__EMSCRIPTEN__)
 #include "clifft/sampling/batch/bits.h"
 #include "clifft/sampling/batch/external_inputs.h"
 #include "clifft/sampling/batch/interleaved_state.h"
-#include "clifft/sampling/executable_plan.h"
-#include "clifft/util/numeric.h"
+#endif
 
 #include <algorithm>
 #include <bit>
@@ -25,6 +28,7 @@ namespace {
 
 }  // namespace
 
+#if !defined(__EMSCRIPTEN__)
 namespace batch_detail {
 
 BatchWorkerStorageLayout batch_worker_storage_layout(const ExecutablePlan& plan,
@@ -109,6 +113,7 @@ uint64_t batch_worker_storage_bytes(const ExecutablePlan& plan, uint32_t lane_ca
 }
 
 }  // namespace batch_detail
+#endif
 
 BatchExecutionPolicy resolve_batch_execution_policy(
     const ExecutablePlan& plan, uint32_t shots, uint32_t shot_workers, uint32_t intra_shot_workers,

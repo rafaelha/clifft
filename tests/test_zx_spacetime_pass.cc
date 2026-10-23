@@ -1,13 +1,9 @@
 #include "clifft/circuit/parser.h"
 #include "clifft/frontend/frontend.h"
-#include "clifft/optimizer/active_width_analysis.h"
 #include "clifft/optimizer/pass_factory.h"
 #include "clifft/optimizer/zx_spacetime_pass.h"
-#include "clifft/zx/emit.h"
-#include "clifft/zx/from_hir.h"
-#include "clifft/zx/pbc.h"
-#include "clifft/zx/schedule.h"
-#include "clifft/zx/simplify.h"
+#include "clifft/sampling/planner.h"
+#include "clifft/zx/rewrite.h"
 
 #include "zx_circuit_reference.h"
 
@@ -34,33 +30,18 @@ using zx_test::to_text;
 namespace {
 
 using C = std::complex<double>;
-using State = std::vector<C>;
+using zx_test::apply_pauli;
+using zx_test::PauliMasks;
+using zx_test::State;
 
-struct Masks {
-    uint64_t x = 0;
-    uint64_t z = 0;
-    bool sign = false;
-};
-
-Masks masks_of(PauliMaskView view, uint32_t num_qubits) {
-    Masks m;
+PauliMasks masks_of(PauliMaskView view, uint32_t num_qubits) {
+    PauliMasks m;
     for (uint32_t q = 0; q < num_qubits; ++q) {
         m.x |= uint64_t(view.x().bit_get(q)) << q;
         m.z |= uint64_t(view.z().bit_get(q)) << q;
     }
     m.sign = view.sign();
     return m;
-}
-
-// P|i> = (-1)^sign i^{#Y} (-1)^{z . i} |i ^ x>, with Y = i X Z.
-State apply_pauli(const State& psi, const Masks& m) {
-    State out(psi.size());
-    const C phase = std::pow(C(0, 1), std::popcount(m.x & m.z)) * (m.sign ? -1.0 : 1.0);
-    for (uint64_t i = 0; i < psi.size(); ++i) {
-        const double sign = (std::popcount(m.z & i) & 1) ? -1.0 : 1.0;
-        out[i ^ m.x] += phase * sign * psi[i];
-    }
-    return out;
 }
 
 // The exact distribution of an HIR module's visible records, branching on
@@ -129,7 +110,8 @@ class HirSimulator {
                         hir_.noise_sites[static_cast<uint32_t>(op.noise_site_idx())];
                     double fired = 0.0;
                     for (const NoiseChannel& c : site.channels) {
-                        Masks m = masks_of(hir_.noise_channel_masks.at(c.mask), hir_.num_qubits);
+                        PauliMasks m =
+                            masks_of(hir_.noise_channel_masks.at(c.mask), hir_.num_qubits);
                         m.sign = false;
                         step(at + 1, apply_pauli(psi, m), prob * c.prob, records);
                         fired += c.prob;
@@ -161,7 +143,7 @@ class HirSimulator {
         dist_[records & visible_mask()] += prob;
     }
 
-    [[nodiscard]] Masks mask(const HeisenbergOp& op) const {
+    [[nodiscard]] PauliMasks mask(const HeisenbergOp& op) const {
         return masks_of(hir_.mask_view(op), hir_.num_qubits);
     }
     [[nodiscard]] uint64_t visible_mask() const {
@@ -178,25 +160,6 @@ class HirSimulator {
     Distribution dist_;
 };
 
-// The rewritten module, without the pass's width test.
-std::optional<HirModule> rewrite(const HirModule& hir, std::string* reason) {
-    const auto d = zx::build_single_copy_diagram(hir, reason);
-    if (!d) {
-        return std::nullopt;
-    }
-    zx::Graph reduced = d->graph;
-    zx::full_reduce(reduced);
-    const auto program = zx::read_pbc(*d, reduced, reason);
-    if (!program) {
-        return std::nullopt;
-    }
-    std::vector<std::vector<uint32_t>> orders;
-    for (const zx::PbcGroup& g : program->groups) {
-        orders.push_back(zx::greedy_schedule(g).order);
-    }
-    return zx::emit_hir(hir, *d, *program, orders, reason);
-}
-
 enum class Check { Matched, Rejected, TooWide };
 
 Check check_circuit(const std::vector<Op>& ops, int num_qubits) {
@@ -204,9 +167,13 @@ Check check_circuit(const std::vector<Op>& ops, int num_qubits) {
     INFO(text);
     const HirModule hir = trace(parse(text));
     std::string reason;
-    auto out = rewrite(hir, &reason);
+    auto out = zx::rewrite_hir(hir, {}, &reason);
     if (!out) {
         INFO(reason);
+        if (hir.num_measurements == 0) {
+            REQUIRE(reason == "the circuit has no measurement records");
+            return Check::Matched;
+        }
         REQUIRE(reason == "feedback reads a record with asymmetric readout noise");
         return Check::Rejected;
     }
@@ -255,16 +222,16 @@ HirModule fixture(const std::string& name) {
 
 }  // namespace
 
-TEST_CASE("Zx rewritten HIR reproduces record distributions of traced circuits") {
+TEST_CASE("Zx rewritten HIR reproduces record distributions of traced circuits", "[zx]") {
     check_random_circuits(25);
 }
 
 TEST_CASE("Zx rewritten HIR reproduces record distributions of many random circuits",
-          "[expensive]") {
+          "[zx][expensive]") {
     check_random_circuits(150);
 }
 
-TEST_CASE("ZxSpacetimePass narrows cultivation d5 to width 6") {
+TEST_CASE("ZxSpacetimePass narrows cultivation d5 to width 6", "[zx]") {
     HirModule hir = fixture("cultivation_d5.stim");
     const HirModule input = hir;
     ZxSpacetimePass pass;
@@ -284,10 +251,10 @@ TEST_CASE("ZxSpacetimePass narrows cultivation d5 to width 6") {
     CHECK(hir.logical_noise_prefix_matches_schedule());
 
     default_hir_pass_manager().run(hir);
-    CHECK(analyze_active_width(hir).peak_width == 6);
+    CHECK(sampling::plan_sampling(hir).peak_active_width == 6);
 }
 
-TEST_CASE("ZxSpacetimePass leaves circuits it does not narrow unchanged") {
+TEST_CASE("ZxSpacetimePass leaves circuits it does not narrow unchanged", "[zx]") {
     HirModule hir = fixture("coherent_d5_r5.stim");
     const size_t num_ops = hir.ops.size();
     const uint32_t num_qubits = hir.num_qubits;
@@ -301,7 +268,7 @@ TEST_CASE("ZxSpacetimePass leaves circuits it does not narrow unchanged") {
     CHECK(hir.final_tableau.has_value());
 }
 
-TEST_CASE("ZxSpacetimePass rejects operations outside the lowering") {
+TEST_CASE("ZxSpacetimePass rejects operations outside the lowering", "[zx]") {
     const auto reason_for = [](const std::string& text) {
         HirModule hir = trace(parse(text));
         const size_t num_ops = hir.ops.size();
@@ -319,7 +286,7 @@ TEST_CASE("ZxSpacetimePass rejects operations outside the lowering") {
           "feedback reads a record with asymmetric readout noise");
 }
 
-TEST_CASE("ZxSpacetimePass leaves circuits above its qubit limit unchanged") {
+TEST_CASE("ZxSpacetimePass leaves circuits above its qubit limit unchanged", "[zx]") {
     // Each reset continues on a fresh qubit: one qubit becomes three.
     const std::string text = "H 0\nT 0\nMR 0\nH 0\nT 0\nMR 0\nH 0\nT 0\nM 0\n";
     HirModule hir = trace(parse(text));
@@ -329,13 +296,12 @@ TEST_CASE("ZxSpacetimePass leaves circuits above its qubit limit unchanged") {
     CHECK(capped.reason() == "fresh qubits for resets would exceed the qubit limit");
     CHECK(hir.num_qubits == 1);
 
-    ZxSpacetimePass roomy({.max_qubits = 64});
-    roomy.run(hir);
-    CHECK(roomy.reason() != "fresh qubits for resets would exceed the qubit limit");
+    std::string reason;
+    CHECK(zx::rewrite_hir(hir, {.max_qubits = 64}, &reason).has_value());
     CHECK_THROWS_AS(ZxSpacetimePass({.max_qubits = 0}), std::invalid_argument);
 }
 
-TEST_CASE("ZxSpacetimePass leaves circuits it cannot reduce within budget unchanged") {
+TEST_CASE("ZxSpacetimePass leaves circuits it cannot reduce within budget unchanged", "[zx]") {
     HirModule hir = fixture("cultivation_d5.stim");
     const size_t num_ops = hir.ops.size();
     ZxSpacetimePass starved({.max_reduce_work = 1000});

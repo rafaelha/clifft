@@ -45,8 +45,10 @@ def test_cultivation_d5_narrows_to_tsim_width(cultivation_d5: str) -> None:
     assert clifft.compile(cultivation_d5).peak_active_width == 10
 
 
-def test_cultivation_d5_samples_match_standard_pipeline(cultivation_d5: str) -> None:
-    shots = 100_000
+@pytest.mark.parametrize(
+    "shots", [10_000, pytest.param(100_000, marks=pytest.mark.expensive, id="100k")]
+)
+def test_cultivation_d5_samples_match_standard_pipeline(cultivation_d5: str, shots: int) -> None:
     pm, zx = _zx_pipeline()
     lowered = clifft.compile(cultivation_d5, hir_passes=pm, normalize_syndromes=True)
     assert zx.applied, zx.reason
@@ -66,3 +68,25 @@ def test_unsupported_circuit_is_left_unchanged() -> None:
     assert not zx.applied
     assert zx.reason == "expectation-value probes name physical qubits"
     assert program.num_measurements == 1
+
+
+def test_limits_leave_circuits_unchanged(cultivation_d5: str) -> None:
+    pm = clifft.HirPassManager()
+    zx = clifft.ZxSpacetimePass(max_reduce_work=1000)
+    pm.add(zx)
+    clifft.compile(cultivation_d5, hir_passes=pm)
+    assert not zx.applied
+    assert zx.reason == "the diagram is too dense to reduce within the work limit"
+
+    pm = clifft.HirPassManager()
+    zx = clifft.ZxSpacetimePass(max_qubits=8)
+    pm.add(zx)
+    clifft.compile(cultivation_d5, hir_passes=pm)
+    assert not zx.applied
+    assert zx.reason == "fresh qubits for resets would exceed the qubit limit"
+
+
+@pytest.mark.parametrize("option", ["max_qubits", "max_reduce_work"])
+def test_limits_must_be_positive(option: str) -> None:
+    with pytest.raises(ValueError, match=f"{option} must be positive"):
+        clifft.ZxSpacetimePass(**{option: 0})

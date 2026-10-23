@@ -200,15 +200,15 @@ void check_random_circuits(int trials) {
 
 }  // namespace
 
-TEST_CASE("Zx diagrams of traced circuits reproduce record distributions") {
+TEST_CASE("Zx diagrams of traced circuits reproduce record distributions", "[zx]") {
     check_random_circuits(25);
 }
 
-TEST_CASE("Zx diagrams reproduce record distributions of many random circuits", "[expensive]") {
+TEST_CASE("Zx diagrams reproduce record distributions of many random circuits", "[zx][expensive]") {
     check_random_circuits(150);
 }
 
-TEST_CASE("Zx diagrams match exact distributions of hand written circuits") {
+TEST_CASE("Zx diagrams match exact distributions of hand written circuits", "[zx]") {
     // Each case targets one failure: Pauli noise a basis change exposes,
     // dependent channels, Y bases, inverted and padded records, rotations with
     // Y factors, readout noise before and after feedback, and repeated resets.
@@ -320,7 +320,7 @@ TEST_CASE("Zx diagrams match exact distributions of hand written circuits") {
     }
 }
 
-TEST_CASE("Zx fresh qubits per reset relabel later targets") {
+TEST_CASE("Zx fresh qubits per reset relabel later targets", "[zx]") {
     const clifft::Circuit c = clifft::parse("H 0\nMR 0\nRX 1\nR 2\nR 2\nCX 0 2\nM 0 1 2\n");
     const clifft::Circuit fresh = with_fresh_qubit_per_reset(c);
     CHECK(fresh.num_measurements == c.num_measurements);
@@ -336,12 +336,12 @@ TEST_CASE("Zx fresh qubits per reset relabel later targets") {
     CHECK(cx->targets[1].value() == 2);
 }
 
-TEST_CASE("Zx fresh qubits per reset reject loss annotations") {
+TEST_CASE("Zx fresh qubits per reset reject loss annotations", "[zx]") {
     const clifft::Circuit c = clifft::parse("LOSS(0.1) 0\nR 0\nM 0\n");
     CHECK_THROWS_AS(with_fresh_qubit_per_reset(c), std::invalid_argument);
 }
 
-TEST_CASE("Zx diagrams reject noise rescheduled across operations") {
+TEST_CASE("Zx diagrams reject noise rescheduled across operations", "[zx]") {
     clifft::HirModule hir = clifft::trace(clifft::parse("H 0\nZ_ERROR(0.3) 0\nT 0\nM 0\n"));
     // Mark the T as having come before the noise, as a scheduler would.
     hir.materialize_logical_noise_prefix();

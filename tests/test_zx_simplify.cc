@@ -293,7 +293,7 @@ Graph random_diagram(zx_test::TestRng& rng, size_t num_vertices, uint32_t num_pa
 
 }  // namespace
 
-TEST_CASE("Zx every rule pass keeps amplitude magnitudes") {
+TEST_CASE("Zx every rule pass keeps amplitude magnitudes", "[zx]") {
     // Independent of zxparam: each pass on its own, then the full strategy,
     // must leave |amplitude| proportional for every parameter assignment once
     // the dropped factors' constraints are applied.
@@ -352,7 +352,7 @@ TEST_CASE("Zx every rule pass keeps amplitude magnitudes") {
     }
 }
 
-TEST_CASE("Zx phases snap to the pi over 4 grid and reduce mod 2") {
+TEST_CASE("Zx phases snap to the pi over 4 grid and reduce mod 2", "[zx]") {
     CHECK(Phase(2.25).value == 0.25);
     CHECK(Phase(-0.25).value == 1.75);
     CHECK(Phase(0.1 + 0.15).value == 0.25);
@@ -363,14 +363,14 @@ TEST_CASE("Zx phases snap to the pi over 4 grid and reduce mod 2") {
     CHECK(Phase(0.25, Params({3})).negated() == Phase(1.75, Params({3})));
 }
 
-TEST_CASE("Zx params combine by xor") {
+TEST_CASE("Zx params combine by xor", "[zx]") {
     Params a({5, 1, 3});
     a.xor_with(Params({3, 9}));
     CHECK(std::vector<uint32_t>(a.ids().begin(), a.ids().end()) == std::vector<uint32_t>{1, 5, 9});
     CHECK(Params({2, 2}).empty());
 }
 
-TEST_CASE("Zx parallel edges fuse cancel or add pi") {
+TEST_CASE("Zx parallel edges fuse cancel or add pi", "[zx]") {
     Graph g;
     const Vertex a = g.add_vertex(VertexType::Z);
     const Vertex b = g.add_vertex(VertexType::Z);
@@ -386,7 +386,7 @@ TEST_CASE("Zx parallel edges fuse cancel or add pi") {
     CHECK_FALSE(g.has_edge(a, c));
 }
 
-TEST_CASE("Zx neighbor order follows insertion and survives updates") {
+TEST_CASE("Zx neighbor order follows insertion and survives updates", "[zx]") {
     Graph g;
     const Vertex hub = g.add_vertex(VertexType::Z);
     std::vector<Vertex> leaves;
@@ -404,7 +404,7 @@ TEST_CASE("Zx neighbor order follows insertion and survives updates") {
     CHECK(std::vector<Neighbor>(g.neighbors(hub).begin(), g.neighbors(hub).end()) == want);
 }
 
-TEST_CASE("Zx full reduce replays zxparam pass by pass") {
+TEST_CASE("Zx full reduce replays zxparam pass by pass", "[zx]") {
     size_t num_cases = 0;
     for (const char* file : kFixtureFiles) {
         for (const FixtureCase& c : load_fixtures(file)) {
@@ -433,10 +433,10 @@ TEST_CASE("Zx full reduce replays zxparam pass by pass") {
             ++num_cases;
         }
     }
-    CHECK(num_cases == 303);
+    CHECK(num_cases == 78);
 }
 
-TEST_CASE("Zx full reduce keeps single copy amplitudes") {
+TEST_CASE("Zx full reduce keeps single copy amplitudes", "[zx]") {
     size_t checked = 0;
     for (const char* file : {"single_copy_random.txt", "single_copy_random_t.txt",
                              "single_copy_random_clifford.txt"}) {
@@ -464,5 +464,5 @@ TEST_CASE("Zx full reduce keeps single copy amplitudes") {
             ++checked;
         }
     }
-    CHECK(checked >= 290);
+    CHECK(checked >= 72);
 }

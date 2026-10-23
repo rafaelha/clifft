@@ -6,9 +6,10 @@
 namespace clifft::zx {
 namespace {
 
-void append_phase(std::string& out, double value) {
+void append_phase(std::string& out, const Phase& phase) {
+    const double value = phase.value;
     char buffer[32];
-    if (value * 4.0 == std::round(value * 4.0)) {
+    if (phase.is_dyadic()) {
         std::snprintf(buffer, sizeof(buffer), "g%d", static_cast<int>(std::lround(value * 4.0)));
     } else {
         std::snprintf(buffer, sizeof(buffer), "%.9f", value);
@@ -23,7 +24,7 @@ std::string canonical_text(const Graph& g) {
     for (Vertex v : g.vertices()) {
         out += std::to_string(v);
         out += g.type(v) == VertexType::Z ? " Z " : " X ";
-        append_phase(out, g.phase(v).value);
+        append_phase(out, g.phase(v));
         out += ' ';
         bool first = true;
         for (uint32_t p : g.phase(v).params.ids()) {

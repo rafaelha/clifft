@@ -2,9 +2,9 @@
 
 // A closed, single-copy parametric ZX diagram.
 //
-// The semantics and the rewrite behavior follow zxparam's Rust core
-// (rust-core-phase-a) restricted to classical-domain vertices, which are
-// single-copy. Vertices are indexed by a dense ID that is never reused, in the
+// The semantics and the rewrite behavior follow zxparam 0.1.0's Rust core
+// (https://pypi.org/project/zxparam/), restricted to classical-domain
+// vertices, which are single-copy. Vertices are indexed by a dense ID that is never reused, in the
 // style of quizx's vector graph. Neighbor order is insertion order: a new
 // neighbor is appended, an edge-type update keeps its position, and a removal
 // keeps the others in order. Rules take matches in vertex then neighbor order,
@@ -105,9 +105,9 @@ class Graph {
     // pivoting.
     void add_hadamard_edges(std::span<const std::pair<Vertex, Vertex>> pairs);
 
-    // Edge toggles so far, the dominant cost of reduction: local
-    // complementation on a degree-d vertex toggles d(d-1)/2 edges, so dense
-    // diagrams grow cubically. Rewrites stop once it passes the limit.
+    // Hadamard-edge toggles from local complementation and pivoting, the
+    // dominant cost of reduction: complementing a degree-d neighborhood
+    // toggles d(d-1)/2 edges. full_reduce sets the limit for its own run.
     [[nodiscard]] uint64_t work() const { return work_; }
     [[nodiscard]] bool over_work_limit() const { return work_ > work_limit_; }
     void set_work_limit(uint64_t limit) { work_limit_ = limit; }

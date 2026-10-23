@@ -28,8 +28,8 @@ struct ReduceOptions {
     // so it must stay a quantum operation rather than become a dropped scalar.
     // Off reproduces zxparam exactly, which folds every isolated piece.
     bool keep_weighted_isolated = true;
-    // Edge toggles allowed (see Graph::work). Once spent, reduction stops
-    // between rewrites, leaving a sound but partly reduced graph.
+    // Hadamard-edge toggles allowed (see Graph::work). Once spent, reduction
+    // stops between rewrites, leaving a sound but partly reduced graph.
     uint64_t max_work = std::numeric_limits<uint64_t>::max();
 };
 

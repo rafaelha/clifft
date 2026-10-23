@@ -53,6 +53,7 @@ add_library(clifft_core STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../clifft/zx/graph.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/../clifft/zx/pbc.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/../clifft/zx/phase.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/../clifft/zx/rewrite.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/../clifft/zx/schedule.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/../clifft/zx/simplify.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/../clifft/sampling/plan.cc

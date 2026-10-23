@@ -1,6 +1,9 @@
 #pragma once
 
-// Dynamic GF(2) vectors and an echelon basis, for the PBC reader.
+// Dynamic GF(2) vectors and an echelon basis, for the PBC reader and the
+// scheduler. Clifft's MaskView and PauliString hold Pauli masks over qubits;
+// the reader also eliminates over spiders, outcome parameters and noise bits
+// together, whose vectors are neither Paulis nor bounded by the qubit count.
 
 #include <bit>
 #include <cassert>
@@ -117,7 +120,6 @@ class EchelonBasis {
         reduce(vector, combination);
         if (const auto lead = vector.highest()) {
             rows_[*lead] = Row{std::move(vector), std::move(combination)};
-            ++num_rows_;
             return std::nullopt;
         }
         return combination;
@@ -144,7 +146,6 @@ class EchelonBasis {
         return out;
     }
     [[nodiscard]] bool has_lead(size_t i) const { return rows_[i].has_value(); }
-    [[nodiscard]] size_t num_rows() const { return num_rows_; }
 
   private:
     struct Row {
@@ -165,7 +166,6 @@ class EchelonBasis {
 
     std::vector<std::optional<Row>> rows_;
     size_t combination_size_;
-    size_t num_rows_ = 0;
 };
 
 }  // namespace clifft::zx

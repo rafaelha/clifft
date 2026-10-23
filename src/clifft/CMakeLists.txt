@@ -61,6 +61,7 @@ add_library(clifft_core STATIC
     zx/graph.cc
     zx/pbc.cc
     zx/phase.cc
+    zx/rewrite.cc
     zx/schedule.cc
     zx/simplify.cc
     noncomp/interaction.cc

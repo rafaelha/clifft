@@ -56,9 +56,6 @@ struct PbcGroup {
 
 struct PbcProgram {
     std::vector<PbcGroup> groups;
-    // Readout flips applied to records outside the computation, as in the
-    // diagram.
-    std::vector<uint32_t> classical_readout;
 };
 
 // Read `reduced`, the full_reduce result of `diagram.graph`. Returns nullopt

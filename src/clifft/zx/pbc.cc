@@ -69,11 +69,11 @@ struct Group {
 // The reading of one group: spider outcomes, postselections and outputs.
 
 struct Reading {
-    size_t n = 0;                  // spiders
-    std::vector<Bits> neighbours;  // over spiders
-    std::vector<char> letter;      // 'X' or 'Y'
-    Bits negative;                 // spiders whose measured Pauli is negated
-    std::vector<double> theta;     // rotation of each spider, where rotated
+    size_t n = 0;                 // spiders
+    std::vector<Bits> neighbors;  // over spiders
+    std::vector<char> letter;     // 'X' or 'Y'
+    Bits negative;                // spiders whose measured Pauli is negated
+    std::vector<double> theta;    // rotation of each spider, where rotated
     std::vector<bool> has_theta;
     std::vector<std::pair<Bits, Bits>> posts;  // (spider mask, rhs)
     struct Output {
@@ -102,7 +102,7 @@ struct Reading {
         for (size_t u : t.ones()) {
             PauliString k(static_cast<uint32_t>(n));
             k.set_pauli(static_cast<uint32_t>(u), true, false);
-            for (size_t w : neighbours[u].ones()) {
+            for (size_t w : neighbors[u].ones()) {
                 k.set_pauli(static_cast<uint32_t>(w), false, true);
             }
             k.set_sign(false);
@@ -166,7 +166,7 @@ std::pair<std::vector<Bits>, std::vector<Bits>> patterns(const Reading& r) {
     for (size_t k = 0; k < r.posts.size(); ++k) {
         for (size_t w : r.posts[k].first.ones()) {
             z_pattern[w].set(k);
-            for (size_t u : r.neighbours[w].ones()) {
+            for (size_t u : r.neighbors[w].ones()) {
                 k_pattern[u].flip(k);
             }
             if (r.letter[w] == 'Y') {
@@ -202,8 +202,8 @@ std::optional<std::vector<std::pair<size_t, Bits>>> rotation_axes(
         if (!z_pattern[v].any()) {
             return Bits(r.n);
         }
-        // Single neighbours first: typically a phase gadget's root.
-        for (size_t u : (r.neighbours[v] & allowed).ones()) {
+        // Single neighbors first: typically a phase gadget's root.
+        for (size_t u : (r.neighbors[v] & allowed).ones()) {
             if (k_pattern[u] == z_pattern[v]) {
                 return Bits::single(r.n, u);
             }
@@ -509,7 +509,6 @@ std::optional<PbcProgram> read_pbc(const SingleCopyDiagram& diagram, const Graph
     }
 
     PbcProgram program;
-    program.classical_readout = diagram.classical_readout;
     for (const Group& grp : groups) {
         if (grp.records.empty()) {
             continue;
@@ -557,7 +556,7 @@ std::optional<PbcProgram> read_pbc(const SingleCopyDiagram& diagram, const Graph
         for (size_t i = 0; i < r.n; ++i) {
             spider_index.emplace(spiders[i], i);
         }
-        r.neighbours.assign(r.n, Bits(r.n));
+        r.neighbors.assign(r.n, Bits(r.n));
         r.letter.assign(r.n, 'X');
         r.negative = Bits(r.n);
         r.theta.assign(r.n, 0.0);
@@ -605,7 +604,7 @@ std::optional<PbcProgram> read_pbc(const SingleCopyDiagram& diagram, const Graph
                 if (nb.type != EdgeType::Hadamard) {
                     return reject("the reduced diagram has a plain edge between spiders");
                 }
-                r.neighbours[i].set(spider_index.at(nb.vertex));
+                r.neighbors[i].set(spider_index.at(nb.vertex));
             }
         }
         for (size_t k : grp.constraints) {

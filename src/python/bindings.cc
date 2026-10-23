@@ -1088,26 +1088,24 @@ NB_MODULE(_clifft_core, m) {
         m, "ZxSpacetimePass",
         "Rewrites the circuit through single-copy ZX calculus into Pauli\n"
         "rotations and measurements on fresh lines, keeping the result only\n"
-        "if its peak active width after the default passes is lower. Preserves\n"
-        "the record distribution but not the state: final-state queries are\n"
-        "unavailable afterwards. Opt in by adding it first, before the\n"
-        "default passes.")
+        "if its planned peak active width after the default passes is lower.\n"
+        "Preserves the record distribution but not the state: final-state\n"
+        "queries are unavailable afterwards. Needs the traced HIR, so add it\n"
+        "before every other pass.\n\n"
+        "max_qubits bounds the qubits once every reset continues on a fresh\n"
+        "qubit, and the qubits of the rewrite. max_reduce_work bounds the\n"
+        "Hadamard-edge toggles spent reducing the diagram. Circuits beyond\n"
+        "either limit are left unchanged.")
         .def(
             "__init__",
-            [](clifft::ZxSpacetimePass* self, int64_t max_qubits, int64_t max_reduce_work) {
-                if (max_qubits < 1 || max_qubits > int64_t{UINT32_MAX}) {
-                    throw std::invalid_argument("max_qubits must be a positive 32-bit count");
-                }
-                if (max_reduce_work < 1) {
-                    throw std::invalid_argument("max_reduce_work must be positive");
-                }
+            [](clifft::ZxSpacetimePass* self, uint32_t max_qubits, uint64_t max_reduce_work) {
+                // The C++ constructor validates options; nanobind translates failures to
+                // ValueError.
                 new (self) clifft::ZxSpacetimePass(
-                    {.max_qubits = static_cast<uint32_t>(max_qubits),
-                     .max_reduce_work = static_cast<uint64_t>(max_reduce_work)});
+                    {.max_qubits = max_qubits, .max_reduce_work = max_reduce_work});
             },
-            nb::arg("max_qubits") = int64_t{clifft::ZxSpacetimeOptions{}.max_qubits},
-            nb::arg("max_reduce_work") =
-                static_cast<int64_t>(clifft::ZxSpacetimeOptions{}.max_reduce_work))
+            nb::arg("max_qubits") = clifft::ZxSpacetimeOptions{}.max_qubits,
+            nb::arg("max_reduce_work") = clifft::ZxSpacetimeOptions{}.max_reduce_work)
         .def_prop_ro("applied", &clifft::ZxSpacetimePass::applied)
         .def_prop_ro("input_peak", &clifft::ZxSpacetimePass::input_peak)
         .def_prop_ro("result_peak", &clifft::ZxSpacetimePass::result_peak)

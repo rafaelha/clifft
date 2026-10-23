@@ -4,12 +4,14 @@
 //
 // A phase is (value + parity(params)) * pi mod 2pi. The parameters are Boolean
 // variables (measurement outcomes and noise bits), so their parity adds pi.
-// This follows zxparam's Phase (https://github.com/QuEraComputing/zxparam) and
-// quizx's per-vertex Parity (https://github.com/zxcalc/quizx).
+// This follows zxparam's Phase (https://pypi.org/project/zxparam/) and quizx's
+// per-vertex Parity (https://github.com/zxcalc/quizx).
 //
 // The concrete value is a double in half-turns, reduced to [0, 2) and snapped
 // to the pi/4 grid. Clifford+T phases therefore stay exact, so the Pauli and
 // Clifford tests that select rewrites agree with zxparam's exact rationals.
+
+#include "clifft/util/numeric.h"
 
 #include <cmath>
 #include <cstdint>
@@ -17,9 +19,6 @@
 #include <vector>
 
 namespace clifft::zx {
-
-// Half-turn tolerance for snapping to the pi/4 grid, as in HIR canonicalization.
-inline constexpr double kPhaseGridTolerance = 1e-12;
 
 // A set of Boolean parameters, combined by XOR. Kept sorted and duplicate-free.
 class Params {
@@ -46,7 +45,7 @@ class Params {
         value += 2.0;
     }
     const double quarters = std::round(value * 4.0);
-    if (std::abs(value * 4.0 - quarters) < 4.0 * kPhaseGridTolerance) {
+    if (std::abs(value * 4.0 - quarters) < 4.0 * kRotationCanonicalizationTolerance) {
         value = quarters / 4.0;
     }
     if (value >= 2.0) {

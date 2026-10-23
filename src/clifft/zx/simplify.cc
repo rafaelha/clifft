@@ -1,7 +1,8 @@
 #include "clifft/zx/simplify.h"
 
+#include "clifft/util/numeric.h"
+
 #include <algorithm>
-#include <cassert>
 #include <limits>
 #include <map>
 #include <optional>
@@ -688,10 +689,7 @@ struct Runner {
 }  // namespace
 
 bool full_reduce(Graph& g, const ReduceOptions& options, const ReduceTrace& trace) {
-    const uint64_t start = g.work();
-    g.set_work_limit(options.max_work > std::numeric_limits<uint64_t>::max() - start
-                         ? std::numeric_limits<uint64_t>::max()
-                         : start + options.max_work);
+    g.set_work_limit(saturating_add_u64(g.work(), options.max_work));
     Runner runner{g, options, trace};
     while (runner.run()) {}
     const bool finished = !g.over_work_limit();

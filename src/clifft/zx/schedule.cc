@@ -61,8 +61,7 @@ class StabilizerGroup {
         return first;
     }
 
-    void rotate(const Bits& op, const Bits& swapped_op) {
-        (void)op;
+    void rotate(const Bits& swapped_op) {
         if (const auto first = eliminate(swapped_op)) {
             rows_.erase(rows_.begin() + static_cast<std::ptrdiff_t>(*first));
         }
@@ -109,7 +108,7 @@ void advance(StabilizerGroup& s, const Prepared& p, size_t j) {
     if (p.is_measurement[j]) {
         s.measure(p.op[j], p.swapped_op[j]);
     } else {
-        s.rotate(p.op[j], p.swapped_op[j]);
+        s.rotate(p.swapped_op[j]);
     }
 }
 
@@ -129,7 +128,7 @@ uint32_t peak_width(const PbcGroup& group, const std::vector<uint32_t>& order) {
 Schedule greedy_schedule(const PbcGroup& group) {
     const Prepared p = prepare(group);
     const size_t n = group.ops.size();
-    // before[i] holds the later ops that anticommute with op i.
+    // successors[i] holds the later ops that anticommute with op i.
     std::vector<Bits> successors(n, Bits(n));
     std::vector<size_t> waiting(n, 0);
     for (size_t i = 0; i < n; ++i) {

@@ -1,5 +1,6 @@
 #include "clifft/zx/emit.h"
 
+#include "clifft/util/numeric.h"
 #include "clifft/zx/bits.h"
 
 #include <cmath>
@@ -117,6 +118,7 @@ std::optional<HirModule> emit_hir(const HirModule& input, const SingleCopyDiagra
     out.observable_targets = input.observable_targets;
     out.readout_noise = input.readout_noise;
     out.neglect_instrument_damping = input.neglect_instrument_damping;
+    out.postselection = input.postselection;
 
     // A channel flips each sign line whose parity its pattern changes.
     auto channel_mask = [&](const NoiseGroup* group, size_t outcome) {
@@ -217,8 +219,11 @@ std::optional<HirModule> emit_hir(const HirModule& input, const SingleCopyDiagra
                 if (!op.x.any() && !op.z.any()) {
                     continue;  // a phase, global within each noise trajectory
                 }
+                // The reader leaves only the non-Clifford remainder of each
+                // phase, so alpha lies in [-1/4, 1/4] and T is its only
+                // named case.
                 const double alpha = 2.0 * op.theta / std::numbers::pi;
-                if (std::abs(std::abs(alpha) - 0.25) < 1e-12) {
+                if (std::abs(std::abs(alpha) - 0.25) < kRotationCanonicalizationTolerance) {
                     out.append_tgate(alpha < 0.0, fill);
                 } else {
                     out.append_phase_rotation(alpha, fill);

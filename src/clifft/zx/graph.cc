@@ -103,7 +103,8 @@ void Graph::toggle_edge(Vertex u, Vertex v) {
 void Graph::add_hadamard_edges(std::span<const std::pair<Vertex, Vertex>> pairs) {
     work_ += pairs.size();
     for (const auto& [a, b] : pairs) {
-        if (a == b || slot(a).type != VertexType::Z || slot(b).type != VertexType::Z) {
+        assert(a != b && "Hadamard self-edges are not toggled");
+        if (slot(a).type != VertexType::Z || slot(b).type != VertexType::Z) {
             add_edge(a, b, EdgeType::Hadamard);
             continue;
         }

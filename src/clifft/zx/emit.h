@@ -16,9 +16,11 @@
 // feedback reads the flipped record: the flip then changes later signs, which
 // a classical flip cannot express, so it becomes a one-channel noise site on
 // the sign lines, appended after the original sites, and its entry is no
-// longer referenced. Visible
-// records keep their indices, so detectors and observables are copied
+// longer referenced.
+//
+// Visible records keep their indices, so detectors and observables are copied
 // unchanged; measurements whose outcomes the reader dropped become hidden.
+// The rewrite has no op-to-source mapping: every source_map entry is empty.
 //
 // The output preserves the record distribution, not the state: it has no
 // final tableau.

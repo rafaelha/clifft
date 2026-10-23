@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <catch2/catch_test_macros.hpp>
 #include <cmath>
 #include <complex>
@@ -442,6 +443,26 @@ class Reference {
     int n_;
     Distribution dist_;
 };
+
+// A Pauli on up to 64 qubits as bit masks: X where x is set, Z where z is,
+// Y where both.
+struct PauliMasks {
+    uint64_t x = 0;
+    uint64_t z = 0;
+    bool sign = false;
+};
+
+// P|i> = (-1)^sign i^{#Y} (-1)^{z . i} |i ^ x>, with Y = i X Z.
+inline State apply_pauli(const State& psi, const PauliMasks& m) {
+    State out(psi.size());
+    const std::complex<double> phase =
+        std::pow(std::complex<double>(0, 1), std::popcount(m.x & m.z)) * (m.sign ? -1.0 : 1.0);
+    for (uint64_t i = 0; i < psi.size(); ++i) {
+        const double sign = (std::popcount(m.z & i) & 1) ? -1.0 : 1.0;
+        out[i ^ m.x] += phase * sign * psi[i];
+    }
+    return out;
+}
 
 // The distribution with every classical readout flip applied.
 inline Distribution apply_classical_readout(Distribution dist, const clifft::HirModule& hir,

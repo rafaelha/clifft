@@ -70,8 +70,8 @@ std::unique_ptr<HirPass> make_hir() {
 // Single source of truth for all available optimization passes.
 // Each entry defines metadata AND the factory function used to construct it.
 inline const PassInfo kRegisteredPasses[] = {
-    // HIR passes. Registry order is pipeline order for callers that enable
-    // passes by name, and the ZX rewrite must see the traced HIR.
+    // HIR passes. The playground runs the passes a user enables in registry
+    // order, and the ZX rewrite must see the traced HIR.
     {.name = "ZxSpacetimePass",
      .default_enabled = false,
      .record_order = kBreaksRecordOrder,

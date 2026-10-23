@@ -31,33 +31,18 @@ using zx_test::to_text;
 namespace {
 
 using C = std::complex<double>;
-using State = std::vector<C>;
+using zx_test::apply_pauli;
+using zx_test::PauliMasks;
+using zx_test::State;
 
 // Masks of a group's Pauli: bit l of x and z for line l.
-struct Masks {
-    uint64_t x = 0;
-    uint64_t z = 0;
-};
-
-Masks masks_of(const PbcOp& op) {
-    Masks m;
+PauliMasks masks_of(const PbcOp& op) {
+    PauliMasks m;
     for (size_t l = 0; l < op.x.size(); ++l) {
         m.x |= uint64_t(op.x.test(l)) << l;
         m.z |= uint64_t(op.z.test(l)) << l;
     }
     return m;
-}
-
-// P|i> = i^{#Y} (-1)^{z . i} |i ^ x>, with Y = i X Z.
-State apply_pauli(const State& psi, const Masks& m) {
-    State out(psi.size());
-    const int ys = std::popcount(m.x & m.z);
-    const C phase = std::pow(C(0, 1), ys);
-    for (uint64_t i = 0; i < psi.size(); ++i) {
-        const double sign = (std::popcount(m.z & i) & 1) ? -1.0 : 1.0;
-        out[i ^ m.x] += phase * sign * psi[i];
-    }
-    return out;
 }
 
 // The distribution of the group's records, given its noise bits, running the
@@ -150,7 +135,7 @@ Distribution pbc_distribution(const SingleCopyDiagram& d, const PbcProgram& prog
             break;
         }
     }
-    return apply_classical_readout(std::move(dist), hir, program.classical_readout);
+    return apply_classical_readout(std::move(dist), hir, d.classical_readout);
 }
 
 enum class Check { Matched, Rejected };
@@ -212,15 +197,15 @@ void check_random_circuits(int trials) {
 
 }  // namespace
 
-TEST_CASE("Zx PBCs reproduce record distributions of traced circuits") {
+TEST_CASE("Zx PBCs reproduce record distributions of traced circuits", "[zx]") {
     check_random_circuits(25);
 }
 
-TEST_CASE("Zx PBCs reproduce record distributions of many random circuits", "[expensive]") {
+TEST_CASE("Zx PBCs reproduce record distributions of many random circuits", "[zx][expensive]") {
     check_random_circuits(150);
 }
 
-TEST_CASE("Zx PBC of cultivation d5 schedules to width 6") {
+TEST_CASE("Zx PBC of cultivation d5 schedules to width 6", "[zx]") {
     // The circuit from SOFT that the ZX lowering was designed around: Tsim
     // reaches width 6 on it, and Clifft's ordinary pipeline reaches 10.
     std::ifstream in(std::string(CLIFFT_FIXTURES_DIR) + "/cultivation_d5.stim");

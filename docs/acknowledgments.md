@@ -65,11 +65,10 @@ parameters.
 Clifft's ZX simplifier (`src/clifft/zx/`) is a C++ port of zxparam's rewrite
 rules and `full_reduce` strategy for parametric ZX diagrams, restricted to
 zxparam's single-copy (classical-domain) vertices. There, the parameters are
-Boolean measurement outcomes and noise bits. zxparam's Rust core also
-generates the fixtures that pin the port pass by pass.
+Boolean measurement outcomes and noise bits. zxparam also generates the
+fixtures that pin the port pass by pass.
 
-- [zxparam source](https://github.com/QuEraComputing/zxparam) (Rust core on the
-  `rust-core-phase-a` branch).
+- [zxparam 0.1.0](https://pypi.org/project/zxparam/) (Apache-2.0).
 
 ## QuiZX
 
